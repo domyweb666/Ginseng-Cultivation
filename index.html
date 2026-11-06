@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="人蔘修煉">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#EDEFEA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111614" media="(prefers-color-scheme: dark)">
+<meta name="description" content="把重訓變成修仙：體組成算境界，力量紀錄算功法，修煉天數算宗門身分。">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="icon" href="img/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>人蔘修煉</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font:14px/1.5 system-ui,-apple-system,sans-serif}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<style>
+/* 版面：單欄手機 app，上方境界碑、中段天梯、底部分頁列；墨色紙底＋玉綠＋金丹金 */
+:root{
+  --bg:#EDEFEA; --paper:#F8F9F5; --ink:#1C2320; --ink-2:#56605B; --line:#D3D8D1;
+  --jade:#2B735C; --jade-soft:#D7E7DF; --gold:#A87A1F; --gold-soft:#F1E4C4; --warn:#B0472E;
+  --f-display:"LXGW WenKai TC","Kaiti TC","STKaiti","KaiTi",serif;
+  --f-body:"Noto Sans TC","PingFang TC","Heiti TC",system-ui,sans-serif;
+  --f-num:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --r:14px; --scroll:#FDFCF8;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111614; --paper:#1A201D; --ink:#E6EAE5; --ink-2:#9AA59F; --line:#2C3531;
+  --jade:#6CC9A6; --jade-soft:#1F3A30; --gold:#E2B85C; --gold-soft:#3A3020; --warn:#E78468; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111614; --paper:#1A201D; --ink:#E6EAE5; --ink-2:#9AA59F; --line:#2C3531;
+  --jade:#6CC9A6; --jade-soft:#1F3A30; --gold:#E2B85C; --gold-soft:#3A3020; --warn:#E78468; color-scheme:dark}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--f-body);font-size:15px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:12px calc(84px + env(safe-area-inset-bottom,0px))}
+.wrap{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1,h2,h3{margin:0;text-wrap:balance}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.muted{color:var(--ink-2)}
+.small{font-size:13px}
+.top{display:flex;justify-content:space-between;align-items:baseline;padding-top:4px}
+.top h1{font-family:var(--f-display);font-size:22px;letter-spacing:.08em}
+.brand{display:flex;align-items:center;gap:10px}
+.brand img{width:34px;height:34px;display:block}
+.portrait{background:var(--scroll);border:1px solid var(--line);border-radius:12px;padding:8px;margin:0 auto 14px;max-width:300px}
+.portrait img{display:block;width:100%;max-height:340px;object-fit:contain}
+.empty .portrait{max-width:220px}
+.thumb{width:36px;height:36px;border-radius:50%;object-fit:cover;object-position:50% 35%;background:var(--scroll);border:1px solid var(--line);display:block}
+.rung.here .thumb{border:2px solid var(--gold)}
+.celebrate .cimg{position:relative;width:min(58vw,250px);max-height:38vh;object-fit:contain;background:var(--scroll);border-radius:16px;padding:6px;box-shadow:0 10px 40px rgba(0,0,0,.18);margin-bottom:8px;animation:cpop .7s cubic-bezier(.2,1.6,.4,1) both}
+.sync{font-size:12px;color:var(--ink-2)}
+
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.label{font-size:12px;letter-spacing:.12em;color:var(--ink-2)}
+
+/* 境界碑 */
+.stele{text-align:center;padding:22px 16px 18px;position:relative;overflow:hidden}
+.stele .realm{font-family:var(--f-display);font-size:56px;line-height:1.1;color:var(--gold);letter-spacing:.12em;margin-top:6px}
+.stele .stage{font-family:var(--f-display);font-size:24px;letter-spacing:.3em;margin-top:2px}
+.stele .ffmi{margin-top:10px;font-size:14px;color:var(--ink-2)}
+.stele .ffmi b{color:var(--ink);font-size:18px}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:14px}
+.bar > i{display:block;height:100%;background:var(--jade);border-radius:6px;transition:width .5s}
+.bar.gold > i{background:var(--gold)}
+.next{display:flex;justify-content:space-between;font-size:13px;color:var(--ink-2);margin-top:6px;gap:8px}
+.gate{margin-top:14px;font-size:13px;padding:8px 12px;border-radius:10px;display:inline-block}
+.gate.ok{background:var(--jade-soft);color:var(--jade)}
+.gate.warn{background:var(--gold-soft);color:var(--gold)}
+.gate.bad{background:transparent;border:1px solid var(--warn);color:var(--warn)}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:10px 8px;text-align:center}
+.stat b{display:block;font-size:20px}
+.stat span{font-size:12px;color:var(--ink-2)}
+
+/* 天梯 */
+.ladder{display:flex;flex-direction:column;gap:2px;margin-top:10px}
+.rung{display:grid;grid-template-columns:36px 52px 1fr auto;align-items:center;gap:10px;padding:8px 10px;border-radius:10px}
+.rung .rn{font-family:var(--f-display);font-size:19px;letter-spacing:.1em}
+.rung .rr{font-size:12px;color:var(--ink-2)}
+.rung .rd{font-size:12px;color:var(--ink-2)}
+.rung.done .rn{color:var(--jade)}
+.rung.here{background:var(--gold-soft)}
+.rung.here .rn{color:var(--gold)}
+.rung.far{opacity:.55}
+
+/* 圖表 */
+.chart{width:100%;height:auto;display:block;margin-top:8px}
+.chart text{fill:var(--ink-2);font-size:10px;font-family:var(--f-num)}
+
+/* 功法卡 */
+.moves{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:360px){.moves{grid-template-columns:1fr}}
+.move{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.move .mn{font-family:var(--f-display);font-size:18px}
+.move .mr{font-size:12px;color:var(--ink-2)}
+.move .lv{font-family:var(--f-display);font-size:15px;color:var(--gold)}
+.move .lv.zero{color:var(--ink-2)}
+.move .bar{height:6px;margin-top:6px}
+
+.list{display:flex;flex-direction:column}
+.row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row .rmain{min-width:0}
+.row .rmain b{font-weight:500}
+.del{background:none;border:1px solid var(--line);color:var(--ink-2);border-radius:8px;font:inherit;font-size:12px;padding:4px 8px;cursor:pointer}
+.del.arm{border-color:var(--warn);color:var(--warn)}
+
+/* 表單 */
+form{display:flex;flex-direction:column;gap:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--ink-2);min-width:0}
+input,select{font:inherit;font-size:17px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 10px;width:100%;box-sizing:border-box;min-width:0}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--jade);outline-offset:1px}
+.btn{font:inherit;font-weight:700;font-size:16px;border:0;border-radius:12px;padding:13px;background:var(--jade);color:var(--paper);cursor:pointer;letter-spacing:.1em}
+.btn.gold{background:var(--gold)}
+.hint{font-size:12px;color:var(--ink-2);margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--jade);border-color:var(--jade);color:var(--paper)}
+
+details summary{cursor:pointer;font-weight:500}
+details p{margin:8px 0 0;font-size:14px;color:var(--ink-2)}
+
+.empty{text-align:center;padding:28px 16px}
+.empty .realm{font-family:var(--f-display);font-size:28px;color:var(--ink-2);letter-spacing:.15em}
+
+/* 分頁列 */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--paper);border-top:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(3,1fr);
+  padding:6px max(16px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+nav.tabs button{font:inherit;background:none;border:0;color:var(--ink-2);padding:6px 0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:0}
+nav.tabs button b{font-family:var(--f-display);font-size:19px;font-weight:400;letter-spacing:.1em}
+nav.tabs button span{font-size:11px}
+nav.tabs button[aria-selected="true"]{color:var(--jade)}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:30;
+  background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:12px;font-size:14px;max-width:calc(100% - 48px);text-align:center;
+  box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.toast b{font-family:var(--f-display);color:var(--gold);font-size:17px;font-weight:400}
+.ident{display:grid;grid-template-columns:1fr;gap:8px}
+.ident .id{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0;display:flex;flex-direction:column;gap:2px}
+.ident .iv{font-family:var(--f-display);font-size:22px;letter-spacing:.08em}
+.ident .is{font-size:12px;color:var(--ink-2)}
+.ident .bar{height:6px;margin:6px 0 2px}
+.timeline{display:flex;flex-direction:column;margin-top:6px}
+.tl{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:baseline;padding:8px 0;border-top:1px solid var(--line)}
+.tl:first-child{border-top:0}
+.tl .tn{font-family:var(--f-display);font-size:17px;color:var(--jade)}
+.tl:first-child .tn{color:var(--gold)}
+
+.celebrate{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;cursor:pointer;
+  background:var(--bg);
+  background:radial-gradient(circle at 50% 45%,var(--gold-soft) 0%,var(--bg) 70%);
+  padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(16px,env(safe-area-inset-left,0px));
+  animation:cfade .3s ease-out}
+.celebrate canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.celebrate .ck{font-size:13px;letter-spacing:.35em;color:var(--ink-2);position:relative}
+.celebrate .cbig{font-family:var(--f-display);font-size:clamp(44px,13vw,72px);line-height:1.15;color:var(--gold);letter-spacing:.12em;position:relative;
+  animation:cpop .7s cubic-bezier(.2,1.6,.4,1) both;text-shadow:0 0 28px var(--gold-soft)}
+.celebrate .csub{font-family:var(--f-display);font-size:24px;letter-spacing:.2em;position:relative;animation:crise .6s .25s ease-out both}
+.celebrate .cnote{font-size:14px;color:var(--ink-2);position:relative;max-width:22em;animation:crise .6s .4s ease-out both}
+.celebrate .ctap{position:absolute;bottom:calc(28px + env(safe-area-inset-bottom,0px));left:0;right:0;font-size:12px;color:var(--ink-2)}
+@keyframes cfade{from{opacity:0}}
+@keyframes cpop{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes crise{from{transform:translateY(12px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.bar > i{transition:none}.celebrate,.celebrate *{animation:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><img src="img/icon.webp" alt="" width="34" height="34"><h1>人蔘修煉</h1></div>
+    <span class="sync" id="sync">連線中…</span>
+  </header>
+
+  <section id="view-realm"></section>
+  <section id="view-gong" hidden></section>
+  <section id="view-log" hidden></section>
+</div>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" id="tab-realm" aria-selected="true" data-v="realm"><b>境界</b><span>身體組成</span></button>
+  <button role="tab" id="tab-gong" aria-selected="false" data-v="gong"><b>功法</b><span>力量紀錄</span></button>
+  <button role="tab" id="tab-log" aria-selected="false" data-v="log"><b>錄入</b><span>量體重・練完</span></button>
+</nav>
+<div class="toast" id="toast" hidden></div>
+<div class="celebrate" id="celebrate" role="status" hidden></div>
+
+<script>
+/* ---------- 規則 ---------- */
+const REALMS=[
+  {n:'煉氣',lo:16.5,hi:18,  d:'一般未訓練'},
+  {n:'築基',lo:18,  hi:19.5,d:'有基礎'},
+  {n:'金丹',lo:19.5,hi:21,  d:'看得出有在練'},
+  {n:'元嬰',lo:21,  hi:22.5,d:'資深健身者'},
+  {n:'化神',lo:22.5,hi:24,  d:'菁英'},
+  {n:'大乘',lo:24,  hi:25.5,d:'天賦上限附近'},
+  {n:'渡劫',lo:25.5,hi:27,  d:'自然人極限'}
+];
+const STAGES=['初期','中期','後期'];
+const MOVES=[
+  {k:'squat',n:'深蹲',f:'坐馬樁',th:[0.75,1.0,1.25,1.5,2.0]},
+  {k:'dead', n:'硬舉',f:'拔山式',th:[1.0,1.25,1.5,2.0,2.5]},
+  {k:'bench',n:'臥推',f:'推山掌',th:[0.5,0.75,1.0,1.25,1.5]},
+  {k:'ohp',  n:'肩推',f:'托天式',th:[0.35,0.5,0.65,0.8,1.0]},
+  {k:'row',  n:'划船',f:'挽弓式',th:[0.5,0.75,1.0,1.25,1.5]},
+  {k:'pull', n:'引體向上',f:'攀雲梯',th:[1.03,1.17,1.33,1.5,1.67],bw:true}
+];
+const LV=['未入門','入門','小成','大成','圓滿','化境'];
+const RANKS=[
+  {n:'雜役弟子',d:0,  r:-1,t:'挑水劈柴，先把宗門的路走熟'},
+  {n:'外門弟子',d:8,  r:-1,t:'名字已寫進宗門名冊'},
+  {n:'內門弟子',d:24, r:1, t:'根基已成，修煉成了習慣'},
+  {n:'真傳弟子',d:50, r:2, t:'結成金丹，宗門重點栽培'},
+  {n:'長老',    d:150,r:3, t:'元嬰已成，坐鎮一方'},
+  {n:'太上長老',d:300,r:4, t:'化神之境，宗門底蘊'}
+];
+const leanOf=m=>m.lean||m.weight*(1-m.bf/100);
+const daysBetween=(a,b)=>Math.round((new Date(b)-new Date(a))/864e5);
+function durTxt(d){if(d<60)return d+' 天';if(d<365)return Math.round(d/30)+' 個月';const y=Math.floor(d/365),mo=Math.round((d%365)/30);return y+' 年'+(mo?' '+mo+' 個月':'')}
+function sectOf(days,realmI){
+  let ri=0;RANKS.forEach((r,j)=>{if(days>=r.d&&realmI>=r.r)ri=j});
+  const nr=RANKS[ri+1];
+  let title=RANKS[ri].n,note=RANKS[ri].t,pct=100,next='已是宗門最高位';
+  if(nr){
+    const need=[];if(days<nr.d)need.push(`再修煉 ${nr.d-days} 天`);if(realmI<nr.r)need.push(`突破至${REALMS[nr.r].n}`);
+    next=need.join('、')+`，升${nr.n}`;
+    pct=days>=nr.d?100:Math.max(3,Math.min(100,(days-RANKS[ri].d)/(nr.d-RANKS[ri].d)*100));
+  }
+  const guest=(t,target)=>{title=t;const g=RANKS[target];note=`實力已達${REALMS[realmI].n}，以客卿身分入宗`;
+    next=`再修煉 ${g.d-days} 天，轉為正式${g.n}`;pct=Math.max(3,Math.min(100,days/g.d*100))};
+  if(realmI>=3&&ri<4) guest('客卿長老',4);
+  else if(realmI>=2&&ri<3) guest('客卿',3);
+  else if(nr&&ri<=2&&days>=100&&days>=nr.d&&realmI<nr.r){title=(ri===2?'內門':'外門')+'執事';note=`修煉 ${days} 天，資歷深厚，掌管宗門事務`}
+  return {ri,title,note,next,pct};
+}
+function realmMax(H){const bt=breakthroughs(H);return bt.length?Math.floor(bt[bt.length-1].idx/3):-1}
+
+function ffmi(lean,hcm){const h=hcm/100;return lean/(h*h)+6.1*(1.8-h)}
+function leanFor(f,hcm){const h=hcm/100;return (f-6.1*(1.8-h))*h*h}
+function realmOf(f){
+  let i=REALMS.findIndex(r=>f<r.hi); if(i<0) i=REALMS.length-1;
+  const r=REALMS[i]; let s=Math.floor((f-r.lo)/0.5); s=Math.max(0,Math.min(2,s));
+  const nextF=f<r.lo?r.lo:(i===REALMS.length-1&&s===2?null:r.lo+(s+1)*0.5);
+  const fromF=f<r.lo?16.5:r.lo+s*0.5;
+  return {i,r,s,nextF,fromF};
+}
+const e1rm=(load,reps)=>reps<=1?load:load*(1+reps/30);
+function moveLevel(m,ratio){let l=0;m.th.forEach((t,i)=>{if(ratio>=t)l=i+1});return l}
+
+/* ---------- 狀態與儲存 ---------- */
+const state={meas:[],lift:[],cfg:{height:174}};
+let DB=null,LOCAL=false,tab='realm';
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const LS='rencan-v1';
+function loadLocal(){try{const s=JSON.parse(localStorage.getItem(LS)||'null');if(s){Object.assign(state,s)}}catch(e){}}
+function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){}}
+
+async function put(col,id,data){
+  if(LOCAL){
+    if(col==='cfg'){state.cfg={...state.cfg,...data}}
+    else{const arr=state[col];const j=arr.findIndex(x=>x.id===id);const v={id,...data};if(j>=0)arr[j]=v;else arr.push(v)}
+    saveLocal();render();return;
+  }
+  if(col==='cfg') await DB.doc('cfg/me').set({...state.cfg,...data});
+  else await DB.collection(col).doc(id).set(data);
+}
+async function del(col,id){
+  if(LOCAL){state[col]=state[col].filter(x=>x.id!==id);saveLocal();render();return}
+  await DB.collection(col).doc(id).delete();
+}
+
+async function init(){
+  render();
+  try{ if(window.claude?.use) DB=await window.claude.use('db'); }catch(e){DB=null}
+  if(!DB){LOCAL=true;loadLocal();setSync('僅存在這台裝置');render();return}
+  let got=0;const need=3;
+  const timer=setTimeout(()=>{if(got<need)setSync('暫時連不上，資料可能不是最新')},10000);
+  const done=(snap)=>{if(!snap.metadata.fromCache){got++;if(got>=need){clearTimeout(timer);setSync('已同步')}}};
+  const fail=()=>{clearTimeout(timer);setSync('同步中斷，請重開頁面')};
+  DB.collection('meas').onSnapshot(s=>{state.meas=s.docs.map(d=>({id:d.id,...d.data()}));done(s);render()},fail);
+  DB.collection('lift').onSnapshot(s=>{state.lift=s.docs.map(d=>({id:d.id,...d.data()}));done(s);render()},fail);
+  DB.doc('cfg/me').onSnapshot(s=>{if(s.exists)state.cfg={...state.cfg,...s.data()};done(s);render()},fail);
+}
+function setSync(t){document.getElementById('sync').textContent=t}
+
+/* ---------- 計算 ---------- */
+const byDate=a=>[...a].sort((x,y)=>(x.date+(x.t||0)).localeCompare(y.date+(y.t||0)));
+function latestMeas(){const a=byDate(state.meas);return a[a.length-1]||null}
+function bwAt(date){
+  const a=byDate(state.meas).filter(m=>m.date<=date);
+  return (a[a.length-1]||latestMeas()||{}).weight||null;
+}
+function liftCalc(l){
+  const m=MOVES.find(x=>x.k===l.move); if(!m) return null;
+  const bw=l.bw||bwAt(l.date)||65;
+  const load=m.bw?bw+(+l.kg||0):(+l.kg||0);
+  const e=e1rm(load,+l.reps||1);
+  return {m,e,ratio:e/bw,bw};
+}
+function bestByMove(excludeId){
+  const best={};
+  state.lift.forEach(l=>{if(l.id===excludeId)return;const c=liftCalc(l);if(!c)return;
+    if(!best[l.move]||c.ratio>best[l.move].ratio)best[l.move]={...c,l}});
+  return best;
+}
+const trainDays=()=>new Set(state.lift.map(l=>l.date)).size;
+function breakthroughs(H){
+  const out=[];let max=-1,prev=null;
+  byDate(state.meas).forEach(m=>{if(m.bf>20)return;const R=realmOf(ffmi(leanOf(m),H));const idx=R.i*3+R.s;
+    if(idx>max){out.push({date:m.date,idx,label:R.r.n+STAGES[R.s],first:max<0,days:prev?daysBetween(prev,m.date):0});max=idx;prev=m.date}});
+  return out;
+}
+function weekCount(){
+  const now=new Date();const day=(now.getDay()+6)%7;const mon=new Date(now);mon.setDate(now.getDate()-day);
+  const ms=mon.getFullYear()+'-'+String(mon.getMonth()+1).padStart(2,'0')+'-'+String(mon.getDate()).padStart(2,'0');
+  return new Set(state.lift.filter(l=>l.date>=ms).map(l=>l.date)).size;
+}
+
+/* ---------- 畫面 ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=(n,d=1)=>(Math.round(n*10**d)/10**d).toFixed(d);
+
+function render(){renderRealm();renderGong();renderLog()}
+
+function renderRealm(){
+  const el=$('#view-realm');const m=latestMeas();const H=state.cfg.height||174;
+  const days=trainDays(),S=sectOf(days,realmMax(H));
+  const ident=`<div class="ident">
+    <div class="id"><span class="is">宗門身分</span><span class="iv">${S.title}</span><span class="is">${S.note}</span>
+      <div class="bar"><i style="width:${S.pct}%"></i></div><span class="is">${S.next}</span></div></div>`;
+  if(!m){el.innerHTML=ident+`<div class="panel empty" style="margin-top:16px"><div class="portrait"><img src="img/r0.webp" alt="穿著雜役服的人蔘"></div><div class="realm">尚未入道</div><p class="muted">還沒有體組成紀錄。到「錄入」填一次體脂秤的數字，就能看到你的境界。</p></div>`;return}
+  const bt=breakthroughs(H);
+  const tlHtml=bt.length?`<div class="panel"><h2 class="label">突破紀錄</h2>
+    ${bt.length>1?`<p class="hint" style="margin-top:4px">從${bt[0].label}到${bt[bt.length-1].label}，用了 ${durTxt(daysBetween(bt[0].date,bt[bt.length-1].date))}</p>`:''}
+    <div class="timeline">${[...bt].reverse().map(b=>`<div class="tl"><span class="tn">${b.label}</span><span class="small muted">${b.first?'入道起點':'距上一階 '+durTxt(b.days)}</span><span class="num small muted">${esc(b.date)}</span></div>`).join('')}</div></div>`:'';
+  const lean=m.lean||m.weight*(1-m.bf/100);
+  const f=ffmi(lean,H);const R=realmOf(f);
+  let pct=100,nextTxt='已達渡劫後期';
+  if(R.nextF!=null){pct=Math.max(2,Math.min(100,(f-R.fromF)/(R.nextF-R.fromF)*100));
+    const nr=realmOf(R.nextF+0.001);const need=leanFor(R.nextF,H)-lean;
+    nextTxt=`距 ${nr.r.n}${STAGES[nr.s]} 還差肌肉 <span class="num">${fmt(Math.max(0,need))}</span> kg`}
+  const bf=m.bf;let gate;
+  if(bf>20) gate=`<span class="gate bad">根基不穩：體脂 ${fmt(bf)}%，超過 20%，境界暫不認證</span>`;
+  else if(bf>18) gate=`<span class="gate warn">根基浮動：體脂 ${fmt(bf)}%，回到 18% 以下才算穩固</span>`;
+  else if(bf<10) gate=`<span class="gate warn">體脂 ${fmt(bf)}%，偏低，留意恢復與飲食</span>`;
+  else gate=`<span class="gate ok">根基穩固・體脂 ${fmt(bf)}%</span>`;
+
+  const ladder=[...REALMS].reverse().map((r,ri)=>{const i=REALMS.length-1-ri;
+    const cls=i<R.i?'done':i===R.i?'here':i>R.i+1?'far':'';
+    const right=i===R.i?`${STAGES[R.s]}`:i<R.i?'已過':'';
+    return `<div class="rung ${cls}"><img class="thumb" src="img/r${i}.webp" alt="" loading="lazy"><span class="rn">${r.n}</span><span class="rr">${r.d}・FFMI ${r.lo}–${r.hi}</span><span class="rd">${right}</span></div>`}).join('');
+
+  const ms=byDate(state.meas);
+  el.innerHTML=ident+`<div style="height:16px"></div>
+  <div class="panel stele">
+    <div class="portrait"><img src="img/r${R.i}.webp" alt="${R.r.n}境界的人蔘"></div>
+    <div class="label">目前境界・${esc(m.date)} 量測</div>
+    <div class="realm">${R.r.n}</div>
+    <div class="stage">${STAGES[R.s]}</div>
+    <div class="ffmi">FFMI <b class="num">${fmt(f,2)}</b>　去脂體重 <span class="num">${fmt(lean,2)}</span> kg</div>
+    <div class="bar gold"><i style="width:${pct}%"></i></div>
+    <div class="next"><span>${nextTxt}</span><span class="num">${R.nextF!=null?fmt(R.nextF,1):''}</span></div>
+    ${gate}
+  </div>
+  <div class="stats">
+    <div class="stat"><b class="num">${weekCount()}</b><span>本週修煉（天）</span></div>
+    <div class="stat"><b class="num">${days}</b><span>累計修煉（天）</span></div>
+    <div class="stat"><b class="num">${bt.length?daysBetween(bt[0].date,today()):0}</b><span>入道（天）</span></div>
+  </div>
+  <div class="panel">
+    <h2 class="label">修為走勢・FFMI</h2>
+    ${chart(ms,H)}
+  </div>
+  ${tlHtml}
+  <div class="panel">
+    <h2 class="label">天梯</h2>
+    <div class="ladder">${ladder}</div>
+  </div>
+  <div class="panel">
+    <details><summary>境界怎麼算</summary>
+      <p>境界看 FFMI（去脂體重 ÷ 身高²，再依身高校正），只算肌肉，不被脂肪灌水。每個大境界分初、中、後期，每期 0.5，約等於 1.5 公斤肌肉。</p>
+      <p>體脂要在 10–18% 才算根基穩固。體脂秤誤差大，建議每月固定一天，早上起床如廁後、空腹量，看趨勢不看單次。</p>
+      <p>此表以男性標準設計。</p>
+      <p>宗門身分同時看修煉天數（有記錄訓練的日子）和曾達到的最高境界：內門要築基、真傳要金丹、長老要元嬰、太上長老要化神。</p>
+      <p>實力夠但天數不夠，先當客卿；天數超過 100 天但境界還沒跟上，會成為執事。量測偶爾失準掉下來，身分也不會降。</p>
+    </details>
+  </div>`;
+}
+
+function chart(ms,H){
+  const pts=ms.map(m=>({d:m.date,f:ffmi(m.lean||m.weight*(1-m.bf/100),H)}));
+  if(pts.length<2) return `<p class="hint" style="margin-top:8px">目前只有一次量測（FFMI ${pts[0]?fmt(pts[0].f,2):'—'}）。下個月再量一次，這裡就會畫出你的修為曲線。</p>`;
+  const W=320,Hh=140,pl=30,pr=10,pt=10,pb=22;
+  let lo=Math.min(...pts.map(p=>p.f)),hi=Math.max(...pts.map(p=>p.f));
+  lo=Math.floor((lo-0.3)*2)/2;hi=Math.ceil((hi+0.3)*2)/2;if(hi-lo<1)hi=lo+1;
+  const x=i=>pl+(W-pl-pr)*(pts.length===1?0.5:i/(pts.length-1));
+  const y=v=>pt+(Hh-pt-pb)*(1-(v-lo)/(hi-lo));
+  let grid='';for(let v=lo;v<=hi+1e-9;v+=0.5){grid+=`<line x1="${pl}" x2="${W-pr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${pl-4}" y="${y(v)+3}" text-anchor="end">${v.toFixed(1)}</text>`}
+  REALMS.forEach(r=>{if(r.lo>lo&&r.lo<hi)grid+=`<line x1="${pl}" x2="${W-pr}" y1="${y(r.lo)}" y2="${y(r.lo)}" stroke="var(--gold)" stroke-dasharray="3 3" stroke-width="1"/><text x="${W-pr}" y="${y(r.lo)-3}" text-anchor="end" style="fill:var(--gold)">${r.n}</text>`});
+  const path=pts.map((p,i)=>`${i?'L':'M'}${x(i)},${y(p.f)}`).join('');
+  const area=path+`L${x(pts.length-1)},${Hh-pb}L${x(0)},${Hh-pb}Z`;
+  const last=pts[pts.length-1];
+  return `<svg class="chart" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="FFMI 走勢">${grid}
+    <path d="${area}" fill="var(--jade-soft)" opacity=".7"/>
+    <path d="${path}" fill="none" stroke="var(--jade)" stroke-width="2"/>
+    <circle cx="${x(pts.length-1)}" cy="${y(last.f)}" r="4" fill="var(--jade)"/>
+    <text x="${pl}" y="${Hh-6}">${pts[0].d.slice(5)}</text><text x="${W-pr}" y="${Hh-6}" text-anchor="end">${last.d.slice(5)}</text></svg>`;
+}
+
+function renderGong(){
+  const el=$('#view-gong');const best=bestByMove();
+  const cards=MOVES.map(m=>{const b=best[m.k];
+    if(!b) return `<div class="move"><span class="mn">${m.f}</span><span class="mr">${m.n}</span><span class="lv zero">未入門</span><span class="mr">還沒有紀錄</span></div>`;
+    const lv=moveLevel(m,b.ratio);const lo=lv?m.th[lv-1]:0,hi=m.th[lv];
+    const pct=hi?Math.max(3,Math.min(100,(b.ratio-lo)/(hi-lo)*100)):100;
+    const needKg=hi?(hi*b.bw-(m.bw?b.bw:0)):0;
+    return `<div class="move"><span class="mn">${m.f}</span><span class="mr">${m.n}・最佳 ${m.bw?'':'<span class="num">'+fmt(b.e,0)+'</span> kg '}<span class="num">${fmt(b.ratio,2)}</span>×體重</span>
+      <span class="lv ${lv?'':'zero'}">${LV[lv]}</span>
+      <div class="bar"><i style="width:${pct}%"></i></div>
+      <span class="mr">${hi?(m.bw?`下一階：約 ${Math.max(1,Math.round((hi-1)*30))} 下`:`下一階：估計 1RM ${fmt(needKg,0)} kg`):'已達化境'}</span></div>`}).join('');
+  const recent=byDate(state.lift).reverse().slice(0,20);
+  const rows=recent.length?recent.map(l=>{const c=liftCalc(l);if(!c)return'';
+    return `<div class="row"><div class="rmain"><b>${c.m.f}</b> <span class="muted small">${c.m.n}</span><div class="small muted">${esc(l.date)}・${c.m.bw?(+l.kg?'加重 '+l.kg+' kg・':'徒手・'):l.kg+' kg・'}${l.reps} 下 × ${l.sets} 組</div></div>
+      <span class="num small muted">${fmt(c.ratio,2)}×</span><button class="del" data-del="lift" data-id="${esc(l.id)}">刪除</button></div>`}).join('')
+    :`<p class="hint">練完到「錄入」記下最重的那組，功法就會開始累積。</p>`;
+  el.innerHTML=`
+  <div class="panel"><h2 class="label">功法進度</h2><p class="hint" style="margin-top:4px">以估計 1RM ÷ 體重計算等級。每次破紀錄就是一次精進。</p></div>
+  <div class="moves">${cards}</div>
+  <div class="panel"><h2 class="label">最近修煉</h2><div class="list" style="margin-top:6px">${rows}</div></div>
+  <div class="panel"><details><summary>功法等級怎麼算</summary>
+    <p>用你那組的重量和次數估算單次最大重量（1RM = 重量 ×（1 + 次數 ÷ 30）），再除以當天體重。引體向上把自身體重算進去。</p>
+    <p>等級：未入門 → 入門 → 小成 → 大成 → 圓滿 → 化境，門檻參考一般成年男性的力量標準。</p></details></div>`;
+}
+
+let selMove='squat';
+function renderLog(){
+  const el=$('#view-log');
+  if(el.dataset.built){fillHistory();return}
+  el.dataset.built='1';
+  const m=latestMeas();
+  el.innerHTML=`
+  <div class="panel">
+    <h2 class="label">記一筆修煉</h2>
+    <form id="f-lift" style="margin-top:10px">
+      <div class="chips" id="moveChips">${MOVES.map(x=>`<button type="button" class="chip" data-k="${x.k}" aria-pressed="${x.k===selMove}">${x.f}・${x.n}</button>`).join('')}</div>
+      <div class="grid3">
+        <label class="f"><span id="kgLabel">重量 kg</span><input id="l-kg" type="number" inputmode="decimal" step="0.5" min="0" required></label>
+        <label class="f">次數<input id="l-reps" type="number" inputmode="numeric" min="1" max="50" value="5" required></label>
+        <label class="f">組數<input id="l-sets" type="number" inputmode="numeric" min="1" max="20" value="3" required></label>
+      </div>
+      <label class="f">日期<input id="l-date" type="date" required></label>
+      <p class="hint">記這次最重、做得最完整的那一組就好。</p>
+      <button class="btn" type="submit">記下這一練</button>
+    </form>
+  </div>
+  <div class="panel">
+    <h2 class="label">量一次體組成</h2>
+    <form id="f-meas" style="margin-top:10px">
+      <div class="grid2">
+        <label class="f">體重 kg<input id="m-w" type="number" inputmode="decimal" step="0.01" min="30" max="200" required></label>
+        <label class="f">體脂率 %<input id="m-bf" type="number" inputmode="decimal" step="0.1" min="3" max="60" required></label>
+      </div>
+      <div class="grid2">
+        <label class="f">去脂體重 kg（選填）<input id="m-lean" type="number" inputmode="decimal" step="0.01" min="20" max="150" placeholder="自動計算"></label>
+        <label class="f">日期<input id="m-date" type="date" required></label>
+      </div>
+      <p class="hint">體脂秤有「去脂體重」就照填，沒有就留空，會用體重和體脂率算。</p>
+      <button class="btn gold" type="submit">結算境界</button>
+    </form>
+  </div>
+  <div class="panel">
+    <h2 class="label">設定</h2>
+    <form id="f-cfg" style="margin-top:10px">
+      <label class="f">身高 cm<input id="c-h" type="number" inputmode="decimal" step="0.5" min="120" max="230" required></label>
+      <button class="btn" type="submit">儲存身高</button>
+    </form>
+  </div>
+  <div class="panel"><h2 class="label">量測紀錄</h2><div class="list" id="measList" style="margin-top:6px"></div></div>`;
+  $('#l-date').value=today();$('#m-date').value=today();
+  if(m){$('#m-w').value=m.weight;$('#m-bf').value=m.bf}
+  $('#c-h').value=state.cfg.height||174;
+  updateKgLabel();
+  $('#moveChips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;selMove=b.dataset.k;
+    document.querySelectorAll('#moveChips .chip').forEach(c=>c.setAttribute('aria-pressed',c.dataset.k===selMove));updateKgLabel()});
+  $('#f-lift').addEventListener('submit',onLift);
+  $('#f-meas').addEventListener('submit',onMeas);
+  $('#f-cfg').addEventListener('submit',async e=>{e.preventDefault();const h=+$('#c-h').value;
+    try{await put('cfg','me',{height:h});toast('身高已更新');render()}catch(err){toast('沒存成功，請再試一次')}});
+  fillHistory();
+}
+function updateKgLabel(){const m=MOVES.find(x=>x.k===selMove);const kg=$('#l-kg');
+  $('#kgLabel').textContent=m.bw?'加重 kg':'重量 kg';kg.required=!m.bw;if(m.bw&&!kg.value)kg.placeholder='徒手填 0';else kg.placeholder=''}
+let measHistKey='';
+function fillHistory(){
+  const box=$('#measList');if(!box)return;
+  if(!document.activeElement||!document.activeElement.closest||!document.activeElement.closest('#f-cfg')){ $('#c-h') && ($('#c-h').value=state.cfg.height||174) }
+  const H=state.cfg.height||174;
+  const ms=byDate(state.meas).reverse();
+  box.innerHTML=ms.length?ms.map(m=>{const lean=m.lean||m.weight*(1-m.bf/100);const f=ffmi(lean,H);const R=realmOf(f);
+    return `<div class="row"><div class="rmain"><b>${R.r.n}${STAGES[R.s]}</b> <span class="small muted">${esc(m.date)}</span><div class="small muted"><span class="num">${fmt(m.weight,2)}</span> kg・體脂 <span class="num">${fmt(m.bf)}</span>%・去脂 <span class="num">${fmt(lean,2)}</span> kg</div></div>
+    <span class="num small muted">${fmt(f,2)}</span><button class="del" data-del="meas" data-id="${esc(m.id)}">刪除</button></div>`}).join('')
+    :`<p class="hint">還沒有量測紀錄。</p>`;
+}
+
+async function onLift(e){
+  e.preventDefault();
+  const m=MOVES.find(x=>x.k===selMove);
+  const rec={date:$('#l-date').value,move:selMove,kg:+($('#l-kg').value||0),reps:+$('#l-reps').value,sets:+$('#l-sets').value,t:Date.now()};
+  rec.bw=bwAt(rec.date)||null;
+  const id='l'+rec.t;
+  const prev=bestByMove()[selMove];const c=liftCalc({id,...rec});
+  const rlm=realmMax(state.cfg.height||174);
+  const daysBefore=trainDays(),newDay=!state.lift.some(l=>l.date===rec.date);
+  const daysAfter=daysBefore+(newDay?1:0),sBefore=sectOf(daysBefore,rlm),sAfter=sectOf(daysAfter,rlm);
+  try{await put('lift',id,rec)}catch(err){toast('沒存成功，請再試一次');return}
+  $('#l-kg').value='';
+  const lvNew=moveLevel(m,c.ratio),lvOld=prev?moveLevel(m,prev.ratio):-1;
+  const isPR=!!prev&&c.ratio>prev.ratio+1e-6,lvUp=!!prev&&lvNew>lvOld;
+  const strength=m.bw?`相當於 ${fmt(c.ratio,2)}× 體重的拉力`:`估計 1RM ${fmt(c.e,0)} kg，${fmt(c.ratio,2)}× 體重`;
+  if(sAfter.title!==sBefore.title){
+    const extra=lvUp?`${m.f}也同時突破至${LV[lvNew]}`:isPR?`${m.f}也破了紀錄`:sAfter.note;
+    celebrate({k:'宗門晉升',img:'img/elder.webp',big:sAfter.title,sub:`累計修煉 ${daysAfter} 天`,note:extra,n:150});return;
+  }
+  if(!prev){toast(`<b>${m.f}</b> 開練，目前 ${LV[lvNew]}`);return}
+  if(lvUp){celebrate({k:'功法突破',img:'img/icon.webp',big:LV[lvNew],sub:`${m.f}・${m.n}`,note:strength,n:130});return}
+  if(isPR){
+    const more=m.bw?'':`，比上次最佳多 ${fmt(Math.max(0,c.e-prev.e),1)} kg`;
+    celebrate({k:'功法精進',big:'精進',sub:`${m.f}・${m.n}`,note:`新紀錄：${strength}${more}`,n:90});return;
+  }
+  toast(`已記下 ${m.f}，修煉 +1`);
+}
+async function onMeas(e){
+  e.preventDefault();
+  const H=state.cfg.height||174;
+  const btBefore=breakthroughs(H),top=btBefore[btBefore.length-1]||null;
+  const realmBefore=top?Math.floor(top.idx/3):-1,days=trainDays();
+  const rec={date:$('#m-date').value,weight:+$('#m-w').value,bf:+$('#m-bf').value,t:Date.now()};
+  const lv=$('#m-lean').value;if(lv)rec.lean=+lv;
+  try{await put('meas',rec.date,rec)}catch(err){toast('沒存成功，請再試一次');return}
+  $('#m-lean').value='';
+  const f=ffmi(leanOf(rec),H);const R=realmOf(f);const idx=R.i*3+R.s;
+  const realmAfter=rec.bf<=20?Math.max(realmBefore,R.i):realmBefore;
+  const sB=sectOf(days,realmBefore),sA=sectOf(days,realmAfter);
+  const sectNote=sA.title!==sB.title?`・宗門身分晉升為${sA.title}`:'';
+  go('realm');
+  if(rec.bf>20){toast(`境界結算：${R.r.n}${STAGES[R.s]}（體脂超過 20%，暫不認證）`);return}
+  if(!top){celebrate({k:'踏入仙途',img:`img/r${R.i}.webp`,big:R.r.n,sub:STAGES[R.s],note:`FFMI ${fmt(f,2)}，修煉從今天開始${sectNote}`,n:120});return}
+  if(idx>top.idx&&rec.date>=top.date){
+    const bigRealm=R.i>Math.floor(top.idx/3);
+    celebrate({k:bigRealm?'大境界突破':'境界突破',img:`img/r${R.i}.webp`,big:R.r.n,sub:STAGES[R.s],
+      note:`FFMI ${fmt(f,2)}・距上一階 ${durTxt(daysBetween(top.date,rec.date))}${sectNote}`,n:bigRealm?240:140});return;
+  }
+  toast(`境界結算：<b>${R.r.n}${STAGES[R.s]}</b>`);
+}
+
+/* 刪除：點兩下確認 */
+document.addEventListener('click',async e=>{
+  const b=e.target.closest('.del');if(!b)return;
+  if(!b.classList.contains('arm')){b.classList.add('arm');b.textContent='確定刪除';setTimeout(()=>{if(b.isConnected){b.classList.remove('arm');b.textContent='刪除'}},3000);return}
+  try{await del(b.dataset.del,b.dataset.id);toast('已刪除')}catch(err){toast('刪除失敗，請再試一次')}
+});
+
+function go(v){tab=v;['realm','gong','log'].forEach(k=>{$('#view-'+k).hidden=k!==v;$('#tab-'+k).setAttribute('aria-selected',k===v)});window.scrollTo(0,0)}
+document.querySelector('nav.tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)go(b.dataset.v)});
+
+/* 慶祝動畫 */
+function burst(canvas,count){
+  const ctx=canvas.getContext('2d');const dpr=window.devicePixelRatio||1;
+  const W=canvas.clientWidth,H=canvas.clientHeight;canvas.width=W*dpr;canvas.height=H*dpr;ctx.scale(dpr,dpr);
+  const cs=getComputedStyle(document.documentElement);
+  const cols=[cs.getPropertyValue('--gold').trim()||'#A87A1F',cs.getPropertyValue('--jade').trim()||'#2B735C'];
+  const P=[];const spawn=(n,delay)=>{for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=2+Math.random()*7;
+    P.push({x:W/2,y:H*0.42,vx:Math.cos(a)*s,vy:Math.sin(a)*s-2.5,r:1.5+Math.random()*3,c:cols[i%3?0:1],life:1,wait:delay})}};
+  spawn(count,0);if(count>150)spawn(Math.round(count/2),24);
+  let raf;const step=()=>{ctx.clearRect(0,0,W,H);let alive=0;
+    P.forEach(p=>{if(p.wait>0){p.wait--;alive++;return}if(p.life<=0)return;alive++;
+      p.x+=p.vx;p.y+=p.vy;p.vy+=0.13;p.vx*=0.985;p.life-=0.011;
+      ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill()});
+    if(alive)raf=requestAnimationFrame(step)};
+  step();return()=>cancelAnimationFrame(raf);
+}
+let cTimer,cStop;
+function celebrate(o){
+  const el=$('#celebrate');
+  el.innerHTML=`<canvas></canvas>${o.img?`<img class="cimg" src="${o.img}" alt="">`:''}<div class="ck">${o.k}</div><div class="cbig">${o.big}</div>${o.sub?`<div class="csub">${o.sub}</div>`:''}${o.note?`<div class="cnote">${o.note}</div>`:''}<div class="ctap">點一下繼續</div>`;
+  el.hidden=false;cStop&&cStop();cStop=null;
+  if(!matchMedia('(prefers-reduced-motion: reduce)').matches)cStop=burst(el.querySelector('canvas'),o.n||90);
+  try{navigator.vibrate&&navigator.vibrate([30,40,60])}catch(e){}
+  clearTimeout(cTimer);cTimer=setTimeout(closeCelebrate,4500);
+}
+function closeCelebrate(){$('#celebrate').hidden=true;cStop&&cStop();cStop=null;clearTimeout(cTimer)}
+document.getElementById('celebrate').addEventListener('click',closeCelebrate);
+
+let tt;function toast(html){const t=$('#toast');t.innerHTML=html;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2600)}
+
+init();
+</script>
+
+</body>
+</html>
