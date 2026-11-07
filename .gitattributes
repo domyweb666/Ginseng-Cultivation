@@ -1,0 +1,8 @@
+# 全部文字檔統一 LF：hook 腳本、Swift、YAML 到 macOS／Linux 機器才不會因 CRLF 出事
+* text=auto eol=lf
+*.png binary
+*.webp binary
+*.ttf binary
+*.otf binary
+*.p12 binary
+*.p8 binary

@@ -1,7 +1,7 @@
 {
-  "station": "decompose",
-  "note": "藍圖與五項調整已點頭並套用（2026-11-07）。vibe-decompose 已寫 .vibe/切片帳本.md（10 組塊、36 片）與 .vibe/組塊核准讀稿.md。待使用者逐塊放行（至少放行組塊 A 才能動工）。放行後：vibe-voice-lock（憲法＋pre-commit hook）→ vibe-spec-standards 第一片 A1/A2 → plan-readback → 實作。不寫 Swift。",
-  "updated_at": "2026-11-07T16:24:05+08:00",
+  "station": "spec-standards",
+  "note": "voice-lock 完成（2026-11-07）：憲法在規矩檔「專案特定規矩」，pre-commit hook 裝在 .vibe/githooks（core.hooksPath），ios/.swift-format 與 ios/.swiftlint.yml 給 CI。spec-standards 已為片 A1（憑證）與 A2（骨架）寫 .vibe/標準清單.md 與 .vibe/黃金行為.md；待使用者真實情境走查。走查過 → plan-readback → 實作 A1 README 與 A2 骨架。",
+  "updated_at": "2026-11-07T16:31:39+08:00",
   "updated_by": "vibe-traffic-control",
   "pieces": {
     "todo": 36,
@@ -14,70 +14,70 @@
       "total": 4,
       "machine_done": 0,
       "human_verified": false,
-      "approved": false
+      "approved": true
     },
     {
       "name": "B：規則引擎",
       "total": 4,
       "machine_done": 0,
       "human_verified": false,
-      "approved": false
+      "approved": true
     },
     {
       "name": "C：記修煉",
       "total": 5,
       "machine_done": 0,
       "human_verified": false,
-      "approved": false
+      "approved": true
     },
     {
       "name": "D：境界那一刻",
       "total": 4,
       "machine_done": 0,
       "human_verified": false,
-      "approved": false
+      "approved": true
     },
     {
       "name": "E：健康 app 連動",
       "total": 4,
       "machine_done": 0,
       "human_verified": false,
-      "approved": false
+      "approved": true
     },
     {
       "name": "F：資料帶得走",
       "total": 4,
       "machine_done": 0,
       "human_verified": false,
-      "approved": false
+      "approved": true
     },
     {
       "name": "G：小工具",
       "total": 3,
       "machine_done": 0,
       "human_verified": false,
-      "approved": false
+      "approved": true
     },
     {
       "name": "H：Siri",
       "total": 2,
       "machine_done": 0,
       "human_verified": false,
-      "approved": false
+      "approved": true
     },
     {
       "name": "I：提醒與設定收尾",
       "total": 2,
       "machine_done": 0,
       "human_verified": false,
-      "approved": false
+      "approved": true
     },
     {
       "name": "J：上架",
       "total": 4,
       "machine_done": 0,
       "human_verified": false,
-      "approved": false
+      "approved": true
     }
   ],
   "pending_immediate_verify": [],

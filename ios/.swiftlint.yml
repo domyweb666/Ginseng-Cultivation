@@ -1,0 +1,80 @@
+# SwiftLint：GitHub Actions 的 macOS 機器跑 `swiftlint --strict --config ios/.swiftlint.yml`。
+# 可驗證的規矩都在這裡與 .swift-format；判斷類的在 .vibe/規矩檔.md。
+included:
+  - Rencan
+  - RencanWidget
+  - RencanCore/Sources
+  - RencanCore/Tests
+excluded:
+  - Rencan/Resources
+
+opt_in_rules:
+  - empty_count
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+  - closure_spacing
+  - explicit_init
+  - redundant_nil_coalescing
+  - unneeded_parentheses_in_closure_argument
+  - vertical_whitespace_closing_braces
+
+disabled_rules:
+  - todo
+
+line_length:
+  warning: 110
+  error: 130
+  ignores_comments: true
+function_body_length:
+  warning: 40
+  error: 60
+cyclomatic_complexity:
+  warning: 10
+  error: 15
+file_length:
+  warning: 400
+  error: 600
+type_body_length:
+  warning: 250
+  error: 350
+identifier_name:
+  min_length: 3
+  excluded: [id, kg, x, y, i]
+force_unwrapping:
+  severity: error
+implicitly_unwrapped_optional:
+  severity: error
+
+custom_rules:
+  no_print:
+    name: "不准 log"
+    regex: '\b(print|debugPrint|NSLog)\s*\('
+    excluded: '.*Tests.*'
+    message: "健康數值不進 log；錯誤往上丟到畫面（安全標準）"
+    severity: error
+  no_try_question:
+    name: "不准 try?"
+    regex: '\btry\?'
+    message: "try? 吞掉錯誤（規矩檔 4）"
+    severity: error
+  no_empty_catch:
+    name: "不准空 catch"
+    regex: '\bcatch\s*(\w+\s*)?\{\s*\}'
+    message: "空的 catch 把錯誤吃掉（規矩檔 4）"
+    severity: error
+  no_cloudkit:
+    name: "不做 iCloud"
+    regex: '\bCloudKit\b|cloudKitDatabase'
+    message: "審核規範 5.1.3 不准健康資料存 iCloud"
+    severity: error
+  no_hardcoded_color:
+    name: "不准寫死色碼"
+    regex: '\bColor\s*\(\s*(red|hex|\.sRGB|white)\b|\bUIColor\s*\(\s*(red|white|hex)\b|#[0-9A-Fa-f]{6}\b'
+    included: '.*(Views|RencanWidget).*'
+    message: "顏色只從設計代號取（藍圖第六節）"
+    severity: error
+  no_http:
+    name: "不發 HTTP"
+    regex: '\bURLSession\b|\bURLRequest\b'
+    message: "app 不發 HTTP 請求（安全標準）"
+    severity: error

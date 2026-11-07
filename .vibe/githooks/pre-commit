@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# VibeRails pre-commit：交給 node 腳本做文字層檢查。沒有 node 就擋下 commit（倒向安全側）。
+if ! command -v node >/dev/null 2>&1; then
+  echo "[pre-commit] reason: 找不到 node，無法跑口吻檢查，commit 被擋" >&2
+  exit 1
+fi
+exec node "$(git rev-parse --show-toplevel)/.vibe/hooks/pre-commit.js"
