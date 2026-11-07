@@ -1,7 +1,7 @@
 {
   "station": "idle",
-  "note": "vibe-grill-me 進行中（2026-11-07）。已定：GitHub Actions 編譯、付費帳號、第一版範圍、上架給別人（男女都要含新手）、訓練模型＝丙、核心功能＝境界那一刻、成功＝陌生人三個月後還在量。待問：最怕變成什麼；答完收定稿轉 vibe-prd。不寫 Swift。",
-  "updated_at": "2026-11-07T15:43:08+08:00",
+  "note": "拷問完成，產品定稿定稿（2026-11-07）；去掉女性版、體脂必要、引導只問身高、最怕欄位多。vibe-prd 已寫 .vibe/PRD.md（27 條使用者故事、5 個深模組），待使用者點頭。點頭後交回 vibe-traffic-control → vibe-blueprint（正式架構圖）→ security-gate 階段 A → decompose → voice-lock。不寫 Swift。",
+  "updated_at": "2026-11-07T15:48:01+08:00",
   "updated_by": "vibe-traffic-control",
   "pieces": {
     "todo": 0,
