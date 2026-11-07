@@ -35,7 +35,9 @@ struct RealmView: View {
         }
     }
 
-    private func pageButton(to target: RencanPage, systemImage: String, label: String) -> some View {
+    private func pageButton(
+        to target: RencanPage, systemImage: String, label: String
+    ) -> some View {
         Button {
             withAnimation { page = target }
         } label: {
