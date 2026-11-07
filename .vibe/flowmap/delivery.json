@@ -19,7 +19,9 @@
     {"id":"d09","label":"網頁版補「匯出 JSON」鈕","type":"process","description":"index.html 加一顆鈕，把 localStorage 整包存成檔案（跟 app 的匯入格式一樣）。你在 iPhone Safari 按一下存到檔案 app，再到 iOS 版設定裡匯入。","trigger_condition":"iOS 版第一次裝好之前做一次。","files":[],"planned_files":["index.html"],"file_responsibilities":{"index.html":"加匯出鈕；其他一字不動。"}},
     {"id":"d10","label":"上架準備 ⚠","type":"process","description":"App Store Connect 建 app 記錄（bundle id、名稱）；隱私政策頁放 domyweb.org；截圖、說明、隱私標籤（健康與健身）；挑一個 TestFlight 版本送審。健康資料的用途要在審核備註說清楚。","trigger_condition":"第一版機器層與人驗都過。","files":[],"planned_files":["ios/Rencan/PrivacyInfo.xcprivacy","ios/ci/README.md"],"file_responsibilities":{"ios/Rencan/PrivacyInfo.xcprivacy":"隱私清單。","ios/ci/README.md":"上架步驟清單。"}},
     {"id":"d11","label":"一次性：在 Windows 做憑證與金鑰 ⚠","type":"process","description":"openssl 產私鑰與 CSR → Apple 開發者後台建 Apple Distribution 憑證 → 下載 .cer → openssl 合成 .p12 → 放 GitHub Secrets。App Store Connect 建 API 金鑰（App Manager）→ .p8 → Secrets。憑證一年到期要重做。","trigger_condition":"第一次跑 CI 之前；憑證到期時。","files":[],"planned_files":["ios/ci/README.md"],"file_responsibilities":{"ios/ci/README.md":"一步一步的操作說明，含 openssl 指令。"}},
-    {"id":"d12","label":"App Store 上架","type":"end","description":"審核通過 → 陌生人搜得到、裝得到。之後每次更新走同一條線。","trigger_condition":"d10 送審通過。","files":[],"planned_files":[],"file_responsibilities":{}}
+    {"id":"d12","label":"App Store 上架","type":"end","description":"審核通過 → 陌生人搜得到、裝得到。之後每次更新走同一條線。","trigger_condition":"d10 送審通過。","files":[],"planned_files":[],"file_responsibilities":{}},
+    {"id":"d13","label":"模擬器版建置並上傳 Limrun","type":"process","description":"同一次 macOS 工作多建一個模擬器版（-sdk iphonesimulator），壓成 zip，用 lim asset upload 放到 Limrun 的 Asset Storage（需 LIM_API_KEY secret）。每次 push 都有一份最新的模擬器版可以開。lim CLI 鎖版本安裝。","trigger_condition":"d05 的 macOS 工作裡，archive 之前或之後都可。","files":[],"planned_files":[".github/workflows/ios.yml","ios/ci/README.md"],"file_responsibilities":{".github/workflows/ios.yml":"多一個 job 或步驟：模擬器版建置、zip、lim asset upload。","ios/ci/README.md":"Limrun 註冊、API key、MCP 安裝的操作說明。"}},
+    {"id":"d14","label":"AI 用 Limrun 模擬器自驗","type":"process","description":"Claude Code 透過 Limrun 遠端 MCP 開一台雲端 iPhone 模擬器並裝最新 asset，截圖、點按、讀元件樹，對照 .vibe/標準清單.md 逐條打勾，截圖存進 .vibe/evidence/ 當 self-review 證據，驗完立刻刪機器省點數（模擬器每分鐘 2 點）。驗得到：畫面、表單、數字、健康 app 讀寫（模擬器的健康 app 可手動加資料）、小工具、匯入匯出。驗不到：震動、Siri 語音（可用捷徑 app 觸發意圖）、真體脂秤同步、TestFlight 安裝流程。","trigger_condition":"每片機器層自審（vibe-self-review）；組塊到齊時整塊回放。","files":[],"planned_files":[".vibe/evidence/"],"file_responsibilities":{".vibe/evidence/":"每片的截圖證據，檔名含片號與日期。"}}
   ],
   "edges": [
     {"from":"d01","to":"d02","label":"push","type":"success"},
@@ -34,11 +36,16 @@
     {"from":"d08","to":"d01","label":"修完再 push","type":"retry","back":true,"show_label":true},
     {"from":"d11","to":"d04","label":"Secrets 準備好才跑得動","type":"conditional"},
     {"from":"d07","to":"d10","label":"挑一個 TestFlight 版本送審","type":"conditional"},
-    {"from":"d10","to":"d12","label":"審核通過","type":"success"}
+    {"from":"d10","to":"d12","label":"審核通過","type":"success"},
+    {"from":"d02","to":"d13","label":"macOS 工作順便建模擬器版","type":"conditional"},
+    {"from":"d13","to":"d14","label":"AI 開模擬器裝最新版","type":"success"},
+    {"from":"d14","to":"d08","label":"自驗紅 → 修","type":"failure"},
+    {"from":"d14","to":"d07","label":"自驗綠 → 才輪到你裝 TestFlight","type":"conditional","minor":true}
   ],
   "file_index": {},
   "layout": {
     "d01":[280,30], "d02":[280,130], "d03":[280,230], "d04":[280,330], "d05":[280,430], "d06":[280,540], "d07":[280,650],
-    "d08":[760,540], "d11":[760,130], "d09":[1240,30], "d10":[760,650], "d12":[1240,650]
+    "d08":[760,540], "d11":[760,130], "d09":[1240,30], "d10":[760,650], "d12":[1240,650],
+    "d13":[1240,330], "d14":[1240,430]
   }
 }

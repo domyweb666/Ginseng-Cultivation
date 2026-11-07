@@ -258,6 +258,36 @@ details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line)
    "files": [],
    "planned_files": [],
    "file_responsibilities": {}
+  },
+  {
+   "id": "d13",
+   "label": "模擬器版建置並上傳 Limrun",
+   "type": "process",
+   "description": "同一次 macOS 工作多建一個模擬器版（-sdk iphonesimulator），壓成 zip，用 lim asset upload 放到 Limrun 的 Asset Storage（需 LIM_API_KEY secret）。每次 push 都有一份最新的模擬器版可以開。lim CLI 鎖版本安裝。",
+   "trigger_condition": "d05 的 macOS 工作裡，archive 之前或之後都可。",
+   "files": [],
+   "planned_files": [
+    ".github/workflows/ios.yml",
+    "ios/ci/README.md"
+   ],
+   "file_responsibilities": {
+    ".github/workflows/ios.yml": "多一個 job 或步驟：模擬器版建置、zip、lim asset upload。",
+    "ios/ci/README.md": "Limrun 註冊、API key、MCP 安裝的操作說明。"
+   }
+  },
+  {
+   "id": "d14",
+   "label": "AI 用 Limrun 模擬器自驗",
+   "type": "process",
+   "description": "Claude Code 透過 Limrun 遠端 MCP 開一台雲端 iPhone 模擬器並裝最新 asset，截圖、點按、讀元件樹，對照 .vibe/標準清單.md 逐條打勾，截圖存進 .vibe/evidence/ 當 self-review 證據，驗完立刻刪機器省點數（模擬器每分鐘 2 點）。驗得到：畫面、表單、數字、健康 app 讀寫（模擬器的健康 app 可手動加資料）、小工具、匯入匯出。驗不到：震動、Siri 語音（可用捷徑 app 觸發意圖）、真體脂秤同步、TestFlight 安裝流程。",
+   "trigger_condition": "每片機器層自審（vibe-self-review）；組塊到齊時整塊回放。",
+   "files": [],
+   "planned_files": [
+    ".vibe/evidence/"
+   ],
+   "file_responsibilities": {
+    ".vibe/evidence/": "每片的截圖證據，檔名含片號與日期。"
+   }
   }
  ],
  "edges": [
@@ -340,6 +370,31 @@ details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line)
    "to": "d12",
    "label": "審核通過",
    "type": "success"
+  },
+  {
+   "from": "d02",
+   "to": "d13",
+   "label": "macOS 工作順便建模擬器版",
+   "type": "conditional"
+  },
+  {
+   "from": "d13",
+   "to": "d14",
+   "label": "AI 開模擬器裝最新版",
+   "type": "success"
+  },
+  {
+   "from": "d14",
+   "to": "d08",
+   "label": "自驗紅 → 修",
+   "type": "failure"
+  },
+  {
+   "from": "d14",
+   "to": "d07",
+   "label": "自驗綠 → 才輪到你裝 TestFlight",
+   "type": "conditional",
+   "minor": true
   }
  ],
  "file_index": {},
@@ -347,7 +402,8 @@ details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line)
   ".github/workflows/ios.yml": [
    "d01",
    "d02",
-   "d04"
+   "d04",
+   "d13"
   ],
   "ios/RencanCore/Tests/RencanCoreTests/GoldenTests.swift": [
    "d03"
@@ -358,7 +414,8 @@ details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line)
   "ios/ci/README.md": [
    "d04",
    "d10",
-   "d11"
+   "d11",
+   "d13"
   ],
   "ios/Rencan.xcodeproj/project.pbxproj": [
    "d05"
@@ -372,6 +429,9 @@ details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line)
   ],
   "ios/Rencan/PrivacyInfo.xcprivacy": [
    "d10"
+  ],
+  ".vibe/evidence/": [
+   "d14"
   ]
  },
  "notes": [
@@ -383,7 +443,7 @@ details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line)
 <script>
 const data=JSON.parse(document.getElementById('flowmap-data').textContent);
 const NW=190,NH=64;
-const LAYOUT={"d01":[280,30],"d02":[280,130],"d03":[280,230],"d04":[280,330],"d05":[280,430],"d06":[280,540],"d07":[280,650],"d08":[760,540],"d11":[760,130],"d09":[1240,30],"d10":[760,650],"d12":[1240,650]};
+const LAYOUT={"d01":[280,30],"d02":[280,130],"d03":[280,230],"d04":[280,330],"d05":[280,430],"d06":[280,540],"d07":[280,650],"d08":[760,540],"d11":[760,130],"d09":[1240,30],"d10":[760,650],"d12":[1240,650],"d13":[1240,330],"d14":[1240,430]};
 const NS='http://www.w3.org/2000/svg';
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const el=(t,a={},p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
