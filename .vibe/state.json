@@ -1,9 +1,13 @@
 {
   "station": "idle",
-  "note": "vibe-grill-me 進行中（2026-11-07）。已定：GitHub Actions 編譯、付費帳號、第一版＝移植＋HealthKit＋震動＋小工具＋Siri、上架給別人。草稿在 .vibe/產品定稿.md。待問：給誰用（具體）、唯一核心功能；之後：成功場景、最怕變成；落差清單產品級項目；第 4 題甲乙丙。定稿完成才轉 vibe-prd。不寫 Swift。",
-  "updated_at": "2026-11-07T15:06:56+08:00",
+  "note": "vibe-grill-me 進行中（2026-11-07）。已定：GitHub Actions 編譯、付費帳號、第一版＝移植＋HealthKit＋震動＋小工具＋Siri、上架給別人、訓練模型＝丙（單筆加今天清單）。待問（第二次）：給誰用（具體的人）、唯一核心功能；之後：成功場景、最怕變成；落差清單產品級項目。定稿完成才轉 vibe-prd。不寫 Swift。",
+  "updated_at": "2026-11-07T15:10:03+08:00",
   "updated_by": "vibe-traffic-control",
-  "pieces": { "todo": 0, "machine_verified": 0, "human_verified": 0 },
+  "pieces": {
+    "todo": 0,
+    "machine_verified": 0,
+    "human_verified": 0
+  },
   "chunks": [],
   "pending_immediate_verify": [],
   "skipped_gates": []
