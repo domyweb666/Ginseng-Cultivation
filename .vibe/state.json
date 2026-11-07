@@ -1,7 +1,7 @@
 {
   "station": "idle",
-  "note": "vibe-adopt 考古完成（2026-11-07）。產出：考古版-flowmap.html、考古版藍圖.md、考古版產品定稿.md、意圖落差清單.md、iOS轉製建議.md。下一站：交回 vibe-traffic-control → vibe-grill-me，拿落差清單與建議書第七節逐條對齊；沒對齊前不寫 Swift。",
-  "updated_at": "2026-11-07T14:56:01+08:00",
+  "note": "vibe-grill-me 進行中（2026-11-07）。已定：GitHub Actions 編譯、付費帳號、第一版＝移植＋HealthKit＋震動＋小工具＋Siri、上架給別人。草稿在 .vibe/產品定稿.md。待問：給誰用（具體）、唯一核心功能；之後：成功場景、最怕變成；落差清單產品級項目；第 4 題甲乙丙。定稿完成才轉 vibe-prd。不寫 Swift。",
+  "updated_at": "2026-11-07T15:06:56+08:00",
   "updated_by": "vibe-traffic-control",
   "pieces": { "todo": 0, "machine_verified": 0, "human_verified": 0 },
   "chunks": [],
