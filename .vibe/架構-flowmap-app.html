@@ -98,7 +98,7 @@ details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line)
    "id": "a01",
    "label": "開啟 app",
    "type": "start",
-   "description": "啟動時建資料容器（SwiftData，開 iCloud 同步），讀設定。設定裡沒有身高就是第一次打開。Siri、通知、小工具點進來也從這裡走，帶目的地分頁。",
+   "description": "啟動時建資料容器（SwiftData，本機；不開 iCloud，審核規範 5.1.3），讀設定。設定裡沒有身高就是第一次打開。Siri、通知、小工具點進來也從這裡走，帶目的地分頁。",
    "trigger_condition": "點圖示、點通知、點小工具、Siri 要求開啟。",
    "files": [],
    "planned_files": [
@@ -250,9 +250,9 @@ details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line)
   },
   {
    "id": "a10",
-   "label": "儲存（SwiftData＋iCloud＋小工具快照）⚠",
+   "label": "儲存（SwiftData＋小工具快照）⚠",
    "type": "process",
-   "description": "寫入 SwiftData（本機；CloudKit 背景同步到同一 Apple ID 的其他裝置）。成功 → 更新 App Group 的快照（境界、期別、本週天數、距下一期差幾 kg）並叫小工具刷新。失敗 → 把錯誤丟回呼叫端，不吞、不假裝成功。iCloud 的限制：欄位都要有預設值、不設唯一鍵。",
+   "description": "寫入 SwiftData（本機，不開 iCloud：審核規範 5.1.3 不准健康資料存 iCloud）。成功 → 更新 App Group 的快照（境界、期別、本週天數、距下一期差幾 kg）並叫小工具刷新。失敗 → 把錯誤丟回呼叫端，不吞、不假裝成功。換手機：量測從健康 app 重建（a07），修煉與身高靠匯出匯入（a15、a16）。",
    "trigger_condition": "a08、a09、a14、a15、a16、a17 的寫入。",
    "files": [],
    "planned_files": [
@@ -336,7 +336,7 @@ details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line)
    "id": "a15",
    "label": "設定（含匯出、提醒、匯入入口）",
    "type": "process",
-   "description": "身高；回寫健康 app 開關（開 → 請求寫入授權）；每月提醒（開關加日期 → 排本機通知，點通知進錄入頁）；匯出 JSON（分享表單，格式跟網頁版一樣）；匯入舊 JSON；健康 app 授權狀態與「到系統設定改」；關於與隱私政策連結。",
+   "description": "身高；回寫健康 app 開關（開 → 請求寫入授權）；每月提醒（開關加日期 → 排本機通知，點通知進錄入頁）；匯出 JSON（分享表單，格式跟網頁版一樣）；匯入舊 JSON；刪除全部紀錄（二次確認；只刪本機與快照，健康 app 裡的不動）；健康 app 授權狀態與「到系統設定改」；關於與隱私政策連結。",
    "trigger_condition": "錄入頁的設定入口。",
    "files": [],
    "planned_files": [

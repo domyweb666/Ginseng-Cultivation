@@ -1,14 +1,85 @@
 {
-  "station": "idle",
-  "note": "PRD 已點頭（2026-11-07）。vibe-blueprint 已寫 .vibe/架構藍圖.md 與兩張流程圖（待掛點版）；security-gate 階段 A 已建 .vibe/安全標準.md 並掛進規矩檔。待使用者：確認藍圖白話走讀、第八節五項調整（含 iCloud 改不做、加刪除全部紀錄）、安全標準的類型判定。點頭後 → vibe-decompose 切片 → voice-lock → 第一片。不寫 Swift。",
-  "updated_at": "2026-11-07T16:15:11+08:00",
+  "station": "decompose",
+  "note": "藍圖與五項調整已點頭並套用（2026-11-07）。vibe-decompose 已寫 .vibe/切片帳本.md（10 組塊、36 片）與 .vibe/組塊核准讀稿.md。待使用者逐塊放行（至少放行組塊 A 才能動工）。放行後：vibe-voice-lock（憲法＋pre-commit hook）→ vibe-spec-standards 第一片 A1/A2 → plan-readback → 實作。不寫 Swift。",
+  "updated_at": "2026-11-07T16:24:05+08:00",
   "updated_by": "vibe-traffic-control",
   "pieces": {
-    "todo": 0,
+    "todo": 36,
     "machine_verified": 0,
     "human_verified": 0
   },
-  "chunks": [],
+  "chunks": [
+    {
+      "name": "A：裝得到你手機上",
+      "total": 4,
+      "machine_done": 0,
+      "human_verified": false,
+      "approved": false
+    },
+    {
+      "name": "B：規則引擎",
+      "total": 4,
+      "machine_done": 0,
+      "human_verified": false,
+      "approved": false
+    },
+    {
+      "name": "C：記修煉",
+      "total": 5,
+      "machine_done": 0,
+      "human_verified": false,
+      "approved": false
+    },
+    {
+      "name": "D：境界那一刻",
+      "total": 4,
+      "machine_done": 0,
+      "human_verified": false,
+      "approved": false
+    },
+    {
+      "name": "E：健康 app 連動",
+      "total": 4,
+      "machine_done": 0,
+      "human_verified": false,
+      "approved": false
+    },
+    {
+      "name": "F：資料帶得走",
+      "total": 4,
+      "machine_done": 0,
+      "human_verified": false,
+      "approved": false
+    },
+    {
+      "name": "G：小工具",
+      "total": 3,
+      "machine_done": 0,
+      "human_verified": false,
+      "approved": false
+    },
+    {
+      "name": "H：Siri",
+      "total": 2,
+      "machine_done": 0,
+      "human_verified": false,
+      "approved": false
+    },
+    {
+      "name": "I：提醒與設定收尾",
+      "total": 2,
+      "machine_done": 0,
+      "human_verified": false,
+      "approved": false
+    },
+    {
+      "name": "J：上架",
+      "total": 4,
+      "machine_done": 0,
+      "human_verified": false,
+      "approved": false
+    }
+  ],
   "pending_immediate_verify": [],
   "skipped_gates": []
 }
