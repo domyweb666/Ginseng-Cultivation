@@ -41,13 +41,19 @@ jobs:
     timeout-minutes: 60
     env:
       BUILD_NUMBER: ${{ github.run_number }}
-      KEYCHAIN_PATH: ${{ runner.temp }}/rencan-ci.keychain-db
-      AUTH_KEY_PATH: ${{ runner.temp }}/AuthKey.p8
-      ARCHIVE_PATH: ${{ runner.temp }}/Rencan.xcarchive
-      EXPORT_PATH: ${{ runner.temp }}/export
-      SIM_DERIVED_DATA: ${{ runner.temp }}/sim
     steps:
       - uses: actions/checkout@v4
+
+      # runner.temp 在 job 層級的 env 不能用，所以用第一個 step 寫進 GITHUB_ENV
+      - name: 設暫存路徑
+        run: |
+          {
+            echo "KEYCHAIN_PATH=$RUNNER_TEMP/rencan-ci.keychain-db"
+            echo "AUTH_KEY_PATH=$RUNNER_TEMP/AuthKey.p8"
+            echo "ARCHIVE_PATH=$RUNNER_TEMP/Rencan.xcarchive"
+            echo "EXPORT_PATH=$RUNNER_TEMP/export"
+            echo "SIM_DERIVED_DATA=$RUNNER_TEMP/sim"
+          } >> "$GITHUB_ENV"
 
       - name: 選 Xcode 16
         run: |
@@ -185,9 +191,10 @@ jobs:
     timeout-minutes: 40
     env:
       BUILD_NUMBER: ${{ github.run_number }}
-      ASC_KEY_P8_PATH: ${{ runner.temp }}/AuthKey.p8
     steps:
       - uses: actions/checkout@v4
+      - name: 設暫存路徑
+        run: echo "ASC_KEY_P8_PATH=$RUNNER_TEMP/AuthKey.p8" >> "$GITHUB_ENV"
       - uses: actions/setup-node@v4
         with:
           node-version: 20
