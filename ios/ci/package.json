@@ -1,0 +1,9 @@
+{
+  "name": "rencan-ci",
+  "private": true,
+  "type": "module",
+  "description": "GitHub Actions 用的兩支小腳本：上傳模擬器版到 Limrun、填 TestFlight 版本說明。版本鎖死（安全標準類別 9）。",
+  "dependencies": {
+    "@limrun/api": "0.69.2"
+  }
+}

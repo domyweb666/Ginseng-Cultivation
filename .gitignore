@@ -1,1 +1,27 @@
 .vibe/.turn-count
+
+# 憑證與金鑰永遠不進 repo（.vibe/安全標準.md 類別 9，CWE-798）
+# 真正的檔案放在 repo 外的 E:\人篸修煉-secrets\
+*.p12
+*.p8
+*.cer
+*.csr
+*.key
+*.pem
+*.mobileprovision
+*.keychain
+*.keychain-db
+
+# 工具的套件
+.vibe/tools/node_modules/
+ios/ci/node_modules/
+node_modules/
+
+# Xcode 與建置產物
+ios/**/xcuserdata/
+ios/**/*.xcuserstate
+ios/build/
+ios/DerivedData/
+ios/RencanCore/.build/
+ios/RencanCore/.swiftpm/
+.DS_Store

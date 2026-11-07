@@ -1,7 +1,7 @@
 {
   "station": "implementing",
-  "note": "2026-11-07 plan-readback 對齊放行。進行中：A1（使用者照 README 操作）＋A2（AI 做骨架），接著 A3、A5。決定：repo 公開 push、Limrun 走 SDK 腳本、TestFlight 版本說明自動填。",
-  "updated_at": "2026-11-07T08:57:18+08:00",
+  "note": "2026-11-07 A2/A3/A5 程式碼寫完並 push，等 CI 第一次跑：Linux 測試、lint、模擬器版建置會先跑；archive/TestFlight/Limrun 要等使用者做完 A1（7 個 secrets）。",
+  "updated_at": "2026-11-07T09:08:18+08:00",
   "updated_by": "vibe-traffic-control",
   "pieces": {
     "todo": 37,

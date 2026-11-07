@@ -1,0 +1,208 @@
+# iOS 交付線（.vibe/架構藍圖.md 第二節 d01–d08、d13）
+# 1. Linux：規則引擎套件測試（證明 RencanCore 不依賴 Apple 框架）
+# 2. macOS：格式與 lint → 模擬器版建置（不簽章，沒 secrets 也能驗專案檔與編譯）
+#            → 還原憑證到暫時鑰匙圈 → archive → 直傳 App Store Connect
+#            → 模擬器版 zip 上傳 Limrun → 不管成敗都刪鑰匙圈
+# 3. Linux：等 Apple 處理完建置，填 TestFlight 測試說明
+# 安全（.vibe/安全標準.md 類別 9）：secrets 只進環境變數、不 echo；shell 不拼任何外部字串；
+# 只在 main 跑；fork 的 PR 拿不到 secrets（GitHub 預設）。
+name: iOS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BUNDLE_ID: org.domyweb.rencan
+  TESTFLIGHT_NOTES: "骨架版：三個空分頁（境界／功法／錄入），什麼都還不能做，這是正常的。"
+
+jobs:
+  core-tests:
+    name: 規則引擎測試（Linux）
+    runs-on: ubuntu-latest
+    container: swift:6.0-noble
+    steps:
+      - uses: actions/checkout@v4
+      - name: swift test
+        run: swift test --package-path ios/RencanCore
+
+  ios-build:
+    name: 建置並上傳 TestFlight（macOS）
+    needs: core-tests
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      BUILD_NUMBER: ${{ github.run_number }}
+      KEYCHAIN_PATH: ${{ runner.temp }}/rencan-ci.keychain-db
+      AUTH_KEY_PATH: ${{ runner.temp }}/AuthKey.p8
+      ARCHIVE_PATH: ${{ runner.temp }}/Rencan.xcarchive
+      EXPORT_PATH: ${{ runner.temp }}/export
+      SIM_DERIVED_DATA: ${{ runner.temp }}/sim
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 選 Xcode 16
+        run: |
+          XCODE_APP="$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)"
+          sudo xcode-select -s "$XCODE_APP"
+          xcodebuild -version
+          swift --version
+
+      - name: swift-format（嚴格）
+        run: |
+          xcrun swift-format lint --strict --recursive --configuration ios/.swift-format \
+            ios/Rencan ios/RencanCore/Sources ios/RencanCore/Tests
+
+      - name: SwiftLint（嚴格）
+        run: |
+          if ! command -v swiftlint >/dev/null 2>&1; then
+            brew install swiftlint
+          fi
+          cd ios && swiftlint lint --strict --config .swiftlint.yml
+
+      - name: 模擬器版建置（給 Limrun 自驗）
+        run: |
+          set -euo pipefail
+          xcodebuild build \
+            -project ios/Rencan.xcodeproj \
+            -scheme Rencan \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination "generic/platform=iOS Simulator" \
+            -derivedDataPath "$SIM_DERIVED_DATA" \
+            ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY=""
+          cd "$SIM_DERIVED_DATA/Build/Products/Debug-iphonesimulator"
+          zip -qry "$RUNNER_TEMP/rencan-sim.zip" Rencan.app
+          ls -l "$RUNNER_TEMP/rencan-sim.zip"
+
+      - name: 模擬器版留一份在 GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: rencan-sim-${{ github.run_number }}
+          path: ${{ runner.temp }}/rencan-sim.zip
+          retention-days: 7
+
+      - name: 還原發佈憑證到暫時鑰匙圈
+        env:
+          APPLE_DIST_P12_BASE64: ${{ secrets.APPLE_DIST_P12_BASE64 }}
+          APPLE_DIST_P12_PASSWORD: ${{ secrets.APPLE_DIST_P12_PASSWORD }}
+        run: |
+          set -euo pipefail
+          KEYCHAIN_PASSWORD="$(openssl rand -base64 24)"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          P12_PATH="$RUNNER_TEMP/dist.p12"
+          printf '%s' "$APPLE_DIST_P12_BASE64" | base64 --decode > "$P12_PATH"
+          security import "$P12_PATH" -P "$APPLE_DIST_P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          rm -f "$P12_PATH"
+          # Apple 的中繼憑證（簽章鏈要完整，codesign 才認得發佈憑證）
+          curl -sSfL -o "$RUNNER_TEMP/wwdr-g3.cer" https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer
+          curl -sSfL -o "$RUNNER_TEMP/wwdr-g4.cer" https://www.apple.com/certificateauthority/AppleWWDRCAG4.cer
+          security import "$RUNNER_TEMP/wwdr-g3.cer" -k "$KEYCHAIN_PATH" -A
+          security import "$RUNNER_TEMP/wwdr-g4.cer" -k "$KEYCHAIN_PATH" -A
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain-db
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+
+      - name: 還原 App Store Connect API 金鑰
+        env:
+          ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$ASC_KEY_P8_BASE64" | base64 --decode > "$AUTH_KEY_PATH"
+          chmod 600 "$AUTH_KEY_PATH"
+
+      - name: archive（自動簽章，描述檔由 Apple 當場發）
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          xcodebuild archive \
+            -project ios/Rencan.xcodeproj \
+            -scheme Rencan \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath "$ARCHIVE_PATH" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$AUTH_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
+
+      - name: 上傳 App Store Connect
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          sed "s/TEAM_ID_PLACEHOLDER/$APPLE_TEAM_ID/" ios/ci/ExportOptions.plist > "$RUNNER_TEMP/ExportOptions.plist"
+          xcodebuild -exportArchive \
+            -archivePath "$ARCHIVE_PATH" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath "$EXPORT_PATH" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$AUTH_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 上傳模擬器版到 Limrun
+        env:
+          LIM_API_KEY: ${{ secrets.LIM_API_KEY }}
+        run: |
+          set -euo pipefail
+          npm install --prefix ios/ci --no-package-lock --no-audit --no-fund
+          node ios/ci/limrun_upload.mjs "$RUNNER_TEMP/rencan-sim.zip" "rencan-sim-$BUILD_NUMBER"
+
+      - name: 刪鑰匙圈與金鑰（不管成敗）
+        if: always()
+        run: |
+          security delete-keychain "$KEYCHAIN_PATH" || true
+          rm -f "$AUTH_KEY_PATH" "$RUNNER_TEMP/dist.p12"
+
+  testflight-notes:
+    name: 填 TestFlight 測試說明
+    needs: ios-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      BUILD_NUMBER: ${{ github.run_number }}
+      ASC_KEY_P8_PATH: ${{ runner.temp }}/AuthKey.p8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: 還原 API 金鑰
+        env:
+          ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$ASC_KEY_P8_BASE64" | base64 --decode > "$ASC_KEY_P8_PATH"
+          chmod 600 "$ASC_KEY_P8_PATH"
+      - name: 等處理完並填說明
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: node ios/ci/testflight_notes.mjs
+      - name: 刪金鑰（不管成敗）
+        if: always()
+        run: rm -f "$ASC_KEY_P8_PATH"

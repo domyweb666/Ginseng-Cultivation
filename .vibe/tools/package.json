@@ -1,0 +1,8 @@
+{
+  "name": "rencan-vibe-tools",
+  "private": true,
+  "description": "VibeRails 工具：流程圖產生（CommonJS .js）、Limrun 模擬器自驗（.mjs）。版本鎖死。",
+  "dependencies": {
+    "@limrun/api": "0.69.2"
+  }
+}

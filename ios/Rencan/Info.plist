@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDisplayName</key>
+	<string>人蔘修煉</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>LXGWWenKaiTC-Regular.ttf</string>
+	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>NSHealthShareUsageDescription</key>
+	<string>讀你的體重、體脂率、去脂體重和身高，用來算你的境界。</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>只有你在設定裡打開回寫，才會把你手打的體重、體脂率、去脂體重存進健康 app。</string>
+</dict>
+</plist>

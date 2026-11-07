@@ -263,29 +263,33 @@ details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line)
    "id": "d13",
    "label": "模擬器版建置並上傳 Limrun",
    "type": "process",
-   "description": "同一次 macOS 工作多建一個模擬器版（-sdk iphonesimulator），壓成 zip，用 lim asset upload 放到 Limrun 的 Asset Storage（需 LIM_API_KEY secret）。每次 push 都有一份最新的模擬器版可以開。lim CLI 鎖版本安裝。",
+   "description": "同一次 macOS 工作多建一個模擬器版（-sdk iphonesimulator），壓成 zip，用 ios/ci/limrun_upload.mjs（@limrun/api 鎖版本）放到 Limrun 的 Asset Storage（需 LIM_API_KEY secret），七天後自動刪。每次 push 都有一份最新的模擬器版可以開。",
    "trigger_condition": "d05 的 macOS 工作裡，archive 之前或之後都可。",
    "files": [],
    "planned_files": [
     ".github/workflows/ios.yml",
+    "ios/ci/limrun_upload.mjs",
     "ios/ci/README.md"
    ],
    "file_responsibilities": {
-    ".github/workflows/ios.yml": "多一個 job 或步驟：模擬器版建置、zip、lim asset upload。",
-    "ios/ci/README.md": "Limrun 註冊、API key、MCP 安裝的操作說明。"
+    ".github/workflows/ios.yml": "模擬器版建置、zip、呼叫 limrun_upload.mjs。",
+    "ios/ci/limrun_upload.mjs": "getOrUpload 上傳 zip，只讀環境變數的金鑰。",
+    "ios/ci/README.md": "Limrun 新帳號 API key、換本機 config.yaml、放 GitHub Secret 的操作說明。"
    }
   },
   {
    "id": "d14",
    "label": "AI 用 Limrun 模擬器自驗",
    "type": "process",
-   "description": "Claude Code 透過 Limrun 遠端 MCP 開一台雲端 iPhone 模擬器並裝最新 asset，截圖、點按、讀元件樹，對照 .vibe/標準清單.md 逐條打勾，截圖存進 .vibe/evidence/ 當 self-review 證據，驗完立刻刪機器省點數（模擬器每分鐘 2 點）。驗得到：畫面、表單、數字、健康 app 讀寫（模擬器的健康 app 可手動加資料）、小工具、匯入匯出。驗不到：震動、Siri 語音（可用捷徑 app 觸發意圖）、真體脂秤同步、TestFlight 安裝流程。",
+   "description": "Claude Code 跑 .vibe/tools/limrun_check.mjs（@limrun/api SDK）開一台雲端 iPhone 模擬器並裝最新 asset，截圖、點按、讀元件樹，對照 .vibe/標準清單.md 逐條打勾，截圖存進 .vibe/evidence/ 當 self-review 證據，驗完立刻刪機器省點數（模擬器每分鐘 2 點）。驗得到：畫面、表單、數字、健康 app 讀寫（模擬器的健康 app 可手動加資料）、小工具、匯入匯出。驗不到：震動、Siri 語音（可用捷徑 app 觸發意圖）、真體脂秤同步、TestFlight 安裝流程。",
    "trigger_condition": "每片機器層自審（vibe-self-review）；組塊到齊時整塊回放。",
    "files": [],
    "planned_files": [
+    ".vibe/tools/limrun_check.mjs",
     ".vibe/evidence/"
    ],
    "file_responsibilities": {
+    ".vibe/tools/limrun_check.mjs": "挑最新 rencan-sim-* 資產、開機、截三分頁、讀元件樹、finally 刪機器。",
     ".vibe/evidence/": "每片的截圖證據，檔名含片號與日期。"
    }
   }
@@ -429,6 +433,12 @@ details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line)
   ],
   "ios/Rencan/PrivacyInfo.xcprivacy": [
    "d10"
+  ],
+  "ios/ci/limrun_upload.mjs": [
+   "d13"
+  ],
+  ".vibe/tools/limrun_check.mjs": [
+   "d14"
   ],
   ".vibe/evidence/": [
    "d14"
