@@ -170,7 +170,9 @@ jobs:
         with:
           node-version: 20
 
+      # A5 延後（2026-11-07 使用者決定）：沒設 LIM_API_KEY 就跳過，不讓這步把交付線弄紅
       - name: 上傳模擬器版到 Limrun
+        if: env.LIM_API_KEY != ''
         env:
           LIM_API_KEY: ${{ secrets.LIM_API_KEY }}
         run: |

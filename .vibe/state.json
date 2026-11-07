@@ -1,7 +1,7 @@
 {
   "station": "implementing",
-  "note": "2026-11-07 17:15 組塊 A：A2/A3/A5 程式碼已 push，CI 到模擬器版編譯綠。Limrun 新 key 可上傳、不可開機（點數用完，要訂 Entry）。GitHub secrets 0 個，卡在 A1：使用者做 Apple 憑證＋7 個 secrets。",
-  "updated_at": "2026-11-07T17:44:53+08:00",
+  "note": "2026-11-07 A5 延後（Limrun 沒點數，使用者選跳過）。卡在 A1：使用者照 ios/ci/README.md 做 Apple 憑證＋6 個 secrets（LIM_API_KEY 可省）。做完重跑 CI 看 archive/上傳/TestFlight。",
+  "updated_at": "2026-11-07T17:52:45+08:00",
   "updated_by": "vibe-traffic-control",
   "pieces": {
     "todo": 37,
