@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>人蔘修煉 flowmap（考古版）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1117;--node:#161b22;--line:#30363d;--fg:#c9d1d9;--mut:#8b949e;--ok:#3fb950;--bad:#f85149;--retry:#d29922;--cond:#58a6ff}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:'JetBrains Mono','Fira Code',Consolas,monospace;font-size:13px}
+header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:16px;padding:10px 16px;background:rgba(13,17,23,.94);border-bottom:1px solid var(--line);backdrop-filter:blur(6px)}
+header h1{font-size:15px;margin:0;font-weight:700}
+header .meta{color:var(--mut);font-size:11px}
+header button{margin-left:auto;background:#21262d;color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 12px;font:inherit;cursor:pointer}
+header button:hover{border-color:var(--cond)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;padding:8px 16px;color:var(--mut);font-size:11px;border-bottom:1px solid var(--line)}
+.legend i{display:inline-block;width:22px;height:0;border-top:2px solid;vertical-align:middle;margin-right:4px}
+.legend b{display:inline-block;width:14px;height:10px;border:1.5px solid;border-radius:3px;vertical-align:middle;margin-right:4px;font-weight:400}
+.canvas{overflow:auto;padding:16px}
+svg{display:block}
+.node{cursor:pointer}
+.node rect{fill:var(--node);stroke:var(--line);stroke-width:1.5;transition:stroke .15s}
+.node.decision rect{stroke:var(--cond)}
+.node.start rect,.node.end rect{stroke:var(--ok)}
+.node.error rect{stroke:var(--bad)}
+.node.inferred rect{stroke-dasharray:6 4}
+.node.sub rect.outer{fill:none;stroke:var(--mut)}
+.node:hover rect{stroke:#fff}
+.node.active rect{stroke:#fff;stroke-width:2.5}
+.node.hl rect{fill:#172217;stroke:var(--ok);stroke-width:2.5}
+.node.dim{opacity:.3}
+.nbox{padding:7px 10px;height:100%;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;color:var(--fg);font-family:'JetBrains Mono','Fira Code',Consolas,monospace;overflow:hidden}
+.nlabel{font-weight:700;font-size:12px;line-height:1.3}
+.nsub{color:var(--mut);font-size:10px;margin-top:3px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.edge{fill:none;stroke-width:1.6}
+.edge.success{stroke:var(--ok)}.edge.failure{stroke:var(--bad)}.edge.retry{stroke:var(--retry);stroke-dasharray:6 4}.edge.conditional{stroke:var(--cond)}
+.edge.faint{stroke:var(--mut);stroke-dasharray:2 4;opacity:.5}
+.edge.inferred{stroke-dasharray:6 4;opacity:.7}
+.elabel{font-size:10px;fill:var(--fg)}
+.elabelbg{fill:#0d1117;stroke:var(--line);stroke-width:.8}
+#panel{position:fixed;top:0;right:0;width:420px;max-width:94vw;height:100vh;background:#161b22;border-left:1px solid var(--line);transform:translateX(100%);transition:transform .25s ease;z-index:10;overflow:auto;padding:18px 20px 40px;box-sizing:border-box}
+#panel.open{transform:none}
+#panel h2{font-size:15px;margin:0 36px 6px 0;line-height:1.4}
+#panel .tag{display:inline-block;font-size:10px;padding:2px 7px;border:1px solid var(--line);border-radius:999px;color:var(--mut);margin-bottom:12px}
+#panel h3{font-size:11px;letter-spacing:.1em;color:var(--mut);margin:16px 0 6px}
+#panel p{margin:0;line-height:1.65;white-space:pre-wrap;font-size:12px}
+#panel .file{display:block;width:100%;text-align:left;background:#0d1117;border:1px solid var(--line);color:var(--cond);border-radius:6px;padding:7px 9px;margin:6px 0 2px;font:inherit;font-size:11.5px;cursor:pointer}
+#panel .file:hover,#panel .file.on{border-color:var(--ok);color:var(--ok)}
+#panel .resp{color:var(--mut);font-size:11px;margin:0 0 6px 4px;line-height:1.5}
+#panel .close{position:absolute;top:10px;right:14px;background:none;border:0;color:var(--mut);font-size:20px;cursor:pointer}
+details{margin:24px 16px;color:var(--mut);font-size:12px}
+details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line);border-radius:8px;padding:12px;color:var(--fg)}
+</style>
+</head>
+<body>
+<header><h1>人蔘修煉 · flowmap（考古版）</h1><span class="meta" id="meta"></span><button id="copy">複製 JSON</button></header>
+<div class="legend">
+  <span><i style="border-color:#3fb950"></i>成功路徑</span>
+  <span><i style="border-color:#f85149"></i>失敗路徑</span>
+  <span><i style="border-color:#d29922;border-style:dashed"></i>重試</span>
+  <span><i style="border-color:#58a6ff"></i>條件分支</span>
+  <span><i style="border-color:#8b949e;border-style:dotted"></i>呼叫規則引擎／回頭重畫／次要提示（JSON 有完整標籤）</span>
+  <span><b style="border-color:#58a6ff"></b>判斷</span>
+  <span><b style="border-color:#8b949e;border-style:double"></b>子流程</span>
+  <span><b style="border-color:#8b949e;border-style:dashed"></b>⚠ 推斷：iPhone 上走不到</span>
+  <span>點節點看掛點；點掛點檔案會亮出所有用到它的節點</span>
+</div>
+<div class="canvas"><svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg></div>
+<aside id="panel"><button class="close" id="close" title="關閉">×</button><div id="pbody"></div></aside>
+<details><summary>🤖 給 Claude Code 的讀圖說明</summary><pre>這份 HTML 包含一個 &lt;script id="flowmap-data" type="application/json"&gt; 區塊。
+讀取方式：document.getElementById('flowmap-data').textContent，然後 JSON.parse()。
+
+重要欄位：
+- nodes[].trigger_condition：這個狀態的觸發條件
+- nodes[].file_responsibilities：每個檔案（區段）在此節點的具體職責
+- file_index：反查表，給你一個檔名（區段），告訴你它出現在哪些節點
+- edges[].type：success / failure / retry / conditional，代表分支語意
+- edges[].call：true 表示「呼叫規則引擎」；edges[].back：true 表示回頭重畫；edges[].minor：次要提示
+- nodes[].inferred：true 表示 ⚠ 推斷（iPhone 上走不到的路）；nodes[].subprocess：子流程
+
+這個專案只有一個 index.html，所以「檔案」用「index.html:L起-迄 區段名」表示。
+當你修改一個區段時，先查 file_index 找到它涉及的所有節點，
+再看每個節點的 edges 確認你的修改是否影響到下游分支。</pre></details>
+<script id="flowmap-data" type="application/json">
+{
+  "project": "人蔘修煉（Ginseng-Cultivation）考古版",
+  "generated_at": "2026-11-07T14:45:00+08:00",
+  "mode": "掛點模式（有真實程式碼）",
+  "nodes": [
+    {"id":"n01","label":"開啟 app","type":"start","description":"從主畫面圖示或 Safari 打開。init() 先用空的 state 畫一次三頁，再決定資料從哪裡來。","trigger_condition":"使用者點開 app，或重新整理頁面。","files":["index.html:L264-298 狀態與儲存","manifest.webmanifest"],"file_responsibilities":{"index.html:L264-298 狀態與儲存":"init()（L286–297）先 render()，再嘗試 window.claude.use('db')。","manifest.webmanifest":"加入主畫面的名稱、圖示、standalone 顯示模式、主題色。"}},
+    {"id":"n02","label":"有 window.claude.use('db')？","type":"decision","description":"init() 試著拿 claude.ai 工件環境提供的資料庫物件。iPhone Safari 與加到主畫面的 PWA 裡沒有這個物件，所以永遠判定「沒有」。這段是從 claude.ai 工件搬出來時留下的。","trigger_condition":"init() 第一步，每次開啟都跑。","files":["index.html:L264-298 狀態與儲存"],"file_responsibilities":{"index.html:L264-298 狀態與儲存":"L288：try { DB = await window.claude.use('db') } catch { DB = null }。"}},
+    {"id":"n03","label":"讀本機資料（localStorage）","type":"process","description":"LOCAL = true。從 localStorage 鑰匙 rencan-v1 把 meas／lift／cfg 整包讀回 state；右上角顯示「僅存在這台裝置」。JSON 壞掉或讀不到就當作沒資料，錯誤被 try/catch 吞掉，不會告訴使用者。","trigger_condition":"n02 判定沒有 claude DB（iPhone 上必然）。","files":["index.html:L264-298 狀態與儲存"],"file_responsibilities":{"index.html:L264-298 狀態與儲存":"loadLocal()（L269）讀取並 Object.assign 進 state；setSync()（L298）改右上角文字。"}},
+    {"id":"n04","label":"雲端監聽（Firestore 風格）","type":"process","inferred":true,"description":"對 meas、lift、cfg/me 掛 onSnapshot 監聽，三個都回來才顯示「已同步」，10 秒沒回顯示「暫時連不上」，監聽斷掉顯示「同步中斷」。只有在 claude.ai 工件內才可能執行，在 iPhone 上是死路。","trigger_condition":"n02 判定有 claude DB（推斷：只在 claude.ai 內成立）。","files":["index.html:L264-298 狀態與儲存"],"file_responsibilities":{"index.html:L264-298 狀態與儲存":"init()（L290–296）的 onSnapshot 三連監聽與逾時計時器；put/del 的 DB 分支（L278–279、L283）。"}},
+    {"id":"n05","label":"三分頁（境界／功法／錄入）","type":"process","description":"底部固定分頁列。go(v) 只切換三個 section 的顯示並捲到頂；三頁內容在每次 render() 時一起重畫（錄入頁的表單只建一次，之後只刷新紀錄清單）。預設停在「境界」。","trigger_condition":"資料讀完後的 render()；之後每次存檔也會回到這裡重畫；使用者點分頁列切換。","files":["index.html:L578-579 go／分頁","index.html:L183-200 畫面骨架","index.html:L28-181 樣式"],"file_responsibilities":{"index.html:L578-579 go／分頁":"go(v) 切換 hidden 與 aria-selected；分頁列的 click 事件。","index.html:L183-200 畫面骨架":"三個 section 容器、nav.tabs、toast 與 celebrate 的空殼。","index.html:L28-181 樣式":"版面、配色（玉綠／金丹金／墨紙底）、深色模式、分頁列固定定位。"}},
+    {"id":"n06","label":"境界頁：有體組成紀錄？","type":"decision","description":"renderRealm() 先算宗門身分卡（修煉天數＋歷史最高境界 → sectOf），再看 latestMeas() 有沒有任何一筆量測。","trigger_condition":"每次 render() 都跑；使用者停在「境界」分頁時看得到。","files":["index.html:L340-403 renderRealm"],"file_responsibilities":{"index.html:L340-403 renderRealm":"L341–345 算 ident 卡；L346 的 if(!m) 走空狀態。"}},
+    {"id":"n07","label":"尚未入道（空狀態）","type":"process","description":"顯示宗門身分卡、雜役服人蔘立繪 r0、「尚未入道」與「到錄入填一次體脂秤的數字」提示。","trigger_condition":"n06：latestMeas() 回傳 null（從沒量過體組成）。","files":["index.html:L340-403 renderRealm","img/r0-r6.webp 境界立繪"],"file_responsibilities":{"index.html:L340-403 renderRealm":"L346 的 empty 區塊 HTML。","img/r0-r6.webp 境界立繪":"r0.webp 雜役服人蔘。"}},
+    {"id":"n08","label":"境界碑＋天梯＋走勢＋突破紀錄","type":"process","badge":"⚙ 用規則引擎","description":"拿最新一筆量測算 FFMI → 境界、期別、金色進度條、「距下一期還差 X kg 肌肉」；體脂門檻標籤（>20% 不認證、18–20 浮動、<10 偏低、10–18 穩固）；三格數字（本週修煉天數、累計修煉天數、入道天數）；FFMI 走勢圖（少於兩筆只顯示一句話）；突破時間線（只記第一次到達每個期別）；七階天梯；「境界怎麼算」說明。","trigger_condition":"n06：至少一筆量測。","files":["index.html:L340-403 renderRealm","index.html:L405-423 chart","index.html:L203-262 規則表與公式","index.html:L300-331 計算","img/r0-r6.webp 境界立繪","index.html:L28-181 樣式"],"file_responsibilities":{"index.html:L340-403 renderRealm":"組出境界碑、統計、時間線、天梯的 HTML。","index.html:L405-423 chart":"chart()：SVG 折線圖，畫 0.5 格線與境界門檻金色虛線。","index.html:L203-262 規則表與公式":"ffmi()、realmOf()、leanFor()、sectOf()、REALMS、STAGES。","index.html:L300-331 計算":"latestMeas()、trainDays()、weekCount()、breakthroughs()、byDate()。","img/r0-r6.webp 境界立繪":"境界碑大圖與天梯縮圖。","index.html:L28-181 樣式":".stele .ladder .timeline .stats .chart 等樣式。"}},
+    {"id":"n09","label":"功法頁：六門功法卡＋最近 20 筆","type":"process","badge":"⚙ 用規則引擎","description":"對六個動作各找 ratio（估計 1RM ÷ 當天體重）最高的一筆 → 等級（未入門→化境）、到下一階的進度條、「下一階：估計 1RM N kg」或引體向上的「約 N 下」。列最近 20 筆修煉，每筆有刪除鈕。沒記過的顯示「未入門・還沒有紀錄」。","trigger_condition":"每次 render() 都跑；使用者停在「功法」分頁時看得到。","files":["index.html:L425-448 renderGong","index.html:L300-331 計算","index.html:L203-262 規則表與公式"],"file_responsibilities":{"index.html:L425-448 renderGong":"組功法卡與最近修煉清單的 HTML。","index.html:L300-331 計算":"bestByMove()、liftCalc()、bwAt()。","index.html:L203-262 規則表與公式":"MOVES 門檻表、LV 等級名、moveLevel()、e1rm()。"}},
+    {"id":"n10","label":"錄入頁：三張表單＋量測紀錄","type":"process","description":"記一筆修煉（功法膠囊鈕、重量或加重、次數預設 5、組數預設 3、日期預設今天）；量一次體組成（體重、體脂率、去脂體重選填、日期；體重體脂預填上一次）；設定身高（預設 174）。下方列所有量測紀錄，每筆可刪。表單只建一次（dataset.built），之後 render() 只刷新紀錄清單。","trigger_condition":"每次 render() 都跑；使用者停在「錄入」分頁時看得到。","files":["index.html:L450-518 renderLog／fillHistory"],"file_responsibilities":{"index.html:L450-518 renderLog／fillHistory":"renderLog() 建三張表單並綁事件；updateKgLabel() 切換「重量／加重」；fillHistory() 刷新量測清單。"}},
+    {"id":"n11","label":"送出修煉（onLift）","type":"process","description":"組一筆 {date, move, kg, reps, sets, bw, t}，bw 取當天（或最近）量測的體重，id 用 'l'＋時間戳。存之前先記住這門功法舊的最佳紀錄、舊的宗門身分與天數，存完才拿來比。存成功後清空重量欄。","trigger_condition":"使用者按「記下這一練」且瀏覽器表單驗證通過（重量必填，引體向上除外）。","files":["index.html:L520-546 onLift","index.html:L300-331 計算"],"file_responsibilities":{"index.html:L520-546 onLift":"L521–529 組資料、記前狀態；L530 await put；L531 清欄位。","index.html:L300-331 計算":"bwAt()、bestByMove()、liftCalc()、trainDays()。"}},
+    {"id":"n12","label":"修煉結果判定（五選一）","type":"decision","badge":"⚙ 用規則引擎","description":"依序只取第一個成立的：① 宗門身分名稱變了 → 宗門晉升（長老圖）② 這門功法第一次記 → toast「開練，目前 X 級」③ 等級上升 → 功法突破 ④ ratio 比舊最佳高 → 功法精進（附多了幾 kg）⑤ 都沒有 → toast「修煉 +1」。","trigger_condition":"n11 的 put() 成功回來後。","files":["index.html:L520-546 onLift","index.html:L203-262 規則表與公式","index.html:L300-331 計算"],"file_responsibilities":{"index.html:L520-546 onLift":"L532–545 的 if 串。","index.html:L203-262 規則表與公式":"moveLevel()、sectOf()、LV。","index.html:L300-331 計算":"liftCalc() 算 ratio 與 1RM。"}},
+    {"id":"n13","label":"送出體組成（onMeas）","type":"process","description":"組一筆 {date, weight, bf, lean?, t}，id ＝ 日期，所以同一天再送會覆蓋前一筆。存之前先記住歷史最高期別與目前宗門身分。存成功後清空去脂欄並 go('realm') 跳到境界頁。","trigger_condition":"使用者按「結算境界」且必填欄位通過驗證。","files":["index.html:L547-569 onMeas"],"file_responsibilities":{"index.html:L547-569 onMeas":"L548–553 組資料與前狀態；L554 await put；L560 go('realm')。"}},
+    {"id":"n14","label":"境界結算判定（四選一）","type":"decision","badge":"⚙ 用規則引擎","description":"① 體脂 >20% → toast「暫不認證」② 之前從沒入道 → 踏入仙途 ③ 期別 index 高於歷史最高、且日期不早於上次突破日 → 境界突破（跨大境界 → 大境界突破，粒子 240）④ 其他 → toast「境界結算：某境某期」。宗門身分若因最高境界提升而晉升，附在文字裡。","trigger_condition":"n13 的 put() 成功回來後。","files":["index.html:L547-569 onMeas","index.html:L203-262 規則表與公式","index.html:L300-331 計算"],"file_responsibilities":{"index.html:L547-569 onMeas":"L561–568 的 if 串。","index.html:L203-262 規則表與公式":"ffmi()、realmOf()、sectOf()、STAGES。","index.html:L300-331 計算":"breakthroughs()、trainDays()。"}},
+    {"id":"n15","label":"儲存身高（cfg）","type":"process","description":"put('cfg','me',{height}) 後 toast「身高已更新」並重畫。所有歷史 FFMI 都用目前身高重算，所以改身高會讓整條走勢、突破紀錄、宗門身分跟著變。預設 174，從沒問過使用者。","trigger_condition":"使用者按「儲存身高」。","files":["index.html:L450-518 renderLog／fillHistory","index.html:L264-298 狀態與儲存"],"file_responsibilities":{"index.html:L450-518 renderLog／fillHistory":"renderLog() 尾端的 f-cfg submit 事件。","index.html:L264-298 狀態與儲存":"put() 的 cfg 分支把 height 合併進 state.cfg。"}},
+    {"id":"n16","label":"寫入儲存（put／del）⚠","type":"process","description":"LOCAL 模式：改 state 陣列（put 以 id 找到就取代、找不到就 push；del 過濾掉）→ JSON.stringify 整包寫回 localStorage → render() 三頁重畫。整個 app 只有這一份資料：沒有備份、沒有匯出、沒有同步；清掉 Safari 網站資料就全沒了。saveLocal 的 try/catch 會吞掉寫入失敗，畫面照樣顯示成功。","trigger_condition":"n11、n13、n15 的 put()；n18 的 del()。","files":["index.html:L264-298 狀態與儲存"],"file_responsibilities":{"index.html:L264-298 狀態與儲存":"put()（L272–280）、del()（L281–284）、saveLocal()（L270）。"}},
+    {"id":"n18","label":"刪除紀錄（兩段式）⚠","type":"process","description":"第一下按鈕變紅框「確定刪除」，3 秒內再按一下才真的刪；3 秒後自動變回「刪除」。功法頁的修煉紀錄與錄入頁的量測紀錄共用這段。刪了沒有復原。","trigger_condition":"使用者按任一筆紀錄的「刪除」。","files":["index.html:L572-576 刪除","index.html:L264-298 狀態與儲存"],"file_responsibilities":{"index.html:L572-576 刪除":"document 層級的 click 委派，看 data-del 與 data-id 決定刪哪一筆。","index.html:L264-298 狀態與儲存":"del() 真正移除並存檔。"}},
+    {"id":"n19","label":"全螢幕慶祝","type":"process","description":"蓋住整個畫面：立繪（長老圖／功法圖示／境界立繪）、小標（宗門晉升／功法突破／功法精進／踏入仙途／境界突破／大境界突破）、大字、副標、說明；canvas 噴金綠色粒子（90～240 顆）；嘗試 navigator.vibrate（iPhone Safari 不支援，實際沒震）；4.5 秒或點一下關閉；系統「減少動態效果」開著就不噴粒子。","trigger_condition":"n12 的 ①③④ 或 n14 的 ②③。","files":["index.html:L582-607 慶祝動畫","img/r0-r6.webp 境界立繪","img/elder.webp, img/icon.webp","index.html:L28-181 樣式"],"file_responsibilities":{"index.html:L582-607 慶祝動畫":"burst() 粒子、celebrate() 組畫面與計時、closeCelebrate()。","img/r0-r6.webp 境界立繪":"境界突破、踏入仙途用對應境界的立繪。","img/elder.webp, img/icon.webp":"宗門晉升用 elder.webp，功法突破用 icon.webp。","index.html:L28-181 樣式":".celebrate 系列樣式與 cpop／crise／cfade 動畫。"}},
+    {"id":"n20","label":"toast 提示","type":"process","description":"底部小黑條 2.6 秒後自動消失。","trigger_condition":"n12 的 ②⑤、n14 的 ①④、n15 存好身高、n16 存檔失敗、n18 刪除完成或失敗。","files":["index.html:L609 toast"],"file_responsibilities":{"index.html:L609 toast":"toast(html) 顯示並重設計時器。"}},
+    {"id":"n21","label":"規則引擎（公式與門檻表）🧠","type":"process","subprocess":true,"description":"REALMS 七境界 FFMI 區間（煉氣 16.5 起，每境 1.5，每期 0.5）；MOVES 六動作的五階 ratio 門檻；RANKS 六個宗門身分（天數＋境界門檻）；ffmi()／leanFor()（身高校正公式）；realmOf()；e1rm()（Epley：重量×(1＋次數/30)）；moveLevel()；sectOf()（含客卿、客卿長老、執事三種例外）；breakthroughs()（只記第一次到達每個期別，體脂 >20% 的量測跳過）；bwAt()（沒量測時預設 65 kg）；liftCalc()、bestByMove()、trainDays()、weekCount()。整個 app 的「對不對」都在這裡。","trigger_condition":"被 n08、n09、n12、n14 呼叫；不自己觸發。","files":["index.html:L203-262 規則表與公式","index.html:L300-331 計算"],"file_responsibilities":{"index.html:L203-262 規則表與公式":"三張表與境界、功法、宗門的公式。","index.html:L300-331 計算":"從 state 取數、排序、找最佳、算天數與突破。"}}
+  ],
+  "edges": [
+    {"from":"n01","to":"n02","label":"render() 空畫面後試 claude DB","type":"conditional"},
+    {"from":"n02","to":"n03","label":"沒有 window.claude（iPhone 必然）","type":"conditional"},
+    {"from":"n02","to":"n04","label":"有 window.claude（僅 claude.ai 內）","type":"conditional","inferred":true},
+    {"from":"n03","to":"n05","label":"loadLocal() 完成 → render()","type":"success"},
+    {"from":"n04","to":"n05","label":"三個 onSnapshot 回來 → 已同步","type":"success","inferred":true},
+    {"from":"n05","to":"n06","label":"預設分頁／點「境界」","type":"conditional"},
+    {"from":"n05","to":"n09","label":"點「功法」","type":"conditional"},
+    {"from":"n05","to":"n10","label":"點「錄入」","type":"conditional"},
+    {"from":"n06","to":"n07","label":"latestMeas() == null","type":"conditional"},
+    {"from":"n06","to":"n08","label":"至少一筆量測","type":"conditional"},
+    {"from":"n08","to":"n21","label":"ffmi／realmOf／sectOf／breakthroughs","type":"conditional","call":true},
+    {"from":"n09","to":"n21","label":"bestByMove／liftCalc／moveLevel","type":"conditional","call":true},
+    {"from":"n10","to":"n11","label":"按「記下這一練」，表單驗證通過","type":"success"},
+    {"from":"n10","to":"n13","label":"按「結算境界」，表單驗證通過","type":"success"},
+    {"from":"n10","to":"n15","label":"按「儲存身高」","type":"success"},
+    {"from":"n11","to":"n16","label":"put('lift', id, rec)","type":"success"},
+    {"from":"n13","to":"n16","label":"put('meas', date, rec)","type":"success"},
+    {"from":"n15","to":"n16","label":"put('cfg', 'me', {height})","type":"success"},
+    {"from":"n18","to":"n16","label":"del(col, id)","type":"success"},
+    {"from":"n16","to":"n20","label":"put/del 拋例外 → 「沒存成功／刪除失敗」","type":"failure"},
+    {"from":"n16","to":"n05","label":"saveLocal() → render() 三頁重畫","type":"success","back":true},
+    {"from":"n11","to":"n12","label":"await put 成功","type":"success"},
+    {"from":"n13","to":"n14","label":"await put 成功，先 go('realm')","type":"success"},
+    {"from":"n12","to":"n21","label":"moveLevel／sectOf 比較前後","type":"conditional","call":true},
+    {"from":"n14","to":"n21","label":"realmOf／breakthroughs 比較前後","type":"conditional","call":true},
+    {"from":"n12","to":"n19","label":"宗門晉升／功法突破／功法精進","type":"success"},
+    {"from":"n12","to":"n20","label":"第一次開練／一般 +1","type":"conditional"},
+    {"from":"n14","to":"n19","label":"踏入仙途／境界突破／大境界突破","type":"success"},
+    {"from":"n14","to":"n20","label":"體脂 >20% 暫不認證／無突破","type":"conditional"},
+    {"from":"n15","to":"n20","label":"「身高已更新」","type":"conditional","minor":true},
+    {"from":"n09","to":"n18","label":"按修煉紀錄「刪除」×2（3 秒內）","type":"conditional"},
+    {"from":"n10","to":"n18","label":"按量測紀錄「刪除」×2（3 秒內）","type":"conditional"},
+    {"from":"n18","to":"n20","label":"「已刪除」","type":"conditional","minor":true},
+    {"from":"n19","to":"n05","label":"點一下或 4.5 秒 → 關閉，回目前分頁","type":"success","back":true}
+  ],
+  "file_index": {
+    "index.html:L203-262 規則表與公式": ["n08","n09","n12","n14","n21"],
+    "index.html:L264-298 狀態與儲存": ["n01","n02","n03","n04","n15","n16","n18"],
+    "index.html:L300-331 計算": ["n08","n09","n11","n12","n14","n21"],
+    "index.html:L340-403 renderRealm": ["n06","n07","n08"],
+    "index.html:L405-423 chart": ["n08"],
+    "index.html:L425-448 renderGong": ["n09"],
+    "index.html:L450-518 renderLog／fillHistory": ["n10","n15"],
+    "index.html:L520-546 onLift": ["n11","n12"],
+    "index.html:L547-569 onMeas": ["n13","n14"],
+    "index.html:L572-576 刪除": ["n18"],
+    "index.html:L578-579 go／分頁": ["n05"],
+    "index.html:L582-607 慶祝動畫": ["n19"],
+    "index.html:L609 toast": ["n20"],
+    "index.html:L28-181 樣式": ["n05","n08","n19"],
+    "index.html:L183-200 畫面骨架": ["n05"],
+    "img/r0-r6.webp 境界立繪": ["n07","n08","n19"],
+    "img/elder.webp, img/icon.webp": ["n19"],
+    "manifest.webmanifest": ["n01"]
+  },
+  "heavy_hook_points": ["index.html:L264-298 狀態與儲存（7 節點）","index.html:L300-331 計算（6 節點）","index.html:L203-262 規則表與公式（5 節點）"],
+  "inferred_branches": ["n02→n04→n05：claude.ai 資料庫分支，iPhone 上走不到，標 ⚠ 推斷"]
+}
+</script>
+<script>
+const data=JSON.parse(document.getElementById('flowmap-data').textContent);
+const NW=190,NH=64;
+const LAYOUT={
+  n01:[760,30], n02:[760,130], n03:[520,230], n04:[1000,230], n05:[760,330],
+  n06:[280,430], n09:[760,430], n10:[1240,430],
+  n07:[280,540], n08:[520,540], n18:[760,540], n11:[1000,540], n13:[1240,540], n15:[1480,540],
+  n16:[760,650], n12:[1000,650], n14:[1240,650],
+  n19:[1000,760], n20:[1480,760],
+  n21:[40,430,190,284]
+};
+const NS='http://www.w3.org/2000/svg';
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const el=(t,a={},p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+const box=id=>{const [x,y,w,h]=LAYOUT[id];return {x,y,w:w||NW,h:h||NH,cx:x+(w||NW)/2,cy:y+(h||NH)/2}};
+const svg=document.getElementById('svg');
+let W=0,H=0;for(const id in LAYOUT){const b=box(id);W=Math.max(W,b.x+b.w);H=Math.max(H,b.y+b.h)}
+W+=40;H+=40;svg.setAttribute('width',W);svg.setAttribute('height',H);svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+const defs=el('defs',{},svg);
+for(const [k,c] of Object.entries({success:'#3fb950',failure:'#f85149',retry:'#d29922',conditional:'#58a6ff',faint:'#8b949e'})){
+  const m=el('marker',{id:'arr-'+k,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse'},defs);
+  el('path',{d:'M0,0 L10,5 L0,10 z',fill:c},m);
+}
+const gE=el('g',{},svg);
+data.edges.forEach(e=>{
+  const a=box(e.from),b=box(e.to);const faint=e.call||e.back||e.minor;let d,mx,my;
+  if(b.y>=a.y+a.h){ // 往下
+    const x1=a.cx,y1=a.y+a.h,x2=b.cx,y2=b.y,dy=(y2-y1)/2;
+    d=`M${x1},${y1} C${x1},${y1+dy} ${x2},${y2-dy} ${x2},${y2}`;mx=(x1+x2)/2;my=(y1+y2)/2;
+  } else if(Math.abs(b.cy-a.cy)<a.h){ // 同一列
+    const left=b.cx<a.cx;const x1=left?a.x:a.x+a.w,x2=left?b.x+b.w:b.x,y=a.cy,k=left?-40:40;
+    d=`M${x1},${y} C${x1+k},${y+26} ${x2-k},${y+26} ${x2},${y}`;mx=(x1+x2)/2;my=y+20;
+  } else { // 往上回頭：從左側繞
+    const x1=a.x,y1=a.cy,x2=b.x,y2=b.cy,k1=x1-50,k2=x2-50;
+    d=`M${x1},${y1} C${k1},${y1} ${k2},${y2} ${x2},${y2}`;mx=Math.min(k1,k2)+10;my=(y1+y2)/2;
+  }
+  const cls='edge '+(faint?'faint':e.type)+(e.inferred?' inferred':'');
+  const p=el('path',{d,class:cls,'marker-end':`url(#arr-${faint?'faint':e.type})`,'data-from':e.from,'data-to':e.to},gE);
+  const t=el('title',{},p);t.textContent=`${e.from} → ${e.to}：${e.label}`;
+  if(e.label&&!faint){
+    const w=[...e.label].reduce((s,c)=>s+(c.charCodeAt(0)>255?10:6.2),0)+10;
+    const g=el('g',{},gE);el('rect',{x:mx-w/2,y:my-8,width:w,height:16,rx:3,class:'elabelbg'},g);
+    const tx=el('text',{x:mx,y:my+3.5,'text-anchor':'middle',class:'elabel'},g);tx.textContent=e.label;
+  }
+});
+const gN=el('g',{},svg);
+data.nodes.forEach(n=>{
+  const b=box(n.id);
+  const g=el('g',{class:'node '+n.type+(n.inferred?' inferred':'')+(n.subprocess?' sub':''),'data-id':n.id,transform:`translate(${b.x},${b.y})`},gN);
+  if(n.subprocess)el('rect',{x:-4,y:-4,width:b.w+8,height:b.h+8,rx:10,class:'outer'},g);
+  el('rect',{x:0,y:0,width:b.w,height:b.h,rx:8},g);
+  const fo=el('foreignObject',{x:0,y:0,width:b.w,height:b.h},g);
+  const div=document.createElementNS('http://www.w3.org/1999/xhtml','div');div.className='nbox';
+  const sub=(n.badge?n.badge+' · ':'')+((n.files&&n.files[0])||'[尚未對應]').replace(/^index\.html:/,'');
+  div.innerHTML=`<div class="nlabel">${esc(n.label)}</div><div class="nsub" title="${esc(sub)}">${esc(sub)}</div>`;
+  fo.appendChild(div);
+  g.addEventListener('click',()=>openNode(n.id));
+});
+const panel=document.getElementById('panel'),pbody=document.getElementById('pbody');
+const labelOf=id=>(data.nodes.find(x=>x.id===id)||{}).label||id;
+function openNode(id){
+  const n=data.nodes.find(x=>x.id===id);if(!n)return;
+  document.querySelectorAll('.node').forEach(g=>g.classList.toggle('active',g.dataset.id===id));
+  const files=n.files.map(f=>`<button class="file" data-f="${esc(f)}">${esc(f)}</button><p class="resp">${esc(n.file_responsibilities[f]||'')}</p>`).join('');
+  const outs=data.edges.filter(e=>e.from===id).map(e=>`→ ${labelOf(e.to)}（${e.label}）${e.call?' ⚙':''}${e.back?' ↺':''}`).join('\n')||'（終點）';
+  const ins=data.edges.filter(e=>e.to===id).map(e=>`← ${labelOf(e.from)}（${e.label}）`).join('\n')||'（起點）';
+  pbody.innerHTML=`<h2>${esc(n.label)}</h2><span class="tag">${n.id} · ${n.type}${n.subprocess?' · 子流程':''}${n.inferred?' · ⚠ 推斷':''}</span>
+    <h3>觸發條件</h3><p>${esc(n.trigger_condition)}</p>
+    <h3>這個節點做什麼</h3><p>${esc(n.description)}</p>
+    <h3>掛點（點一下亮出用到它的節點）</h3>${files}
+    <h3>從哪來</h3><p>${esc(ins)}</p>
+    <h3>往下接</h3><p>${esc(outs)}</p>`;
+  panel.classList.add('open');
+}
+let hlFile=null;
+pbody.addEventListener('click',ev=>{
+  const b=ev.target.closest('.file');if(!b)return;const f=b.dataset.f;hlFile=hlFile===f?null:f;
+  document.querySelectorAll('#panel .file').forEach(x=>x.classList.toggle('on',x.dataset.f===hlFile));
+  const ids=hlFile?(data.file_index[hlFile]||[]):null;
+  document.querySelectorAll('.node').forEach(g=>{const on=!!ids&&ids.includes(g.dataset.id);g.classList.toggle('hl',on);g.classList.toggle('dim',!!ids&&!on)});
+});
+document.getElementById('close').addEventListener('click',()=>{panel.classList.remove('open');document.querySelectorAll('.node').forEach(g=>g.classList.remove('active','hl','dim'));hlFile=null});
+const copyBtn=document.getElementById('copy');
+copyBtn.addEventListener('click',async()=>{const txt=document.getElementById('flowmap-data').textContent.trim();
+  try{await navigator.clipboard.writeText(txt);copyBtn.textContent='已複製';setTimeout(()=>copyBtn.textContent='複製 JSON',1500)}
+  catch(err){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();copyBtn.textContent='已複製';setTimeout(()=>copyBtn.textContent='複製 JSON',1500)}});
+document.getElementById('meta').textContent=`${data.nodes.length} 節點 · ${data.edges.length} 邊 · ${data.generated_at}`;
+</script>
+</body>
+</html>
