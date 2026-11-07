@@ -1,7 +1,7 @@
 {
   "station": "idle",
-  "note": "vibe-grill-me 進行中（2026-11-07）。已定：GitHub Actions 編譯、付費帳號、第一版＝移植＋HealthKit＋震動＋小工具＋Siri、上架給別人（男女都要含新手）、訓練模型＝丙、核心功能＝境界那一刻、女性標準表進第一版、體脂門檻分性別並軟化。待問：怎樣算成功、最怕變成什麼；答完收定稿轉 vibe-prd。不寫 Swift。",
-  "updated_at": "2026-11-07T15:29:33+08:00",
+  "note": "vibe-grill-me 進行中（2026-11-07）。已定：GitHub Actions 編譯、付費帳號、第一版範圍、上架給別人（男女都要含新手）、訓練模型＝丙、核心功能＝境界那一刻、成功＝陌生人三個月後還在量。待問：最怕變成什麼；答完收定稿轉 vibe-prd。不寫 Swift。",
+  "updated_at": "2026-11-07T15:43:08+08:00",
   "updated_by": "vibe-traffic-control",
   "pieces": {
     "todo": 0,
