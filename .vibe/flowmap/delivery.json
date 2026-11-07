@@ -1,0 +1,44 @@
+{
+  "title": "人蔘修煉 iOS · 交付 flowmap（沒有 Mac 的編譯與上架路）",
+  "project": "人蔘修煉 iOS（交付管線）",
+  "generated_at": "2026-11-07T16:30:00+08:00",
+  "mode": "待掛點（規劃階段）",
+  "notes": [
+    "這張圖是「程式碼寫好之後怎麼變成你手機上的 app」。主線：你 push → GitHub Actions → 測試 → macOS 建置 → TestFlight → 你手機。",
+    "⚠＝碰憑證、對外上傳。d11 是一次性的憑證準備，在 Windows 上用 openssl 做，不需要 Mac。"
+  ],
+  "nodes": [
+    {"id":"d01","label":"改完 → git push 到 GitHub","type":"start","description":"每一片做完、機器層驗完，push 到 GitHub（main，或 ios 分支）。這個 repo 是公開的，GitHub 的 macOS 機器不收費。","trigger_condition":"一片改動完成。","files":[],"planned_files":[".github/workflows/ios.yml"],"file_responsibilities":{".github/workflows/ios.yml":"觸發條件：push 與 pull request。"}},
+    {"id":"d02","label":"GitHub Actions 觸發","type":"process","description":"兩個工作：Linux 跑規則引擎測試；macOS 建置（只在測試綠了才跑）。建置號用工作流的 run number，每次遞增。","trigger_condition":"push 或 PR 到指定分支。","files":[],"planned_files":[".github/workflows/ios.yml"],"file_responsibilities":{".github/workflows/ios.yml":"兩個 job 與相依關係。"}},
+    {"id":"d03","label":"Linux：規則引擎黃金測試","type":"process","badge":"⚙","description":"swift test 跑 RencanCore 的單元測試：拿網頁版匯出的真實資料算一遍，跟網頁版算出的境界、功法、宗門、突破逐一比對。幾分鐘內完成，不用 macOS。","trigger_condition":"d02 的第一個 job。","files":[],"planned_files":["ios/RencanCore/Tests/RencanCoreTests/GoldenTests.swift","ios/RencanCore/Tests/RencanCoreTests/Fixtures/web-export.json"],"file_responsibilities":{"ios/RencanCore/Tests/RencanCoreTests/GoldenTests.swift":"黃金集比對。","ios/RencanCore/Tests/RencanCoreTests/Fixtures/web-export.json":"網頁版匯出的真實資料（去識別化）。"}},
+    {"id":"d04","label":"macOS：裝憑證與金鑰 ⚠","type":"process","description":"從 GitHub Secrets 還原發佈憑證 .p12 到一個暫時鑰匙圈、放 App Store Connect API 金鑰 .p8；工作結束刪鑰匙圈。Secrets 不存在或壞掉 → 這步紅燈，說缺哪一個。","trigger_condition":"d03 綠燈。","files":[],"planned_files":[".github/workflows/ios.yml","ios/ci/README.md"],"file_responsibilities":{".github/workflows/ios.yml":"還原憑證、建暫時鑰匙圈、放金鑰的步驟。","ios/ci/README.md":"Secrets 名稱清單與怎麼放。"}},
+    {"id":"d05","label":"xcodebuild archive（自動簽章）","type":"process","description":"用最新 Xcode 建置主 app 與小工具；-allowProvisioningUpdates 加 API 金鑰讓 Xcode 自己管描述檔；版本號從專案設定來、建置號從 run number 來。編譯錯誤 → 紅燈，紀錄裡有錯誤行。","trigger_condition":"d04 完成。","files":[],"planned_files":["ios/Rencan.xcodeproj/project.pbxproj","ios/ci/ExportOptions.plist"],"file_responsibilities":{"ios/Rencan.xcodeproj/project.pbxproj":"兩個 target（app、小工具）與 RencanCore 套件的相依。","ios/ci/ExportOptions.plist":"method app-store-connect、destination upload、簽章設定。"}},
+    {"id":"d06","label":"匯出並直傳 App Store Connect ⚠","type":"process","description":"xcodebuild -exportArchive 用 ExportOptions 的 destination=upload 直接上傳，不另外裝工具。上傳失敗（金鑰權限、版本號重複）→ 紅燈。","trigger_condition":"d05 完成。","files":[],"planned_files":["ios/ci/ExportOptions.plist"],"file_responsibilities":{"ios/ci/ExportOptions.plist":"上傳目的地與簽章。"}},
+    {"id":"d07","label":"TestFlight → 你的手機","type":"end","description":"App Store Connect 處理 5 到 15 分鐘 → 手機上的 TestFlight app 出現新版本 → 裝 → 照 PRD 的完成定義親手驗。這是你看到畫面的唯一地方。","trigger_condition":"d06 上傳成功。","files":[],"planned_files":[],"file_responsibilities":{}},
+    {"id":"d08","label":"紅燈：讀建置紀錄、修、再 push","type":"error","description":"任何一步紅燈 → GitHub Actions 的紀錄裡有錯誤；AI 用 gh run view --log 讀、改、再 push。第一次編譯幾乎一定會紅，這是正常循環。","trigger_condition":"d03、d05、d06 任一失敗。","files":[],"planned_files":[],"file_responsibilities":{}},
+    {"id":"d09","label":"網頁版補「匯出 JSON」鈕","type":"process","description":"index.html 加一顆鈕，把 localStorage 整包存成檔案（跟 app 的匯入格式一樣）。你在 iPhone Safari 按一下存到檔案 app，再到 iOS 版設定裡匯入。","trigger_condition":"iOS 版第一次裝好之前做一次。","files":[],"planned_files":["index.html"],"file_responsibilities":{"index.html":"加匯出鈕；其他一字不動。"}},
+    {"id":"d10","label":"上架準備 ⚠","type":"process","description":"App Store Connect 建 app 記錄（bundle id、名稱）；隱私政策頁放 domyweb.org；截圖、說明、隱私標籤（健康與健身）；挑一個 TestFlight 版本送審。健康資料的用途要在審核備註說清楚。","trigger_condition":"第一版機器層與人驗都過。","files":[],"planned_files":["ios/Rencan/PrivacyInfo.xcprivacy","ios/ci/README.md"],"file_responsibilities":{"ios/Rencan/PrivacyInfo.xcprivacy":"隱私清單。","ios/ci/README.md":"上架步驟清單。"}},
+    {"id":"d11","label":"一次性：在 Windows 做憑證與金鑰 ⚠","type":"process","description":"openssl 產私鑰與 CSR → Apple 開發者後台建 Apple Distribution 憑證 → 下載 .cer → openssl 合成 .p12 → 放 GitHub Secrets。App Store Connect 建 API 金鑰（App Manager）→ .p8 → Secrets。憑證一年到期要重做。","trigger_condition":"第一次跑 CI 之前；憑證到期時。","files":[],"planned_files":["ios/ci/README.md"],"file_responsibilities":{"ios/ci/README.md":"一步一步的操作說明，含 openssl 指令。"}},
+    {"id":"d12","label":"App Store 上架","type":"end","description":"審核通過 → 陌生人搜得到、裝得到。之後每次更新走同一條線。","trigger_condition":"d10 送審通過。","files":[],"planned_files":[],"file_responsibilities":{}}
+  ],
+  "edges": [
+    {"from":"d01","to":"d02","label":"push","type":"success"},
+    {"from":"d02","to":"d03","label":"job 1","type":"success"},
+    {"from":"d03","to":"d04","label":"全部測試綠","type":"success"},
+    {"from":"d03","to":"d08","label":"任一測試紅","type":"failure"},
+    {"from":"d04","to":"d05","label":"憑證與金鑰就位","type":"success"},
+    {"from":"d05","to":"d06","label":"archive 成功","type":"success"},
+    {"from":"d05","to":"d08","label":"編譯錯誤","type":"failure"},
+    {"from":"d06","to":"d07","label":"上傳成功","type":"success"},
+    {"from":"d06","to":"d08","label":"上傳失敗","type":"failure"},
+    {"from":"d08","to":"d01","label":"修完再 push","type":"retry","back":true,"show_label":true},
+    {"from":"d11","to":"d04","label":"Secrets 準備好才跑得動","type":"conditional"},
+    {"from":"d07","to":"d10","label":"挑一個 TestFlight 版本送審","type":"conditional"},
+    {"from":"d10","to":"d12","label":"審核通過","type":"success"}
+  ],
+  "file_index": {},
+  "layout": {
+    "d01":[280,30], "d02":[280,130], "d03":[280,230], "d04":[280,330], "d05":[280,430], "d06":[280,540], "d07":[280,650],
+    "d08":[760,540], "d11":[760,130], "d09":[1240,30], "d10":[760,650], "d12":[1240,650]
+  }
+}

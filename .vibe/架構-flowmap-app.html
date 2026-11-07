@@ -1,0 +1,906 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>人蔘修煉 iOS · 架構 flowmap（待掛點版）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1117;--node:#161b22;--line:#30363d;--fg:#c9d1d9;--mut:#8b949e;--ok:#3fb950;--bad:#f85149;--retry:#d29922;--cond:#58a6ff}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:'JetBrains Mono','Fira Code',Consolas,monospace;font-size:13px}
+header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:16px;padding:10px 16px;background:rgba(13,17,23,.94);border-bottom:1px solid var(--line);backdrop-filter:blur(6px)}
+header h1{font-size:15px;margin:0;font-weight:700}
+header .meta{color:var(--mut);font-size:11px}
+header button{margin-left:auto;background:#21262d;color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 12px;font:inherit;cursor:pointer}
+header button:hover{border-color:var(--cond)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;padding:8px 16px;color:var(--mut);font-size:11px;border-bottom:1px solid var(--line)}
+.legend i{display:inline-block;width:22px;height:0;border-top:2px solid;vertical-align:middle;margin-right:4px}
+.legend b{display:inline-block;width:14px;height:10px;border:1.5px solid;border-radius:3px;vertical-align:middle;margin-right:4px;font-weight:400}
+.notes{padding:8px 16px;color:var(--mut);font-size:11px;border-bottom:1px solid var(--line)}
+.canvas{overflow:auto;padding:16px}
+svg{display:block}
+.node{cursor:pointer}
+.node rect{fill:var(--node);stroke:var(--line);stroke-width:1.5;transition:stroke .15s}
+.node.decision rect{stroke:var(--cond)}
+.node.start rect,.node.end rect{stroke:var(--ok)}
+.node.error rect{stroke:var(--bad)}
+.node.inferred rect,.node.planned rect{stroke-dasharray:6 4}
+.node.sub rect.outer{fill:none;stroke:var(--mut)}
+.node:hover rect{stroke:#fff}
+.node.active rect{stroke:#fff;stroke-width:2.5}
+.node.hl rect{fill:#172217;stroke:var(--ok);stroke-width:2.5}
+.node.dim{opacity:.3}
+.nbox{padding:7px 10px;height:100%;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;color:var(--fg);font-family:'JetBrains Mono','Fira Code',Consolas,monospace;overflow:hidden}
+.nlabel{font-weight:700;font-size:12px;line-height:1.3}
+.nsub{color:var(--mut);font-size:10px;margin-top:3px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.edge{fill:none;stroke-width:1.6}
+.edge.success{stroke:var(--ok)}.edge.failure{stroke:var(--bad)}.edge.retry{stroke:var(--retry);stroke-dasharray:6 4}.edge.conditional{stroke:var(--cond)}
+.edge.faint{stroke:var(--mut);stroke-dasharray:2 4;opacity:.55}
+.edge.inferred{stroke-dasharray:6 4;opacity:.7}
+.elabel{font-size:10px;fill:var(--fg)}
+.elabelbg{fill:#0d1117;stroke:var(--line);stroke-width:.8}
+#panel{position:fixed;top:0;right:0;width:420px;max-width:94vw;height:100vh;background:#161b22;border-left:1px solid var(--line);transform:translateX(100%);transition:transform .25s ease;z-index:10;overflow:auto;padding:18px 20px 40px;box-sizing:border-box}
+#panel.open{transform:none}
+#panel h2{font-size:15px;margin:0 36px 6px 0;line-height:1.4}
+#panel .tag{display:inline-block;font-size:10px;padding:2px 7px;border:1px solid var(--line);border-radius:999px;color:var(--mut);margin-bottom:12px}
+#panel h3{font-size:11px;letter-spacing:.1em;color:var(--mut);margin:16px 0 6px}
+#panel p{margin:0;line-height:1.65;white-space:pre-wrap;font-size:12px}
+#panel .file{display:block;width:100%;text-align:left;background:#0d1117;border:1px solid var(--line);color:var(--cond);border-radius:6px;padding:7px 9px;margin:6px 0 2px;font:inherit;font-size:11.5px;cursor:pointer}
+#panel .file.planned{border-style:dashed;color:var(--mut)}
+#panel .file:hover,#panel .file.on{border-color:var(--ok);color:var(--ok)}
+#panel .resp{color:var(--mut);font-size:11px;margin:0 0 6px 4px;line-height:1.5}
+#panel .close{position:absolute;top:10px;right:14px;background:none;border:0;color:var(--mut);font-size:20px;cursor:pointer}
+details{margin:24px 16px;color:var(--mut);font-size:12px}
+details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line);border-radius:8px;padding:12px;color:var(--fg)}
+</style>
+</head>
+<body>
+<header><h1>人蔘修煉 iOS · 架構 flowmap（待掛點版）</h1><span class="meta" id="meta"></span><button id="copy">複製 JSON</button></header>
+<div class="legend">
+  <span><i style="border-color:#3fb950"></i>成功路徑</span>
+  <span><i style="border-color:#f85149"></i>失敗路徑</span>
+  <span><i style="border-color:#d29922;border-style:dashed"></i>重試</span>
+  <span><i style="border-color:#58a6ff"></i>條件分支</span>
+  <span><i style="border-color:#8b949e;border-style:dotted"></i>呼叫規則引擎／回頭／次要（JSON 有完整標籤）</span>
+  <span><b style="border-color:#58a6ff"></b>判斷</span>
+  <span><b style="border-color:#f85149"></b>錯誤</span>
+  <span><b style="border-color:#8b949e;border-style:double"></b>子流程</span>
+  <span><b style="border-color:#8b949e;border-style:dashed"></b>虛線框＝待掛點（計畫中的檔案）或 ⚠ 推斷</span>
+  <span>點節點看掛點；點檔案會亮出所有用到它的節點</span>
+</div>
+<div class="notes">虛線框＝待掛點：節點對到「計畫中」的 Swift 檔案，實作完成後重跑掛點模式會變成真實掛點。<br>⚙＝呼叫規則引擎 RencanCore（純 Swift 套件）。🧠＝深模組。⚠＝碰資料、對外連線、刪東西。<br>檔案路徑都從 repo 根目錄起算：ios/Rencan/… 是主 app、ios/RencanWidget/… 是小工具、ios/RencanCore/… 是規則引擎套件。</div>
+<div class="canvas"><svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg></div>
+<aside id="panel"><button class="close" id="close" title="關閉">×</button><div id="pbody"></div></aside>
+<details><summary>🤖 給 Claude Code 的讀圖說明</summary><pre>這份 HTML 包含一個 &lt;script id="flowmap-data" type="application/json"&gt; 區塊。
+讀取方式：document.getElementById('flowmap-data').textContent，然後 JSON.parse()。
+
+重要欄位：
+- nodes[].trigger_condition：這個狀態的觸發條件
+- nodes[].file_responsibilities：每個檔案在此節點的具體職責
+- nodes[].planned_files：待掛點版才有，計畫中要建的檔案（實作後重跑掛點模式會變成 files）
+- file_index：反查表（真實檔案）；planned_index：反查表（計畫中的檔案）
+- edges[].type：success / failure / retry / conditional
+- edges[].call：呼叫規則引擎；edges[].back：回頭；edges[].minor：次要
+- nodes[].inferred：⚠ 推斷；nodes[].subprocess：子流程
+
+當你修改一個檔案時，先查 file_index（或 planned_index）找到它涉及的所有節點，
+再看每個節點的 edges 確認你的修改是否影響到下游分支。
+規格來源：.vibe/flowmap/app.json；改規格後重跑 node .vibe/tools/flowmap_build.js 重新產生。</pre></details>
+<script id="flowmap-data" type="application/json">
+{
+ "project": "人蔘修煉 iOS（SwiftUI）",
+ "generated_at": "2026-11-07T16:30:00+08:00",
+ "mode": "待掛點（規劃階段，尚無程式碼；planned_files 是計畫中的檔案）",
+ "nodes": [
+  {
+   "id": "a01",
+   "label": "開啟 app",
+   "type": "start",
+   "description": "啟動時建資料容器（SwiftData，開 iCloud 同步），讀設定。設定裡沒有身高就是第一次打開。Siri、通知、小工具點進來也從這裡走，帶目的地分頁。",
+   "trigger_condition": "點圖示、點通知、點小工具、Siri 要求開啟。",
+   "files": [],
+   "planned_files": [
+    "ios/Rencan/App/RencanApp.swift",
+    "ios/Rencan/Models/UserSettings.swift"
+   ],
+   "file_responsibilities": {
+    "ios/Rencan/App/RencanApp.swift": "進入點：建 SwiftData 容器（開 CloudKit）、注入服務、決定先走首次還是分頁。",
+    "ios/Rencan/Models/UserSettings.swift": "身高、回寫開關、提醒設定；沒有身高＝首次。"
+   }
+  },
+  {
+   "id": "a02",
+   "label": "首次：只問身高",
+   "type": "decision",
+   "description": "一次向健康 app 請求四種讀取（身高、體重、體脂率、去脂體重），這是整個 app 唯一主動跳出的系統視窗。允許而且健康 app 有身高 → 直接存、不問；否則出現一個身高欄。沒有教學頁、沒有輪播。",
+   "trigger_condition": "設定裡沒有身高。",
+   "files": [],
+   "planned_files": [
+    "ios/Rencan/App/FirstLaunchView.swift",
+    "ios/Rencan/Services/HealthKitService.swift"
+   ],
+   "file_responsibilities": {
+    "ios/Rencan/App/FirstLaunchView.swift": "一個身高欄加一顆按鈕；先試健康 app 再顯示欄位。",
+    "ios/Rencan/Services/HealthKitService.swift": "requestRead（四種）、latestHeight()。"
+   }
+  },
+  {
+   "id": "a03",
+   "label": "三分頁（境界／功法／錄入）",
+   "type": "process",
+   "description": "TabView 三個分頁。預設停在境界。通知與 Siri 可以深連結到指定分頁。",
+   "trigger_condition": "有身高之後；慶祝關閉後回到目前分頁。",
+   "files": [],
+   "planned_files": [
+    "ios/Rencan/App/RootTabView.swift"
+   ],
+   "file_responsibilities": {
+    "ios/Rencan/App/RootTabView.swift": "TabView；接收「開到哪一頁」的深連結。"
+   }
+  },
+  {
+   "id": "a04",
+   "label": "境界頁",
+   "type": "process",
+   "badge": "⚙ 用規則引擎",
+   "description": "沒量測 → 空狀態（雜役服立繪、一句「去量一次體脂秤」）。有 → 宗門身分卡、境界碑（體脂超過 20% 時顯示境界但標根基不穩、灰進度條、「降到 20% 以下才生效，還差 Y%」）、三格天數、FFMI 走勢（Swift Charts，境界門檻虛線）、突破紀錄、天梯、「境界怎麼算」說明（含「此表以男性標準設計」）。所有數字由規則引擎算。",
+   "trigger_condition": "點境界分頁；結算體組成後自動切過來。",
+   "files": [],
+   "planned_files": [
+    "ios/Rencan/Views/Realm/RealmView.swift",
+    "ios/Rencan/Views/Realm/SteleView.swift",
+    "ios/Rencan/Views/Realm/FFMIChartView.swift",
+    "ios/Rencan/Views/Realm/LadderView.swift",
+    "ios/Rencan/Views/Realm/BreakthroughTimelineView.swift"
+   ],
+   "file_responsibilities": {
+    "ios/Rencan/Views/Realm/RealmView.swift": "組頁：宗門卡、境界碑、三格、走勢、突破、天梯、說明。",
+    "ios/Rencan/Views/Realm/SteleView.swift": "境界碑，含根基不穩的灰進度條與差幾 %。",
+    "ios/Rencan/Views/Realm/FFMIChartView.swift": "Swift Charts 折線加境界門檻虛線；少於兩筆顯示一句話。",
+    "ios/Rencan/Views/Realm/LadderView.swift": "七階縮圖，目前境界金框。",
+    "ios/Rencan/Views/Realm/BreakthroughTimelineView.swift": "突破紀錄清單。"
+   }
+  },
+  {
+   "id": "a05",
+   "label": "功法頁",
+   "type": "process",
+   "badge": "⚙ 用規則引擎",
+   "description": "六張功法卡（等級、進度、下一階要多少）加最近修煉清單；點卡 → 單一功法頁：所有紀錄與 1RM 走勢線。清單可左滑刪除、點一筆編輯。",
+   "trigger_condition": "點功法分頁。",
+   "files": [],
+   "planned_files": [
+    "ios/Rencan/Views/Gong/GongView.swift",
+    "ios/Rencan/Views/Gong/MoveDetailView.swift"
+   ],
+   "file_responsibilities": {
+    "ios/Rencan/Views/Gong/GongView.swift": "六張卡與最近修煉。",
+    "ios/Rencan/Views/Gong/MoveDetailView.swift": "單一功法：所有紀錄加 1RM 走勢線。"
+   }
+  },
+  {
+   "id": "a06",
+   "label": "錄入頁：今天的修煉＋體組成＋設定入口",
+   "type": "process",
+   "description": "上：今天的修煉（按日期分組的清單，最上面是今天）加四欄表單（功法膠囊、重量或加重、次數、組數、日期）。中：量體組成（體重、體脂率、去脂選填、日期），進頁時向健康 app 要最新一筆帶入並標來源與日期。下：設定入口。欄位數定死，不會再多。",
+   "trigger_condition": "點錄入分頁；點每月提醒通知。",
+   "files": [],
+   "planned_files": [
+    "ios/Rencan/Views/Log/LogView.swift",
+    "ios/Rencan/Views/Log/TodayListView.swift",
+    "ios/Rencan/Views/Log/LiftFormView.swift",
+    "ios/Rencan/Views/Log/MeasurementFormView.swift"
+   ],
+   "file_responsibilities": {
+    "ios/Rencan/Views/Log/LogView.swift": "三段組頁；錯誤顯示。",
+    "ios/Rencan/Views/Log/TodayListView.swift": "按日期分組的修煉清單；左滑刪除、點一筆編輯。",
+    "ios/Rencan/Views/Log/LiftFormView.swift": "功法膠囊加四欄加日期；驗證；送出後重量清空、其餘留著。",
+    "ios/Rencan/Views/Log/MeasurementFormView.swift": "體重、體脂率、去脂選填、日期；進頁時帶入健康 app 最新一筆；驗證；同日先問。"
+   }
+  },
+  {
+   "id": "a07",
+   "label": "健康 app 讀寫（授權）",
+   "type": "process",
+   "description": "讀：查最新一筆體重、體脂率、去脂體重、身高，連日期與來源一起回；沒授權或沒資料 → 回空，表單留白讓手打，不擋。寫：設定開了回寫才請求寫入授權；只寫手打的三種數字，從健康 app 帶入的不寫回去（不然會重複）。授權被拒 → 功能照常，設定頁顯示「到系統設定開」。所有呼叫 async，錯誤往上丟。",
+   "trigger_condition": "首次（a02）、進錄入頁（a06）、結算且回寫開著（a09）、設定開回寫（a15）。",
+   "files": [],
+   "planned_files": [
+    "ios/Rencan/Services/HealthKitService.swift"
+   ],
+   "file_responsibilities": {
+    "ios/Rencan/Services/HealthKitService.swift": "授權請求、最新一筆查詢、寫入；全部 async；錯誤往上丟。"
+   }
+  },
+  {
+   "id": "a08",
+   "label": "送出修煉",
+   "type": "process",
+   "badge": "⚙ 用規則引擎",
+   "description": "驗四欄（重量 0 到 500、次數 1 到 50、組數 1 到 20、日期不在未來）。存之前先用規則引擎算「存前狀態」（這門功法舊最佳、舊宗門身分、舊天數），存成功才拿來比。",
+   "trigger_condition": "按「記下這一練」。",
+   "files": [],
+   "planned_files": [
+    "ios/Rencan/Views/Log/LiftFormView.swift",
+    "ios/RencanCore/Sources/RencanCore/Judgement.swift"
+   ],
+   "file_responsibilities": {
+    "ios/Rencan/Views/Log/LiftFormView.swift": "驗證與送出。",
+    "ios/RencanCore/Sources/RencanCore/Judgement.swift": "liftOutcome(before, after)：純函式，回五選一。"
+   }
+  },
+  {
+   "id": "a09",
+   "label": "送出體組成",
+   "type": "process",
+   "badge": "⚙ 用規則引擎",
+   "description": "驗（體重 30 到 200、體脂率 3 到 60、去脂不大於體重、日期不在未來）。同一天已有一筆 → 先問要不要蓋。存前先記歷史最高期別與宗門身分；存 → 判定 → 切到境界頁。回寫開著而且數字是手打的 → 寫健康 app。",
+   "trigger_condition": "按「結算境界」。",
+   "files": [],
+   "planned_files": [
+    "ios/Rencan/Views/Log/MeasurementFormView.swift",
+    "ios/RencanCore/Sources/RencanCore/Judgement.swift"
+   ],
+   "file_responsibilities": {
+    "ios/Rencan/Views/Log/MeasurementFormView.swift": "驗證、同日詢問、送出。",
+    "ios/RencanCore/Sources/RencanCore/Judgement.swift": "measurementOutcome(before, after)：純函式，回四選一。"
+   }
+  },
+  {
+   "id": "a10",
+   "label": "儲存（SwiftData＋iCloud＋小工具快照）⚠",
+   "type": "process",
+   "description": "寫入 SwiftData（本機；CloudKit 背景同步到同一 Apple ID 的其他裝置）。成功 → 更新 App Group 的快照（境界、期別、本週天數、距下一期差幾 kg）並叫小工具刷新。失敗 → 把錯誤丟回呼叫端，不吞、不假裝成功。iCloud 的限制：欄位都要有預設值、不設唯一鍵。",
+   "trigger_condition": "a08、a09、a14、a15、a16、a17 的寫入。",
+   "files": [],
+   "planned_files": [
+    "ios/Rencan/Services/StoreService.swift",
+    "ios/Rencan/Models/Measurement.swift",
+    "ios/Rencan/Models/LiftRecord.swift",
+    "ios/Rencan/Services/WidgetBridge.swift"
+   ],
+   "file_responsibilities": {
+    "ios/Rencan/Services/StoreService.swift": "新增、更新、刪除、查詢；每個操作 throws。",
+    "ios/Rencan/Models/Measurement.swift": "date、weight、bodyFat、leanMass?、createdAt；iCloud 要求全部有預設值、不設 unique。",
+    "ios/Rencan/Models/LiftRecord.swift": "date、move、kg、reps、sets、bodyweight?、createdAt。",
+    "ios/Rencan/Services/WidgetBridge.swift": "寫快照到 App Group UserDefaults；WidgetCenter.reloadAllTimelines。"
+   }
+  },
+  {
+   "id": "a11",
+   "label": "修煉判定（五選一）🧠",
+   "type": "decision",
+   "badge": "⚙ 用規則引擎",
+   "description": "① 宗門身分名變 → 宗門晉升 ② 第一次記這門功法 → 開練提示 ③ 等級上升 → 功法突破 ④ 估計 1RM 比舊最佳高 → 功法精進（只因體重掉讓比值變高：不放煙火，等級可升）⑤ 其他 → 修煉 +1 提示。提示在頁內顯示，不另開畫面。",
+   "trigger_condition": "a10 存修煉成功後。",
+   "files": [],
+   "planned_files": [
+    "ios/RencanCore/Sources/RencanCore/Judgement.swift"
+   ],
+   "file_responsibilities": {
+    "ios/RencanCore/Sources/RencanCore/Judgement.swift": "liftOutcome 的全部分支，含「精進要 1RM 真的變高」。"
+   }
+  },
+  {
+   "id": "a12",
+   "label": "境界判定（四選一，含軟化）🧠",
+   "type": "decision",
+   "badge": "⚙ 用規則引擎",
+   "description": "① 體脂超過 20% → 境界頁顯示境界但「根基不穩」，不進突破紀錄、不動宗門 ② 之前從沒入道 → 踏入仙途 ③ 期別高於歷史最高且日期不早於上次突破 → 境界突破或大境界突破 ④ 其他 → 境界結算提示。",
+   "trigger_condition": "a10 存體組成成功後。",
+   "files": [],
+   "planned_files": [
+    "ios/RencanCore/Sources/RencanCore/Judgement.swift"
+   ],
+   "file_responsibilities": {
+    "ios/RencanCore/Sources/RencanCore/Judgement.swift": "measurementOutcome 的全部分支，含軟化與補登不放煙火。"
+   }
+  },
+  {
+   "id": "a13",
+   "label": "慶祝＋觸覺",
+   "type": "process",
+   "description": "全螢幕蓋住：立繪、小標、大字、副標、說明；粒子用 TimelineView 加 Canvas 畫；出現時觸覺 success；4.5 秒或點一下關。系統「減少動態效果」→ 不噴粒子、不縮放，但仍顯示。",
+   "trigger_condition": "a11 的 ①③④、a12 的 ②③。",
+   "files": [],
+   "planned_files": [
+    "ios/Rencan/Views/CelebrationView.swift",
+    "ios/Rencan/Services/HapticsService.swift"
+   ],
+   "file_responsibilities": {
+    "ios/Rencan/Views/CelebrationView.swift": "overlay、粒子、計時、點擊關閉、減少動態。",
+    "ios/Rencan/Services/HapticsService.swift": "success 與 light 兩種；裝置不支援就略過（唯一允許靜默略過的錯誤）。"
+   }
+  },
+  {
+   "id": "a14",
+   "label": "編輯／刪除／復原",
+   "type": "process",
+   "description": "清單左滑刪除 → 先從畫面移除並暫存 → 底部「復原」5 秒 → 逾時才真的刪。點一筆 → 編輯表單（同四欄或體組成三欄）→ 存回 → 等級、天數、突破重算。修煉與量測紀錄同一套規則。",
+   "trigger_condition": "功法頁或錄入頁清單的左滑或點擊。",
+   "files": [],
+   "planned_files": [
+    "ios/Rencan/Views/Log/TodayListView.swift",
+    "ios/Rencan/Views/Log/EditRecordView.swift",
+    "ios/Rencan/Services/StoreService.swift"
+   ],
+   "file_responsibilities": {
+    "ios/Rencan/Views/Log/TodayListView.swift": "左滑刪除與復原條。",
+    "ios/Rencan/Views/Log/EditRecordView.swift": "編輯修煉或量測的一張表單。",
+    "ios/Rencan/Services/StoreService.swift": "更新與刪除。"
+   }
+  },
+  {
+   "id": "a15",
+   "label": "設定（含匯出、提醒、匯入入口）",
+   "type": "process",
+   "description": "身高；回寫健康 app 開關（開 → 請求寫入授權）；每月提醒（開關加日期 → 排本機通知，點通知進錄入頁）；匯出 JSON（分享表單，格式跟網頁版一樣）；匯入舊 JSON；健康 app 授權狀態與「到系統設定改」；關於與隱私政策連結。",
+   "trigger_condition": "錄入頁的設定入口。",
+   "files": [],
+   "planned_files": [
+    "ios/Rencan/Views/SettingsView.swift",
+    "ios/Rencan/Services/NotificationService.swift",
+    "ios/Rencan/Services/ImportExportService.swift"
+   ],
+   "file_responsibilities": {
+    "ios/Rencan/Views/SettingsView.swift": "全部設定項。",
+    "ios/Rencan/Services/NotificationService.swift": "排每月重複通知、取消、點通知的深連結。",
+    "ios/Rencan/Services/ImportExportService.swift": "匯出：全部紀錄轉成網頁版相同的 JSON。"
+   }
+  },
+  {
+   "id": "a16",
+   "label": "匯入舊 JSON ⚠",
+   "type": "process",
+   "description": "選檔 → 驗格式（要有 meas、lift、cfg；每筆欄位型別與範圍對）→ 顯示「幾筆量測、幾筆修煉、身高多少」預覽 → 確認 → 寫入（同 id 已存在就跳過）→ 顯示結果。檔案壞 → 拒絕，說哪一筆哪個欄位壞，絕不寫入一半。",
+   "trigger_condition": "設定裡按「匯入」。",
+   "files": [],
+   "planned_files": [
+    "ios/Rencan/Services/ImportExportService.swift",
+    "ios/RencanCore/Sources/RencanCore/WebExport.swift"
+   ],
+   "file_responsibilities": {
+    "ios/Rencan/Services/ImportExportService.swift": "選檔、預覽、確認、寫入、結果。",
+    "ios/RencanCore/Sources/RencanCore/WebExport.swift": "網頁版 JSON 的 Codable 定義與驗證規則。"
+   }
+  },
+  {
+   "id": "a17",
+   "label": "Siri／捷徑",
+   "type": "process",
+   "badge": "⚙ 用規則引擎",
+   "description": "「記一下〔功法〕〔重量〕公斤〔次數〕下（〔組數〕組）」：功法接受中文名與功法名（深蹲或坐馬樁）；組數沒講記 1；走跟 a08 一樣的驗證與儲存，不開 app；回一句「已記下坐馬樁，修煉 +1」，破紀錄也用一句話講。「我現在什麼境界」→ 規則引擎 → 一句話；沒量過 → 「尚未入道，先量一次體組成」。",
+   "trigger_condition": "對 Siri 講話、捷徑執行、Spotlight。",
+   "files": [],
+   "planned_files": [
+    "ios/Rencan/Intents/LogLiftIntent.swift",
+    "ios/Rencan/Intents/RealmStatusIntent.swift",
+    "ios/Rencan/Intents/AppShortcuts.swift"
+   ],
+   "file_responsibilities": {
+    "ios/Rencan/Intents/LogLiftIntent.swift": "參數解析、驗證、存、回覆。",
+    "ios/Rencan/Intents/RealmStatusIntent.swift": "算境界回一句話。",
+    "ios/Rencan/Intents/AppShortcuts.swift": "短語註冊。"
+   }
+  },
+  {
+   "id": "a18",
+   "label": "小工具（主畫面小、中；鎖定畫面）",
+   "type": "process",
+   "description": "讀 App Group 快照。小：境界、期別、本週修煉天數。中：再加「距下一期還差 X kg」。鎖定畫面圓形：本週天數。點小工具開 app 到境界頁。沒有快照（還沒入道）→ 顯示「尚未入道」。主 app 每次存檔後叫它刷新。",
+   "trigger_condition": "使用者加入小工具；a10 存檔後刷新。",
+   "files": [],
+   "planned_files": [
+    "ios/RencanWidget/RencanWidgetBundle.swift",
+    "ios/RencanWidget/RencanWidget.swift",
+    "ios/Rencan/Services/WidgetBridge.swift"
+   ],
+   "file_responsibilities": {
+    "ios/RencanWidget/RencanWidgetBundle.swift": "小工具組合入口。",
+    "ios/RencanWidget/RencanWidget.swift": "三種家族的 timeline provider 與畫面。",
+    "ios/Rencan/Services/WidgetBridge.swift": "快照格式，主 app 與小工具共用。"
+   }
+  },
+  {
+   "id": "a20",
+   "label": "規則引擎 RencanCore 🧠",
+   "type": "process",
+   "subprocess": true,
+   "description": "純 Swift 套件，沒有 UI、沒有資料庫依賴。三張表（REALMS、MOVES、RANKS）與全部公式（ffmi、leanFor、realmOf、e1rm、moveLevel、sectOf、breakthroughs、bestByMove、liftCalc、trainDays、weekCount、durTxt）原樣移植，數字一字不改；輸入是純值陣列，輸出是純值。單元測試拿網頁版匯出的真實資料當黃金集，兩邊數字要一模一樣；GitHub Actions 每次推送在 Linux 上跑，紅燈不建 app。",
+   "trigger_condition": "被 a04、a05、a08、a09、a11、a12、a17、a18 呼叫；不自己觸發。",
+   "files": [],
+   "planned_files": [
+    "ios/RencanCore/Package.swift",
+    "ios/RencanCore/Sources/RencanCore/Tables.swift",
+    "ios/RencanCore/Sources/RencanCore/Formulas.swift",
+    "ios/RencanCore/Sources/RencanCore/Judgement.swift",
+    "ios/RencanCore/Tests/RencanCoreTests/GoldenTests.swift"
+   ],
+   "file_responsibilities": {
+    "ios/RencanCore/Package.swift": "套件定義；iOS 與 Linux 都能跑。",
+    "ios/RencanCore/Sources/RencanCore/Tables.swift": "三張表，數字從 index.html 一字不改。",
+    "ios/RencanCore/Sources/RencanCore/Formulas.swift": "全部公式。",
+    "ios/RencanCore/Sources/RencanCore/Judgement.swift": "五選一與四選一，純函式。",
+    "ios/RencanCore/Tests/RencanCoreTests/GoldenTests.swift": "黃金集比對；fixture 是網頁版匯出的 JSON。"
+   }
+  },
+  {
+   "id": "a21",
+   "label": "儲存失敗",
+   "type": "error",
+   "description": "寫入拋錯 → 表單留著、紅字寫原因（空間不足、iCloud 帳號狀態、資料驗證失敗）；絕不顯示「已記下」。匯入失敗也到這裡並說明哪一筆壞。",
+   "trigger_condition": "a10 拋錯；a16 驗證失敗。",
+   "files": [],
+   "planned_files": [
+    "ios/Rencan/Views/Log/LogView.swift",
+    "ios/Rencan/Services/StoreService.swift"
+   ],
+   "file_responsibilities": {
+    "ios/Rencan/Views/Log/LogView.swift": "錯誤顯示。",
+    "ios/Rencan/Services/StoreService.swift": "錯誤型別與訊息。"
+   }
+  }
+ ],
+ "edges": [
+  {
+   "from": "a01",
+   "to": "a02",
+   "label": "設定裡沒有身高",
+   "type": "conditional"
+  },
+  {
+   "from": "a01",
+   "to": "a03",
+   "label": "有身高",
+   "type": "conditional"
+  },
+  {
+   "from": "a02",
+   "to": "a07",
+   "label": "一次請求四種讀取，查身高",
+   "type": "conditional"
+  },
+  {
+   "from": "a02",
+   "to": "a03",
+   "label": "存好身高（抓到或手填）",
+   "type": "success"
+  },
+  {
+   "from": "a03",
+   "to": "a04",
+   "label": "預設分頁／點境界",
+   "type": "conditional"
+  },
+  {
+   "from": "a03",
+   "to": "a05",
+   "label": "點功法",
+   "type": "conditional"
+  },
+  {
+   "from": "a03",
+   "to": "a06",
+   "label": "點錄入",
+   "type": "conditional"
+  },
+  {
+   "from": "a04",
+   "to": "a20",
+   "label": "ffmi／realmOf／sectOf／breakthroughs",
+   "type": "conditional",
+   "call": true
+  },
+  {
+   "from": "a05",
+   "to": "a20",
+   "label": "bestByMove／liftCalc／moveLevel",
+   "type": "conditional",
+   "call": true
+  },
+  {
+   "from": "a06",
+   "to": "a07",
+   "label": "進頁時查最新一筆體組成",
+   "type": "conditional"
+  },
+  {
+   "from": "a07",
+   "to": "a06",
+   "label": "允許且有資料 → 帶入三欄；否則留白",
+   "type": "success",
+   "back": true,
+   "show_label": true
+  },
+  {
+   "from": "a06",
+   "to": "a08",
+   "label": "按「記下這一練」",
+   "type": "success"
+  },
+  {
+   "from": "a06",
+   "to": "a09",
+   "label": "按「結算境界」",
+   "type": "success"
+  },
+  {
+   "from": "a06",
+   "to": "a14",
+   "label": "清單左滑／點一筆",
+   "type": "conditional"
+  },
+  {
+   "from": "a05",
+   "to": "a14",
+   "label": "最近修煉：左滑／點一筆",
+   "type": "conditional"
+  },
+  {
+   "from": "a06",
+   "to": "a15",
+   "label": "設定入口",
+   "type": "conditional"
+  },
+  {
+   "from": "a08",
+   "to": "a20",
+   "label": "存前狀態",
+   "type": "conditional",
+   "call": true
+  },
+  {
+   "from": "a09",
+   "to": "a20",
+   "label": "存前狀態",
+   "type": "conditional",
+   "call": true
+  },
+  {
+   "from": "a08",
+   "to": "a10",
+   "label": "驗證通過 → 存",
+   "type": "success"
+  },
+  {
+   "from": "a09",
+   "to": "a10",
+   "label": "驗證通過（同日先問）→ 存",
+   "type": "success"
+  },
+  {
+   "from": "a09",
+   "to": "a07",
+   "label": "回寫開著且手打 → 寫入健康 app",
+   "type": "conditional",
+   "minor": true
+  },
+  {
+   "from": "a14",
+   "to": "a10",
+   "label": "復原逾時才真刪／編輯存回",
+   "type": "success"
+  },
+  {
+   "from": "a15",
+   "to": "a10",
+   "label": "改身高、開關存檔",
+   "type": "success",
+   "minor": true
+  },
+  {
+   "from": "a15",
+   "to": "a16",
+   "label": "匯入",
+   "type": "conditional"
+  },
+  {
+   "from": "a15",
+   "to": "a07",
+   "label": "開回寫 → 請求寫入授權",
+   "type": "conditional"
+  },
+  {
+   "from": "a16",
+   "to": "a10",
+   "label": "驗證通過、確認後寫入",
+   "type": "success"
+  },
+  {
+   "from": "a17",
+   "to": "a10",
+   "label": "驗證通過 → 存（不開 app）",
+   "type": "success"
+  },
+  {
+   "from": "a17",
+   "to": "a20",
+   "label": "算境界一句話",
+   "type": "conditional",
+   "call": true
+  },
+  {
+   "from": "a10",
+   "to": "a21",
+   "label": "寫入拋錯",
+   "type": "failure"
+  },
+  {
+   "from": "a10",
+   "to": "a18",
+   "label": "更新快照 → 小工具刷新",
+   "type": "conditional"
+  },
+  {
+   "from": "a10",
+   "to": "a11",
+   "label": "來源是修煉 → 五選一",
+   "type": "success"
+  },
+  {
+   "from": "a10",
+   "to": "a12",
+   "label": "來源是體組成 → 四選一",
+   "type": "success"
+  },
+  {
+   "from": "a11",
+   "to": "a20",
+   "label": "比較存前存後",
+   "type": "conditional",
+   "call": true
+  },
+  {
+   "from": "a12",
+   "to": "a20",
+   "label": "比較存前存後",
+   "type": "conditional",
+   "call": true
+  },
+  {
+   "from": "a11",
+   "to": "a13",
+   "label": "宗門晉升／功法突破／功法精進",
+   "type": "success"
+  },
+  {
+   "from": "a12",
+   "to": "a13",
+   "label": "踏入仙途／境界突破／大境界突破",
+   "type": "success"
+  },
+  {
+   "from": "a12",
+   "to": "a04",
+   "label": "結算或根基不穩 → 顯示在境界頁",
+   "type": "conditional",
+   "back": true,
+   "show_label": true
+  },
+  {
+   "from": "a13",
+   "to": "a03",
+   "label": "點一下或 4.5 秒 → 關閉，回目前分頁",
+   "type": "success",
+   "back": true
+  }
+ ],
+ "file_index": {},
+ "planned_index": {
+  "ios/Rencan/App/RencanApp.swift": [
+   "a01"
+  ],
+  "ios/Rencan/Models/UserSettings.swift": [
+   "a01"
+  ],
+  "ios/Rencan/App/FirstLaunchView.swift": [
+   "a02"
+  ],
+  "ios/Rencan/Services/HealthKitService.swift": [
+   "a02",
+   "a07"
+  ],
+  "ios/Rencan/App/RootTabView.swift": [
+   "a03"
+  ],
+  "ios/Rencan/Views/Realm/RealmView.swift": [
+   "a04"
+  ],
+  "ios/Rencan/Views/Realm/SteleView.swift": [
+   "a04"
+  ],
+  "ios/Rencan/Views/Realm/FFMIChartView.swift": [
+   "a04"
+  ],
+  "ios/Rencan/Views/Realm/LadderView.swift": [
+   "a04"
+  ],
+  "ios/Rencan/Views/Realm/BreakthroughTimelineView.swift": [
+   "a04"
+  ],
+  "ios/Rencan/Views/Gong/GongView.swift": [
+   "a05"
+  ],
+  "ios/Rencan/Views/Gong/MoveDetailView.swift": [
+   "a05"
+  ],
+  "ios/Rencan/Views/Log/LogView.swift": [
+   "a06",
+   "a21"
+  ],
+  "ios/Rencan/Views/Log/TodayListView.swift": [
+   "a06",
+   "a14"
+  ],
+  "ios/Rencan/Views/Log/LiftFormView.swift": [
+   "a06",
+   "a08"
+  ],
+  "ios/Rencan/Views/Log/MeasurementFormView.swift": [
+   "a06",
+   "a09"
+  ],
+  "ios/RencanCore/Sources/RencanCore/Judgement.swift": [
+   "a08",
+   "a09",
+   "a11",
+   "a12",
+   "a20"
+  ],
+  "ios/Rencan/Services/StoreService.swift": [
+   "a10",
+   "a14",
+   "a21"
+  ],
+  "ios/Rencan/Models/Measurement.swift": [
+   "a10"
+  ],
+  "ios/Rencan/Models/LiftRecord.swift": [
+   "a10"
+  ],
+  "ios/Rencan/Services/WidgetBridge.swift": [
+   "a10",
+   "a18"
+  ],
+  "ios/Rencan/Views/CelebrationView.swift": [
+   "a13"
+  ],
+  "ios/Rencan/Services/HapticsService.swift": [
+   "a13"
+  ],
+  "ios/Rencan/Views/Log/EditRecordView.swift": [
+   "a14"
+  ],
+  "ios/Rencan/Views/SettingsView.swift": [
+   "a15"
+  ],
+  "ios/Rencan/Services/NotificationService.swift": [
+   "a15"
+  ],
+  "ios/Rencan/Services/ImportExportService.swift": [
+   "a15",
+   "a16"
+  ],
+  "ios/RencanCore/Sources/RencanCore/WebExport.swift": [
+   "a16"
+  ],
+  "ios/Rencan/Intents/LogLiftIntent.swift": [
+   "a17"
+  ],
+  "ios/Rencan/Intents/RealmStatusIntent.swift": [
+   "a17"
+  ],
+  "ios/Rencan/Intents/AppShortcuts.swift": [
+   "a17"
+  ],
+  "ios/RencanWidget/RencanWidgetBundle.swift": [
+   "a18"
+  ],
+  "ios/RencanWidget/RencanWidget.swift": [
+   "a18"
+  ],
+  "ios/RencanCore/Package.swift": [
+   "a20"
+  ],
+  "ios/RencanCore/Sources/RencanCore/Tables.swift": [
+   "a20"
+  ],
+  "ios/RencanCore/Sources/RencanCore/Formulas.swift": [
+   "a20"
+  ],
+  "ios/RencanCore/Tests/RencanCoreTests/GoldenTests.swift": [
+   "a20"
+  ]
+ },
+ "notes": [
+  "虛線框＝待掛點：節點對到「計畫中」的 Swift 檔案，實作完成後重跑掛點模式會變成真實掛點。",
+  "⚙＝呼叫規則引擎 RencanCore（純 Swift 套件）。🧠＝深模組。⚠＝碰資料、對外連線、刪東西。",
+  "檔案路徑都從 repo 根目錄起算：ios/Rencan/… 是主 app、ios/RencanWidget/… 是小工具、ios/RencanCore/… 是規則引擎套件。"
+ ]
+}
+</script>
+<script>
+const data=JSON.parse(document.getElementById('flowmap-data').textContent);
+const NW=190,NH=64;
+const LAYOUT={"a01":[760,30],"a02":[1000,130],"a03":[760,230],"a04":[280,330],"a05":[520,330],"a06":[760,330],"a15":[1000,330],"a14":[280,430],"a08":[520,430],"a09":[760,430],"a16":[1000,430],"a07":[1240,430],"a17":[1480,430],"a10":[760,540],"a21":[280,650],"a18":[520,650],"a11":[760,650],"a12":[1000,650],"a13":[1000,760],"a20":[40,430,190,284]};
+const NS='http://www.w3.org/2000/svg';
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const el=(t,a={},p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+const box=id=>{const [x,y,w,h]=LAYOUT[id];return {x,y,w:w||NW,h:h||NH,cx:x+(w||NW)/2,cy:y+(h||NH)/2}};
+const svg=document.getElementById('svg');
+let W=0,H=0;for(const id in LAYOUT){const b=box(id);W=Math.max(W,b.x+b.w);H=Math.max(H,b.y+b.h)}
+W+=40;H+=40;svg.setAttribute('width',W);svg.setAttribute('height',H);svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+const defs=el('defs',{},svg);
+for(const [k,c] of Object.entries({success:'#3fb950',failure:'#f85149',retry:'#d29922',conditional:'#58a6ff',faint:'#8b949e'})){
+  const m=el('marker',{id:'arr-'+k,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse'},defs);
+  el('path',{d:'M0,0 L10,5 L0,10 z',fill:c},m);
+}
+const gE=el('g',{},svg);
+data.edges.forEach(e=>{
+  const a=box(e.from),b=box(e.to);const faint=e.call||e.back||e.minor;let d,mx,my;
+  if(b.y>=a.y+a.h){ const x1=a.cx,y1=a.y+a.h,x2=b.cx,y2=b.y,dy=(y2-y1)/2;
+    d=`M${x1},${y1} C${x1},${y1+dy} ${x2},${y2-dy} ${x2},${y2}`;mx=(x1+x2)/2;my=(y1+y2)/2;
+  } else if(Math.abs(b.cy-a.cy)<a.h){ const left=b.cx<a.cx;const x1=left?a.x:a.x+a.w,x2=left?b.x+b.w:b.x,y=a.cy,k=left?-40:40;
+    d=`M${x1},${y} C${x1+k},${y+26} ${x2-k},${y+26} ${x2},${y}`;mx=(x1+x2)/2;my=y+20;
+  } else { const x1=a.x,y1=a.cy,x2=b.x,y2=b.cy,k1=x1-50,k2=x2-50;
+    d=`M${x1},${y1} C${k1},${y1} ${k2},${y2} ${x2},${y2}`;mx=Math.min(k1,k2)+10;my=(y1+y2)/2;
+  }
+  const cls='edge '+(faint?'faint':e.type)+(e.inferred?' inferred':'');
+  const p=el('path',{d,class:cls,'marker-end':`url(#arr-${faint?'faint':e.type})`,'data-from':e.from,'data-to':e.to},gE);
+  const t=el('title',{},p);t.textContent=`${e.from} → ${e.to}：${e.label}`;
+  if(e.label&&(!faint||e.show_label)){
+    const w=[...e.label].reduce((s,c)=>s+(c.charCodeAt(0)>255?10:6.2),0)+10;
+    const g=el('g',{},gE);el('rect',{x:mx-w/2,y:my-8,width:w,height:16,rx:3,class:'elabelbg'},g);
+    const tx=el('text',{x:mx,y:my+3.5,'text-anchor':'middle',class:'elabel'},g);tx.textContent=e.label;
+  }
+});
+const gN=el('g',{},svg);
+data.nodes.forEach(n=>{
+  const b=box(n.id);const planned=!(n.files&&n.files.length)&&(n.planned_files&&n.planned_files.length);
+  const g=el('g',{class:'node '+n.type+(n.inferred?' inferred':'')+(planned?' planned':'')+(n.subprocess?' sub':''),'data-id':n.id,transform:`translate(${b.x},${b.y})`},gN);
+  if(n.subprocess)el('rect',{x:-4,y:-4,width:b.w+8,height:b.h+8,rx:10,class:'outer'},g);
+  el('rect',{x:0,y:0,width:b.w,height:b.h,rx:8},g);
+  const fo=el('foreignObject',{x:0,y:0,width:b.w,height:b.h},g);
+  const div=document.createElementNS('http://www.w3.org/1999/xhtml','div');div.className='nbox';
+  const first=(n.files&&n.files[0])||(n.planned_files&&('計畫：'+n.planned_files[0]))||'[尚未對應]';
+  const sub=(n.badge?n.badge+' · ':'')+first;
+  div.innerHTML=`<div class="nlabel">${esc(n.label)}</div><div class="nsub" title="${esc(sub)}">${esc(sub)}</div>`;
+  fo.appendChild(div);
+  g.addEventListener('click',()=>openNode(n.id));
+});
+const panel=document.getElementById('panel'),pbody=document.getElementById('pbody');
+const labelOf=id=>(data.nodes.find(x=>x.id===id)||{}).label||id;
+function openNode(id){
+  const n=data.nodes.find(x=>x.id===id);if(!n)return;
+  document.querySelectorAll('.node').forEach(g=>g.classList.toggle('active',g.dataset.id===id));
+  const files=(n.files||[]).map(f=>`<button class="file" data-f="${esc(f)}" data-kind="file">${esc(f)}</button><p class="resp">${esc((n.file_responsibilities||{})[f]||'')}</p>`).join('');
+  const planned=(n.planned_files||[]).map(f=>`<button class="file planned" data-f="${esc(f)}" data-kind="planned">${esc(f)}</button><p class="resp">${esc((n.file_responsibilities||{})[f]||'')}</p>`).join('');
+  const outs=data.edges.filter(e=>e.from===id).map(e=>`→ ${labelOf(e.to)}（${e.label}）${e.call?' ⚙':''}${e.back?' ↺':''}`).join('\n')||'（終點）';
+  const ins=data.edges.filter(e=>e.to===id).map(e=>`← ${labelOf(e.from)}（${e.label}）`).join('\n')||'（起點）';
+  pbody.innerHTML=`<h2>${esc(n.label)}</h2><span class="tag">${n.id} · ${n.type}${n.subprocess?' · 子流程':''}${n.inferred?' · ⚠ 推斷':''}${(!n.files||!n.files.length)&&n.planned_files?' · 待掛點':''}</span>
+    <h3>觸發條件</h3><p>${esc(n.trigger_condition)}</p>
+    <h3>這個節點做什麼</h3><p>${esc(n.description)}</p>
+    ${files?'<h3>掛點（真實檔案，點一下亮出用到它的節點）</h3>'+files:''}
+    ${planned?'<h3>計畫中的檔案（實作後會變成掛點）</h3>'+planned:''}
+    <h3>從哪來</h3><p>${esc(ins)}</p>
+    <h3>往下接</h3><p>${esc(outs)}</p>`;
+  panel.classList.add('open');
+}
+let hlFile=null;
+pbody.addEventListener('click',ev=>{
+  const b=ev.target.closest('.file');if(!b)return;const f=b.dataset.f;const idx=b.dataset.kind==='planned'?data.planned_index:data.file_index;hlFile=hlFile===f?null:f;
+  document.querySelectorAll('#panel .file').forEach(x=>x.classList.toggle('on',x.dataset.f===hlFile));
+  const ids=hlFile?(idx[hlFile]||[]):null;
+  document.querySelectorAll('.node').forEach(g=>{const on=!!ids&&ids.includes(g.dataset.id);g.classList.toggle('hl',on);g.classList.toggle('dim',!!ids&&!on)});
+});
+document.getElementById('close').addEventListener('click',()=>{panel.classList.remove('open');document.querySelectorAll('.node').forEach(g=>g.classList.remove('active','hl','dim'));hlFile=null});
+const copyBtn=document.getElementById('copy');
+copyBtn.addEventListener('click',async()=>{const txt=document.getElementById('flowmap-data').textContent.trim();
+  try{await navigator.clipboard.writeText(txt);copyBtn.textContent='已複製';setTimeout(()=>copyBtn.textContent='複製 JSON',1500)}
+  catch(err){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();copyBtn.textContent='已複製';setTimeout(()=>copyBtn.textContent='複製 JSON',1500)}});
+document.getElementById('meta').textContent=`${data.nodes.length} 節點 · ${data.edges.length} 邊 · ${data.mode||''} · ${data.generated_at}`;
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 {
   "station": "idle",
-  "note": "拷問完成，產品定稿定稿（2026-11-07）；去掉女性版、體脂必要、引導只問身高、最怕欄位多。vibe-prd 已寫 .vibe/PRD.md（27 條使用者故事、5 個深模組），待使用者點頭。點頭後交回 vibe-traffic-control → vibe-blueprint（正式架構圖）→ security-gate 階段 A → decompose → voice-lock。不寫 Swift。",
-  "updated_at": "2026-11-07T15:48:01+08:00",
+  "note": "PRD 已點頭（2026-11-07）。vibe-blueprint 已寫 .vibe/架構藍圖.md 與兩張流程圖（待掛點版）；security-gate 階段 A 已建 .vibe/安全標準.md 並掛進規矩檔。待使用者：確認藍圖白話走讀、第八節五項調整（含 iCloud 改不做、加刪除全部紀錄）、安全標準的類型判定。點頭後 → vibe-decompose 切片 → voice-lock → 第一片。不寫 Swift。",
+  "updated_at": "2026-11-07T16:15:11+08:00",
   "updated_by": "vibe-traffic-control",
   "pieces": {
     "todo": 0,
