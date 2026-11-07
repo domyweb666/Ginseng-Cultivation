@@ -1,6 +1,6 @@
 {
   "station": "idle",
-  "note": "HANDOFF 已寫（2026-11-07 17:40）。使用者指定 Limrun 納入交付線：帳本新片 A5、交付圖 d13/d14；組塊 A 組成變了要重新放行。停在片 A1/A2 走查未做、plan-readback 未跑。新會話從 .vibe/HANDOFF.md「下一步從哪繼續」接。全部 commit 未 push。",
+  "note": "HANDOFF 已寫（2026-11-07 16:37）。使用者指定 Limrun 納入交付線：帳本新片 A5、交付圖 d13/d14；組塊 A 組成變了要重新放行。停在片 A1/A2 走查未做、plan-readback 未跑。新會話從 .vibe/HANDOFF.md「下一步從哪繼續」接。全部 commit 未 push。",
   "updated_at": "2026-11-07T16:37:53+08:00",
   "updated_by": "vibe-traffic-control",
   "pieces": {
