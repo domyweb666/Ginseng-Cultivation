@@ -1,6 +1,6 @@
 {
   "station": "implementing",
-  "note": "2026-11-07 A5 延後（Limrun 沒點數，使用者選跳過）。卡在 A1：使用者照 ios/ci/README.md 做 Apple 憑證＋6 個 secrets（LIM_API_KEY 可省）。做完重跑 CI 看 archive/上傳/TestFlight。",
+  "note": "2026-11-07 晚上 UIUX 定案三頁左右滑（.uiux/02-流程.md），A2 骨架與帳本已同步改。A5 延後（Limrun 沒點數，使用者選跳過）。卡在 A1：使用者照 ios/ci/README.md 做 Apple 憑證＋6 個 secrets（LIM_API_KEY 可省）。做完重跑 CI 看 archive/上傳/TestFlight。",
   "updated_at": "2026-11-07T17:52:45+08:00",
   "updated_by": "vibe-traffic-control",
   "pieces": {

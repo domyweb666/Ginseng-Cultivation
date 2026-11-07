@@ -1,5 +1,5 @@
 // 等 App Store Connect 把剛上傳的建置處理完，然後填 TestFlight 的「測試內容」說明
-// （標準清單 A2：使用者在 TestFlight 要看到「骨架版：三個空分頁」那一行，知道空殼不是壞掉）。
+// （標準清單 A2：使用者在 TestFlight 要看到「骨架版：三個空頁」那一行，知道空殼不是壞掉）。
 // 只用 node 內建的 crypto 與 fetch 簽 App Store Connect API 的 JWT，零套件。
 // 用法（環境變數）：ASC_KEY_ID、ASC_ISSUER_ID、ASC_KEY_P8_PATH、BUNDLE_ID、BUILD_NUMBER、TESTFLIGHT_NOTES
 import { createPrivateKey, sign } from "node:crypto";

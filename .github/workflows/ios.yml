@@ -22,7 +22,7 @@ concurrency:
 
 env:
   BUNDLE_ID: org.domyweb.rencan
-  TESTFLIGHT_NOTES: "骨架版：三個空分頁（境界／功法／錄入），什麼都還不能做，這是正常的。"
+  TESTFLIGHT_NOTES: "骨架版：三個空頁（左右滑：設定／境界／分析），什麼都還不能做，這是正常的。"
 
 jobs:
   core-tests:

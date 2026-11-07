@@ -39,6 +39,8 @@ enum RencanLayout {
     static let cardCornerRadius: CGFloat = 14
     static let pageSpacing: CGFloat = 24
     static let portraitMaxWidth: CGFloat = 240
+    /// 圖示按鈕的點擊範圍，照 iOS 的 44pt 下限。
+    static let tapTarget: CGFloat = 44
 }
 
 /// 立繪的資源名稱；r0 到 r6 對應煉氣到渡劫，跟網頁版 img/ 同名。

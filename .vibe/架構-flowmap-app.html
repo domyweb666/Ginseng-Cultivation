@@ -128,10 +128,10 @@ details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line)
   },
   {
    "id": "a03",
-   "label": "三分頁（境界／功法／錄入）",
+   "label": "三頁左右滑（設定／境界／分析）",
    "type": "process",
-   "description": "TabView 三個分頁。預設停在境界。通知與 Siri 可以深連結到指定分頁。",
-   "trigger_condition": "有身高之後；慶祝關閉後回到目前分頁。",
+   "description": "TabView 的 page 樣式，三頁左右滑，預設停在境界，底下三個頁點。左右滑是隱藏手勢，所以境界頁左上齒輪、右上分析圖示，側頁有回境界箭頭。通知與 Siri 可以深連結到指定頁。2026-11-07 UIUX 定案改的。",
+   "trigger_condition": "有身高之後；慶祝關閉後回到目前頁。",
    "files": [],
    "planned_files": [
     "ios/Rencan/App/RootTabView.swift"
@@ -165,11 +165,11 @@ details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line)
   },
   {
    "id": "a05",
-   "label": "功法頁",
+   "label": "分析頁（境界段／功法段）",
    "type": "process",
    "badge": "⚙ 用規則引擎",
-   "description": "六張功法卡（等級、進度、下一階要多少）加最近修煉清單；點卡 → 單一功法頁：所有紀錄與 1RM 走勢線。清單可左滑刪除、點一筆編輯。",
-   "trigger_condition": "點功法分頁。",
+   "description": "分段切換。境界段：宗門身分卡、FFMI 走勢、突破紀錄、天梯、說明。功法段：總覽三格、六張功法卡（等級、進度、1RM 走勢線、下一階要多少）加最近修煉清單；點卡 → 單一功法頁：所有紀錄與 1RM 走勢線。清單可左滑刪除、點一筆編輯。",
+   "trigger_condition": "境界頁往左滑或點右上分析圖示。",
    "files": [],
    "planned_files": [
     "ios/Rencan/Views/Gong/GongView.swift",
@@ -182,22 +182,22 @@ details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line)
   },
   {
    "id": "a06",
-   "label": "錄入頁：今天的修煉＋體組成＋設定入口",
+   "label": "境界頁的記一筆與手動輸入（彈出表單）",
    "type": "process",
-   "description": "上：今天的修煉（按日期分組的清單，最上面是今天）加四欄表單（功法膠囊、重量或加重、次數、組數、日期）。中：量體組成（體重、體脂率、去脂選填、日期），進頁時向健康 app 要最新一筆帶入並標來源與日期。下：設定入口。欄位數定死，不會再多。",
-   "trigger_condition": "點錄入分頁；點每月提醒通知。",
+   "description": "境界頁第一屏：境界碑、體組成來源列（由健康 app 帶入・上次幾號，加「手動輸入」）、三格天數、今天的修煉、「記一筆修煉」按鈕。記一筆是彈出表單（功法 3×2 格子、重量或加重、次數、組數、日期，先帶上次那門的數字），記完收回、清單多一行。手動輸入體組成也是彈出表單（體重、體脂率、去脂選填、日期）。欄位數定死，不會再多。沒有錄入頁。",
+   "trigger_condition": "境界頁按「記一筆」或「手動輸入」；點每月提醒通知進境界頁。",
    "files": [],
    "planned_files": [
-    "ios/Rencan/Views/Log/LogView.swift",
+    "ios/Rencan/Views/Realm/RealmView.swift",
     "ios/Rencan/Views/Log/TodayListView.swift",
     "ios/Rencan/Views/Log/LiftFormView.swift",
     "ios/Rencan/Views/Log/MeasurementFormView.swift"
    ],
    "file_responsibilities": {
-    "ios/Rencan/Views/Log/LogView.swift": "三段組頁；錯誤顯示。",
+    "ios/Rencan/Views/Realm/RealmView.swift": "境界頁組頁：來源列、今天的修煉、記一筆按鈕、兩張彈出表單的開關。",
     "ios/Rencan/Views/Log/TodayListView.swift": "按日期分組的修煉清單；左滑刪除、點一筆編輯。",
-    "ios/Rencan/Views/Log/LiftFormView.swift": "功法膠囊加四欄加日期；驗證；送出後重量清空、其餘留著。",
-    "ios/Rencan/Views/Log/MeasurementFormView.swift": "體重、體脂率、去脂選填、日期；進頁時帶入健康 app 最新一筆；驗證；同日先問。"
+    "ios/Rencan/Views/Log/LiftFormView.swift": "記一筆彈出表單：功法 3×2 格子加四欄加日期；先帶上次那門的數字；驗證；錯誤紅字留在表單。",
+    "ios/Rencan/Views/Log/MeasurementFormView.swift": "手動輸入彈出表單：體重、體脂率、去脂選填、日期；驗證；同日先問。"
    }
   },
   {
@@ -205,7 +205,7 @@ details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line)
    "label": "健康 app 讀寫（授權）",
    "type": "process",
    "description": "讀：查最新一筆體重、體脂率、去脂體重、身高，連日期與來源一起回；沒授權或沒資料 → 回空，表單留白讓手打，不擋。寫：設定開了回寫才請求寫入授權；只寫手打的三種數字，從健康 app 帶入的不寫回去（不然會重複）。授權被拒 → 功能照常，設定頁顯示「到系統設定開」。所有呼叫 async，錯誤往上丟。",
-   "trigger_condition": "首次（a02）、進錄入頁（a06）、結算且回寫開著（a09）、設定開回寫（a15）。",
+   "trigger_condition": "首次（a02）、打開 app 進境界頁（a04）、結算且回寫開著（a09）、設定開回寫（a15）。",
    "files": [],
    "planned_files": [
     "ios/Rencan/Services/HealthKitService.swift"
@@ -319,7 +319,7 @@ details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line)
    "label": "編輯／刪除／復原",
    "type": "process",
    "description": "清單左滑刪除 → 先從畫面移除並暫存 → 底部「復原」5 秒 → 逾時才真的刪。點一筆 → 編輯表單（同四欄或體組成三欄）→ 存回 → 等級、天數、突破重算。修煉與量測紀錄同一套規則。",
-   "trigger_condition": "功法頁或錄入頁清單的左滑或點擊。",
+   "trigger_condition": "境界頁今天的修煉或分析頁最近修煉清單的左滑或點擊。",
    "files": [],
    "planned_files": [
     "ios/Rencan/Views/Log/TodayListView.swift",
@@ -336,16 +336,16 @@ details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line)
    "id": "a15",
    "label": "設定（含匯出、提醒、匯入入口）",
    "type": "process",
-   "description": "身高；回寫健康 app 開關（開 → 請求寫入授權）；每月提醒（開關加日期 → 排本機通知，點通知進錄入頁）；匯出 JSON（分享表單，格式跟網頁版一樣）；匯入舊 JSON；刪除全部紀錄（二次確認；只刪本機與快照，健康 app 裡的不動）；健康 app 授權狀態與「到系統設定改」；關於與隱私政策連結。",
-   "trigger_condition": "錄入頁的設定入口。",
+   "description": "身高；回寫健康 app 開關（開 → 請求寫入授權）；每月提醒（開關加日期 → 排本機通知，點通知進境界頁）；匯出 JSON（分享表單，格式跟網頁版一樣）；匯入舊 JSON；刪除全部紀錄（二次確認；只刪本機與快照，健康 app 裡的不動）；健康 app 授權狀態與「到系統設定改」；關於與隱私政策連結。",
+   "trigger_condition": "境界頁往右滑或點左上齒輪（左頁）。",
    "files": [],
    "planned_files": [
-    "ios/Rencan/Views/SettingsView.swift",
+    "ios/Rencan/Views/Settings/SettingsView.swift",
     "ios/Rencan/Services/NotificationService.swift",
     "ios/Rencan/Services/ImportExportService.swift"
    ],
    "file_responsibilities": {
-    "ios/Rencan/Views/SettingsView.swift": "全部設定項。",
+    "ios/Rencan/Views/Settings/SettingsView.swift": "左頁：全部設定項。",
     "ios/Rencan/Services/NotificationService.swift": "排每月重複通知、取消、點通知的深連結。",
     "ios/Rencan/Services/ImportExportService.swift": "匯出：全部紀錄轉成網頁版相同的 JSON。"
    }
@@ -434,11 +434,11 @@ details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line)
    "trigger_condition": "a10 拋錯；a16 驗證失敗。",
    "files": [],
    "planned_files": [
-    "ios/Rencan/Views/Log/LogView.swift",
+    "ios/Rencan/Views/Log/LiftFormView.swift",
     "ios/Rencan/Services/StoreService.swift"
    ],
    "file_responsibilities": {
-    "ios/Rencan/Views/Log/LogView.swift": "錯誤顯示。",
+    "ios/Rencan/Views/Log/LiftFormView.swift": "錯誤顯示在表單裡。",
     "ios/Rencan/Services/StoreService.swift": "錯誤型別與訊息。"
    }
   }
@@ -483,7 +483,7 @@ details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line)
   {
    "from": "a03",
    "to": "a06",
-   "label": "點錄入",
+   "label": "境界頁按記一筆／手動輸入",
    "type": "conditional"
   },
   {
@@ -706,7 +706,8 @@ details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line)
    "a03"
   ],
   "ios/Rencan/Views/Realm/RealmView.swift": [
-   "a04"
+   "a04",
+   "a06"
   ],
   "ios/Rencan/Views/Realm/SteleView.swift": [
    "a04"
@@ -726,17 +727,14 @@ details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line)
   "ios/Rencan/Views/Gong/MoveDetailView.swift": [
    "a05"
   ],
-  "ios/Rencan/Views/Log/LogView.swift": [
-   "a06",
-   "a21"
-  ],
   "ios/Rencan/Views/Log/TodayListView.swift": [
    "a06",
    "a14"
   ],
   "ios/Rencan/Views/Log/LiftFormView.swift": [
    "a06",
-   "a08"
+   "a08",
+   "a21"
   ],
   "ios/Rencan/Views/Log/MeasurementFormView.swift": [
    "a06",
@@ -773,7 +771,7 @@ details pre{white-space:pre-wrap;background:#161b22;border:1px solid var(--line)
   "ios/Rencan/Views/Log/EditRecordView.swift": [
    "a14"
   ],
-  "ios/Rencan/Views/SettingsView.swift": [
+  "ios/Rencan/Views/Settings/SettingsView.swift": [
    "a15"
   ],
   "ios/Rencan/Services/NotificationService.swift": [

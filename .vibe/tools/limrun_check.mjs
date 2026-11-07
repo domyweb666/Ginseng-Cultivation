@@ -1,4 +1,4 @@
-// AI 自驗用：開一台 Limrun 雲端 iPhone 模擬器、裝最新的模擬器版、截三個分頁的圖存進
+// AI 自驗用：開一台 Limrun 雲端 iPhone 模擬器、裝最新的模擬器版、截三頁（境界、設定、分析）的圖存進
 // .vibe/evidence/、讀元件樹，然後刪機器（交付圖 d14；每分鐘 2 點，所以硬上限 12 分鐘）。
 // 用法：node .vibe/tools/limrun_check.mjs --piece A2 [--asset rencan-sim-123]
 // 金鑰：環境變數 LIM_API_KEY，沒有就讀 ~/.lim/config.yaml 的 api-key。
@@ -90,13 +90,14 @@ try {
   await sleep(6000);
   await saveScreenshot(client, "01-境界");
 
-  for (const [index, tab] of [["02", "功法"], ["03", "錄入"]]) {
-    await client.tapElement({ AXLabel: tab });
+  // 三頁左右滑：境界頁左上齒輪到設定、右上圖示到分析，側頁的「回境界」回中頁（都是無障礙標籤）
+  for (const [index, page] of [["02", "設定"], ["03", "分析"]]) {
+    await client.tapElement({ AXLabel: page });
     await sleep(1500);
-    await saveScreenshot(client, `${index}-${tab}`);
+    await saveScreenshot(client, `${index}-${page}`);
+    await client.tapElement({ AXLabel: "回境界" });
+    await sleep(1000);
   }
-  await client.tapElement({ AXLabel: "境界" });
-  await sleep(1000);
 
   const tree = await client.elementTreeRaw();
   const treeFile = join(evidenceDir, `${piece}-${today}-element-tree.txt`);
