@@ -1,0 +1,379 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>小人蔘頭套預覽</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap">
+<style>
+/* 版面：左邊是舞台（底色就是 app 的頁底），右邊依序是動作、長相、底色、實際大小；手機寬度時上下堆疊 */
+:root{
+  --bg:#F7F4EC;
+  --panel:#FFFFFF;
+  --panel-muted:#EFEBE3;
+  --ink:#1D1D1F;
+  --muted:#66666D;
+  --line:#E5E1D8;
+  --accent:#916B1B;
+  --on-accent:#FFFFFF;
+  --strong:#7A5916;
+  --soft:#F1E6CC;
+  /* app 的兩套頁底與線條色，舞台用；跟頁面主題無關，所以兩個主題都是同一組值 */
+  --app-light-ground:#F7F4EC;
+  --app-light-limb:#7A5916;
+  --app-light-mark:#916B1B;
+  --app-light-shade:#191614;
+  --app-dark-ground:#14130F;
+  --app-dark-limb:#E6C277;
+  --app-dark-mark:#D9AE4E;
+  --app-dark-shade:#000000;
+  --font-display:"LXGW WenKai TC","PingFang TC","Microsoft JhengHei",serif;
+  --font-body:-apple-system,BlinkMacSystemFont,"PingFang TC","Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#14130F;--panel:#1C1C1E;--panel-muted:#2C2C2E;--ink:#F5F5F7;--muted:#A1A1A8;--line:#38383A;
+    --accent:#D9AE4E;--on-accent:#2B2006;--strong:#E6C277;--soft:#3A2F17;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#14130F;--panel:#1C1C1E;--panel-muted:#2C2C2E;--ink:#F5F5F7;--muted:#A1A1A8;--line:#38383A;
+  --accent:#D9AE4E;--on-accent:#2B2006;--strong:#E6C277;--soft:#3A2F17;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1040px;margin:0 auto;padding-block:28px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:22px}
+.head{display:flex;flex-direction:column;gap:6px}
+h1{font-family:var(--font-display);font-size:30px;font-weight:700;margin:0;color:var(--strong);text-wrap:balance}
+.head p{margin:0;color:var(--muted);max-width:60ch}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+
+/* 舞台與小尺寸格共用：底色跟線條色照 app 的淺色或深色 */
+.ground-light{--ground:var(--app-light-ground);--limb:var(--app-light-limb);--mark:var(--app-light-mark);--shade:var(--app-light-shade)}
+.ground-dark{--ground:var(--app-dark-ground);--limb:var(--app-dark-limb);--mark:var(--app-dark-mark);--shade:var(--app-dark-shade)}
+.limb{stroke:var(--limb)}
+.mark{fill:var(--mark)}
+.shade{fill:var(--shade)}
+
+.stage{position:relative;border-radius:24px;background:var(--ground);border:1px solid var(--line);overflow:hidden}
+.stage svg{display:block;width:100%;height:auto;max-height:560px}
+.stage-bar{position:absolute;left:14px;right:14px;top:12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.now{font-family:var(--font-display);font-size:18px;color:var(--limb)}
+.toggle{font:inherit;font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:5px 14px;cursor:pointer}
+
+.side{display:flex;flex-direction:column;gap:20px;min-width:0}
+.group{display:flex;flex-direction:column;gap:10px}
+.group h2{font-size:13px;font-weight:600;color:var(--muted);margin:0;letter-spacing:.06em}
+.acts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.act{font:inherit;text-align:left;display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:16px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;min-width:0}
+.act b{font-family:var(--font-display);font-size:19px;font-weight:700}
+.act span{font-size:12.5px;color:var(--muted)}
+.act[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.act[aria-pressed="true"] span{color:var(--on-accent);opacity:.85}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.opt{font:inherit;font-size:14px;font-weight:600;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.opt[aria-pressed="true"]{background:var(--soft);border-color:var(--accent);color:var(--strong)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.sizes{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;background:var(--ground);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.size{display:flex;flex-direction:column;align-items:center;gap:4px}
+.size svg{display:block}
+.size i{font-style:normal;font-size:11.5px;color:var(--limb);font-variant-numeric:tabular-nums}
+.note{font-size:13px;color:var(--muted);margin:0;max-width:60ch}
+.defs{position:absolute;width:0;height:0;overflow:hidden}
+@media (max-width:760px){
+  .layout{grid-template-columns:minmax(0,1fr)}
+  h1{font-size:26px}
+}
+</style>
+
+<div class="wrap">
+  <div class="head">
+    <h1>小人蔘頭套預覽</h1>
+    <p>身體照茄子火柴人動作庫的八個關節，頭換成人蔘，線條換成 app 的金棕。六個動作各配一個出場位置，看順眼再定。</p>
+  </div>
+
+  <div class="layout">
+    <div class="stage ground-light" id="stageBox">
+      <svg id="stage" viewBox="0 -30 320 430" role="img" aria-label="戴人蔘頭套的火柴人動畫">
+        <g id="char"></g>
+      </svg>
+      <div class="stage-bar">
+        <span class="now" id="now">揮手</span>
+        <button class="toggle" id="toggle" type="button">暫停</button>
+      </div>
+    </div>
+
+    <div class="side">
+      <div class="group">
+        <h2>動作與出場位置</h2>
+        <div class="acts" id="acts"></div>
+      </div>
+      <div class="group">
+        <h2>長相</h2>
+        <div class="seg" id="faces"></div>
+        <p class="note" id="faceNote"></p>
+      </div>
+      <div class="group">
+        <h2>底色</h2>
+        <div class="seg" id="grounds"></div>
+      </div>
+      <div class="group">
+        <h2>在 app 裡的大小</h2>
+        <div class="sizes ground-light" id="sizes"></div>
+        <p class="note">數字是高度，單位 pt。來源列旁和表單紅字旁會用到最小那個，問身高那頁和分析頁空狀態用最大那個。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<svg class="defs" aria-hidden="true">
+  <defs>
+    <radialGradient id="gRoot" cx="36%" cy="34%" r="80%">
+      <stop offset="0" stop-color="#FFF4D2"/><stop offset=".5" stop-color="#F5D892"/><stop offset="1" stop-color="#DFB25C"/>
+    </radialGradient>
+    <radialGradient id="gFace" cx="42%" cy="36%" r="75%">
+      <stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#F3ECDC"/>
+    </radialGradient>
+    <linearGradient id="gLeaf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8DBB52"/><stop offset="1" stop-color="#4F7D2A"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<script id="core">
+/* ===== 純計算：姿勢與繪製（不碰 DOM，可在任何環境執行；K2 的測試拿這段的角度當標準答案）===== */
+var RIG = { hipX:160, hipY:260, ground:380, thigh:62, shin:62, torso:78, shoulderDrop:12, shoulderHalf:6, upper:44, fore:44 };
+
+function basePose(){
+  return { rx:0, ry:0, lean:0, head:0, hy:0, sh:0,
+           lS:-38, lE:143, rS:38, rE:-143,
+           lH:-14, lK:0, rH:14, rK:0,
+           eyeH:12, lookX:0, lookY:0, brow:2, browY:0, squash:0,
+           tl:1, hs:1, sx:1,
+           mouth:'smile', happy:0, bubble:0, zzz:0, sweat:0, t:0 };
+}
+function ss(a,b,x){ var k=Math.max(0,Math.min(1,(x-a)/(b-a))); return k*k*(3-2*k); }
+
+var ANIMS = {
+  wave: function(t){
+    return { rS:110, rE:40+22*Math.sin(t*9), lS:-16, lE:-6,
+             head:5+2*Math.sin(t*4.5), lean:2, brow:5, browY:-1, mouth:'smile',
+             hy:-1*Math.sin(t*4.5) };
+  },
+  sleep: function(t){
+    var n=Math.sin(t*1.4);
+    return { head:13+3*n, lean:3+0.8*n, hy:1, eyeH:1.5, brow:0, browY:2, mouth:'o', zzz:1, sh:-1*n };
+  },
+  think: function(t){
+    return { rS:42, rE:165, lS:-30, lE:120, head:-8+1.5*Math.sin(t*1.6), lean:-1.5,
+             lookX:-2, lookY:-3, brow:3, browY:-2, bubble:1, mouth:'flat' };
+  },
+  oops: function(t){
+    return { rS:112, rE:45+7*Math.sin(t*12), lS:-16, lE:-6, head:9, lean:2,
+             brow:-12, browY:-1, lookY:3, lookX:-1, mouth:'wavy', sweat:1 };
+  },
+  shrug: function(t){
+    var c=t%2.4, u=ss(0,0.3,c)*(1-ss(1.5,1.9,c));
+    return { sh:-6*u, lS:-16-14*u, lE:-6-82*u, rS:16+14*u, rE:6+82*u,
+             head:8*u, brow:2-12*u, browY:-3*u, mouth:(u>0.4?'wavy':'smile'), lookY:-1*u };
+  },
+  please: function(t){
+    var k=Math.sin(t*7);
+    return { lS:-50, lE:167, rS:50, rE:-167, sh:-2-1.5*k, hy:-1.5*k, head:7+1.5*k, lean:1,
+             brow:-15, browY:-2, eyeH:13, lookY:-1.5, mouth:'o' };
+  }
+};
+
+function poseAt(name,t){
+  var p=basePose(), o=ANIMS[name](t), k;
+  for(k in o) p[k]=o[k];
+  p.t=t; return p;
+}
+function blend(a,b,k){
+  var o={}, key;
+  for(key in b){ o[key]=(typeof b[key]==='number' && typeof a[key]==='number') ? a[key]+(b[key]-a[key])*k : (k<0.5?a[key]:b[key]); }
+  o.t=b.t; return o;
+}
+
+function dirv(a){ var r=a*Math.PI/180; return [Math.sin(r),Math.cos(r)]; }
+function f(n){ return Math.round(n*10)/10; }
+function seg(a,b,w){ return '<line class="limb" x1="'+f(a[0])+'" y1="'+f(a[1])+'" x2="'+f(b[0])+'" y2="'+f(b[1])+'" stroke-width="'+w+'" stroke-linecap="round"/>'; }
+function add(p,v,l){ return [p[0]+v[0]*l, p[1]+v[1]*l]; }
+
+var INK='#3A2A0C', RIM='#8A6420';
+
+/* 人蔘頭套。原點在脖子頂端，往上是負值。face：'root' 臉直接畫在人蔘上；'hood' 人蔘中間開一個白臉 */
+function headSVG(p,face){
+  var s='', ex=p.lookX, ey=p.lookY, i, sx;
+  /* 兩側的鬚根，畫在主體後面 */
+  s+='<path d="M-43,-20 C-55,-18 -61,-8 -57,3" fill="none" stroke="'+RIM+'" stroke-width="3.2" stroke-linecap="round"/>';
+  s+='<path d="M43,-20 C55,-18 61,-8 57,3" fill="none" stroke="'+RIM+'" stroke-width="3.2" stroke-linecap="round"/>';
+  s+='<path d="M-45,-38 C-56,-41 -63,-35 -65,-27" fill="none" stroke="'+RIM+'" stroke-width="2.6" stroke-linecap="round"/>';
+  /* 梗與葉 */
+  s+='<path d="M0,-116 L0,-137" fill="none" stroke="#6E8F3A" stroke-width="5" stroke-linecap="round"/>';
+  s+='<path d="M-2,-126 C-14,-149 -42,-153 -60,-139 C-44,-124 -20,-118 -2,-126 Z" fill="url(#gLeaf)"/>';
+  s+='<path d="M2,-126 C14,-149 42,-153 60,-139 C44,-124 20,-118 2,-126 Z" fill="url(#gLeaf)"/>';
+  s+='<path d="M-8,-129 C-24,-137 -40,-140 -53,-139" fill="none" stroke="#3F6B24" stroke-opacity=".55" stroke-width="1.6" stroke-linecap="round"/>';
+  s+='<path d="M8,-129 C24,-137 40,-140 53,-139" fill="none" stroke="#3F6B24" stroke-opacity=".55" stroke-width="1.6" stroke-linecap="round"/>';
+  /* 紅果 */
+  var berries=[[-9,-142],[9,-142],[0,-137],[-5,-151],[5,-151]];
+  for(i=0;i<berries.length;i++){
+    s+='<circle cx="'+berries[i][0]+'" cy="'+berries[i][1]+'" r="5.4" fill="#D8402F"/>';
+    s+='<circle cx="'+(berries[i][0]-1.6)+'" cy="'+(berries[i][1]-1.6)+'" r="1.4" fill="#FFFFFF" fill-opacity=".7"/>';
+  }
+  /* 人蔘主體 */
+  s+='<path d="M-46,-34 C-46,-64 -32,-84 -15,-97 C-20,-101 -20,-112 -12,-117 C-6,-120 6,-120 12,-117 C20,-112 20,-101 15,-97 C32,-84 46,-64 46,-34 C46,-10 28,6 0,6 C-28,6 -46,-10 -46,-34 Z" fill="url(#gRoot)" stroke="'+RIM+'" stroke-width="3" stroke-linejoin="round"/>';
+  s+='<path d="M-33,-58 C-31,-70 -26,-79 -20,-86" fill="none" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="5" stroke-linecap="round"/>';
+  /* 蘆頭的環紋 */
+  s+='<path d="M-16,-108 Q0,-103 16,-108" fill="none" stroke="#C4923A" stroke-opacity=".85" stroke-width="2.4" stroke-linecap="round"/>';
+  s+='<path d="M-14,-97 Q0,-92 14,-97" fill="none" stroke="#C4923A" stroke-opacity=".85" stroke-width="2.4" stroke-linecap="round"/>';
+  s+='<path d="M-27,-85 Q0,-78 27,-85" fill="none" stroke="#C4923A" stroke-opacity=".6" stroke-width="2.2" stroke-linecap="round"/>';
+  /* 臉 */
+  if(face==='hood'){
+    s+='<circle cx="0" cy="-46" r="33" fill="'+RIM+'"/>';
+    s+='<circle cx="0" cy="-46" r="30" fill="url(#gFace)" stroke="'+INK+'" stroke-width="3"/>';
+  } else {
+    s+='<ellipse cx="'+f(-24+ex*0.4)+'" cy="'+f(-36+ey*0.4)+'" rx="7.5" ry="4.6" fill="#F0937C" fill-opacity=".55"/>';
+    s+='<ellipse cx="'+f(24+ex*0.4)+'" cy="'+f(-36+ey*0.4)+'" rx="7.5" ry="4.6" fill="#F0937C" fill-opacity=".55"/>';
+  }
+  for(i=0;i<2;i++){
+    sx=i?1:-1;
+    var cx=sx*11+ex, cy=-48+ey;
+    if(p.happy>0.5){
+      s+='<path d="M'+f(cx-5)+','+f(cy+3)+' Q'+f(cx)+','+f(cy-6)+' '+f(cx+5)+','+f(cy+3)+'" fill="none" stroke="'+INK+'" stroke-width="3.6" stroke-linecap="round"/>';
+    } else {
+      var h=Math.max(1.5,p.eyeH);
+      s+='<rect x="'+f(cx-2.3)+'" y="'+f(cy-h/2)+'" width="4.6" height="'+f(h)+'" rx="2.3" fill="'+INK+'"/>';
+    }
+    var bx=sx*12+ex*0.5, by=-61+p.browY+ey*0.5, br=p.brow*Math.PI/180, c=8*Math.cos(br), sn=8*Math.sin(br);
+    s+='<line x1="'+f(bx-sx*c)+'" y1="'+f(by+sn)+'" x2="'+f(bx+sx*c)+'" y2="'+f(by-sn)+'" stroke="'+INK+'" stroke-width="3.4" stroke-linecap="round"/>';
+  }
+  var mx=ex*0.5, my=-30+ey*0.5;
+  if(p.mouth==='smile') s+='<path d="M'+f(mx-6)+','+f(my-1)+' Q'+f(mx)+','+f(my+5)+' '+f(mx+6)+','+f(my-1)+'" fill="none" stroke="'+INK+'" stroke-width="3" stroke-linecap="round"/>';
+  else if(p.mouth==='open') s+='<path d="M'+f(mx-7)+','+f(my-2)+' Q'+f(mx)+','+f(my+10)+' '+f(mx+7)+','+f(my-2)+' Z" fill="'+INK+'"/>';
+  else if(p.mouth==='wavy') s+='<path d="M'+f(mx-7)+','+f(my)+' q3.5,-4 7,0 t7,0" fill="none" stroke="'+INK+'" stroke-width="3" stroke-linecap="round"/>';
+  else if(p.mouth==='o') s+='<circle cx="'+f(mx)+'" cy="'+f(my)+'" r="2.6" fill="none" stroke="'+INK+'" stroke-width="2.6"/>';
+  else s+='<line x1="'+f(mx-5)+'" y1="'+f(my)+'" x2="'+f(mx+5)+'" y2="'+f(my)+'" stroke="'+INK+'" stroke-width="3" stroke-linecap="round"/>';
+  if(p.sweat>0.5){
+    var d=(p.t*0.9)%1;
+    s+='<path d="M-25,'+f(-72+d*6)+' q-4,7 0,9 q4,-2 0,-9 Z" fill="#6FB7E0" opacity="'+f(1-d*0.6)+'"/>';
+  }
+  return s;
+}
+
+function renderChar(p,face){
+  var R=RIG, s='';
+  var hip=[R.hipX+p.rx, R.hipY+p.ry];
+  var up=dirv(180-p.lean);
+  var TL=R.torso*p.tl;
+  var neck=add(hip,up,TL);
+  var sho=add(hip,up,TL-R.shoulderDrop); sho[1]+=p.sh;
+  s+='<ellipse class="shade" cx="'+f(R.hipX+p.rx)+'" cy="'+(R.ground+7)+'" rx="62" ry="8" opacity=".14"/>';
+  var legs=[[p.lH,p.lK,-1],[p.rH,p.rK,1]], i;
+  for(i=0;i<2;i++){
+    var kn=add(hip,dirv(legs[i][0]),R.thigh), an=add(kn,dirv(legs[i][0]+legs[i][1]),R.shin);
+    s+=seg(hip,kn,9)+seg(kn,an,9)+seg(an,[an[0]+legs[i][2]*12,an[1]+1],9);
+  }
+  s+=seg(hip,[neck[0],neck[1]+p.sh*0.5],9);
+  s+='<g transform="translate('+f(neck[0])+','+f(neck[1]+p.hy+p.sh*0.5)+') rotate('+f(p.head+p.lean)+') scale(1,'+f(p.hs*100)/100+')">'+headSVG(p,face)+'</g>';
+  var arms=[[p.lS,p.lE],[p.rS,p.rE]];
+  for(i=0;i<2;i++){
+    var so=[sho[0]+(i?R.shoulderHalf:-R.shoulderHalf),sho[1]], el=add(so,dirv(arms[i][0]),R.upper), ha=add(el,dirv(arms[i][0]+arms[i][1]),R.fore);
+    s+=seg(so,el,8.5)+seg(el,ha,8.5);
+  }
+  if(p.bubble>0.5){
+    var dots=[[-62,-108,4],[-74,-124,5.5],[-90,-144,7.5]];
+    for(i=0;i<3;i++){
+      var o=0.35+0.65*Math.max(0,Math.sin(p.t*3-i*0.9));
+      s+='<circle class="mark" cx="'+f(neck[0]+dots[i][0])+'" cy="'+f(neck[1]+dots[i][1])+'" r="'+dots[i][2]+'" opacity="'+f(o)+'"/>';
+    }
+  }
+  if(p.zzz>0.5){
+    for(i=0;i<3;i++){
+      var ph=((p.t*0.45)+i/3)%1;
+      s+='<text class="mark" x="'+f(neck[0]+70+ph*30)+'" y="'+f(neck[1]-116-ph*44)+'" font-family="system-ui,sans-serif" font-weight="800" font-size="'+f(11+ph*12)+'" opacity="'+f(Math.sin(Math.PI*ph))+'">Z</text>';
+    }
+  }
+  return s;
+}
+</script>
+
+<script>
+(function(){
+  var ACTS=[
+    {id:'wave',  name:'揮手',   use:'第一次打開問身高'},
+    {id:'sleep', name:'打瞌睡', use:'超過 30 天沒量'},
+    {id:'think', name:'思考',   use:'從健康 app 讀資料'},
+    {id:'oops',  name:'抓頭',   use:'存檔失敗、健康 app 讀不到'},
+    {id:'shrug', name:'聳肩',   use:'分析頁沒資料'},
+    {id:'please',name:'拜託',   use:'開每月提醒之前'}
+  ];
+  var FACES=[
+    {id:'root', name:'臉畫在人蔘上', note:'跟 app 圖示同一張臉，有腮紅。縮小以後五官還是清楚。'},
+    {id:'hood', name:'頭套款',       note:'人蔘中間開一個白臉，跟茄子版同一個做法。看起來像戴著人蔘帽。'}
+  ];
+  var GROUNDS=[{id:'light',name:'淺色頁底'},{id:'dark',name:'深色頁底'}];
+  var SIZES=[120,88,56];
+  var $=function(id){return document.getElementById(id);};
+  var charEl=$('char'), actsEl=$('acts'), facesEl=$('faces'), groundsEl=$('grounds'), sizesEl=$('sizes'),
+      nowEl=$('now'), toggleEl=$('toggle'), stageBox=$('stageBox'), faceNote=$('faceNote');
+
+  var dark=false, reduce=false;
+  try{
+    var forced=document.documentElement.getAttribute('data-theme');
+    dark = forced ? forced==='dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }catch(e){}
+
+  var state={ name:'wave', face:'root', ground:(dark?'dark':'light'), clock:0, start:0, from:basePose(), switchAt:-1, playing:!reduce, last:null, shown:basePose() };
+
+  function button(cls,id,html,onClick,parent){
+    var b=document.createElement('button');
+    b.type='button'; b.className=cls; b.id=id; b.innerHTML=html;
+    b.addEventListener('click',onClick); parent.appendChild(b);
+  }
+  ACTS.forEach(function(a){ button('act','act-'+a.id,'<b>'+a.name+'</b><span>'+a.use+'</span>',function(){ go(a.id); },actsEl); });
+  FACES.forEach(function(x){ button('opt','face-'+x.id,x.name,function(){ state.face=x.id; sync(); draw(); },facesEl); });
+  GROUNDS.forEach(function(x){ button('opt','ground-'+x.id,x.name,function(){ state.ground=x.id; sync(); },groundsEl); });
+  var smallEls=SIZES.map(function(h){
+    var d=document.createElement('div'); d.className='size';
+    d.innerHTML='<svg viewBox="62 8 196 388" width="'+Math.round(h*196/388)+'" height="'+h+'" aria-hidden="true"><g></g></svg><i>'+h+'</i>';
+    sizesEl.appendChild(d);
+    return d.querySelector('g');
+  });
+
+  function go(id){
+    state.from=state.shown; state.switchAt=state.clock; state.start=state.clock; state.name=id;
+    sync(); if(!state.playing) draw();
+  }
+  function sync(){
+    ACTS.forEach(function(a){ $('act-'+a.id).setAttribute('aria-pressed', a.id===state.name?'true':'false'); });
+    FACES.forEach(function(x){ $('face-'+x.id).setAttribute('aria-pressed', x.id===state.face?'true':'false'); });
+    GROUNDS.forEach(function(x){ $('ground-'+x.id).setAttribute('aria-pressed', x.id===state.ground?'true':'false'); });
+    stageBox.className='stage ground-'+state.ground;
+    sizesEl.className='sizes ground-'+state.ground;
+    nowEl.textContent=ACTS.filter(function(x){return x.id===state.name;})[0].name;
+    faceNote.textContent=FACES.filter(function(x){return x.id===state.face;})[0].note;
+    toggleEl.textContent=state.playing?'暫停':'播放';
+  }
+  function draw(){
+    var t=state.clock-state.start, target=poseAt(state.name,t), p=target;
+    if(state.switchAt>=0){
+      var k=(state.clock-state.switchAt)/0.28;
+      if(state.playing && k<1){ k=k*k*(3-2*k); p=blend(state.from,target,k); } else state.switchAt=-1;
+    }
+    state.shown=p;
+    var html=renderChar(p,state.face);
+    charEl.innerHTML=html;
+    for(var i=0;i<smallEls.length;i++) smallEls[i].innerHTML=html;
+  }
+  function frame(ts){
+    if(state.last===null) state.last=ts;
+    var dt=Math.min(0.05,(ts-state.last)/1000); state.last=ts;
+    if(state.playing){ state.clock+=dt; draw(); }
+    requestAnimationFrame(frame);
+  }
+  toggleEl.addEventListener('click',function(){ state.playing=!state.playing; sync(); });
+
+  sync(); draw();
+  requestAnimationFrame(frame);
+})();
+</script>
