@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// 分析頁（右頁）：分段切換境界／功法。這片只有標題、回境界箭頭與分段控制；
-/// 境界段（宗門、走勢、突破、天梯）在組塊 D 長肉，功法段交給 GongView 在組塊 C 長肉。
+/// 分析頁（右頁）：分段切換境界／功法。外框照 domy 金棕畫布：回境界箭頭＋文楷大標題、分段控制。
+/// 境界段（宗門、走勢、突破、天梯）在組塊 D 長肉，功法段交給 GongView 在組塊 C 長肉
+/// （照畫布 AnalysisRealm、AnalysisGong 兩張）。
 struct AnalysisView: View {
     enum Segment: String, CaseIterable, Identifiable {
         case realm = "境界"
@@ -14,18 +15,14 @@ struct AnalysisView: View {
     @State private var segment: Segment = .realm
 
     var body: some View {
-        ZStack {
-            Color.rencan.background.ignoresSafeArea()
-            VStack(spacing: RencanLayout.pageSpacing) {
-                HStack {
+        ScrollView {
+            VStack(alignment: .leading, spacing: RencanLayout.sectionSpacing) {
+                HStack(spacing: 0) {
                     BackToRealmButton(page: $page, edge: .leading)
-                    Spacer()
                     Text("分析")
                         .font(RencanType.pageTitle)
-                        .foregroundStyle(Color.rencan.gold)
+                        .accessibilityAddTraits(.isHeader)
                     Spacer()
-                    Spacer()
-                        .frame(width: RencanLayout.tapTarget)
                 }
                 Picker("分析類別", selection: $segment) {
                     ForEach(Segment.allCases) { item in
@@ -35,12 +32,12 @@ struct AnalysisView: View {
                 .pickerStyle(.segmented)
                 switch segment {
                 case .realm:
-                    Spacer()
+                    EmptyView()
                 case .gong:
                     GongView()
                 }
             }
-            .padding()
+            .padding(.horizontal, RencanLayout.screenMargin)
         }
     }
 }
