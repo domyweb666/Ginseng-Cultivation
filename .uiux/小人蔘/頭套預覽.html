@@ -307,8 +307,8 @@ function renderChar(p,face){
     {id:'please',name:'拜託',   use:'開每月提醒之前'}
   ];
   var FACES=[
-    {id:'root', name:'臉畫在人蔘上', note:'跟 app 圖示同一張臉，有腮紅。縮小以後五官還是清楚。'},
-    {id:'hood', name:'頭套款',       note:'人蔘中間開一個白臉，跟茄子版同一個做法。看起來像戴著人蔘帽。'}
+    {id:'hood', name:'頭套款（已選）', note:'2026-11-15 定案。人蔘中間開一個白臉，跟茄子版同一個做法，看起來像戴著人蔘帽。'},
+    {id:'root', name:'臉畫在人蔘上',   note:'沒選的那一種，留著對照。跟 app 圖示同一張臉，有腮紅。'}
   ];
   var GROUNDS=[{id:'light',name:'淺色頁底'},{id:'dark',name:'深色頁底'}];
   var SIZES=[120,88,56];
@@ -323,7 +323,7 @@ function renderChar(p,face){
     reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }catch(e){}
 
-  var state={ name:'wave', face:'root', ground:(dark?'dark':'light'), clock:0, start:0, from:basePose(), switchAt:-1, playing:!reduce, last:null, shown:basePose() };
+  var state={ name:'wave', face:'hood', ground:(dark?'dark':'light'), clock:0, start:0, from:basePose(), switchAt:-1, playing:!reduce, last:null, shown:basePose() };
 
   function button(cls,id,html,onClick,parent){
     var b=document.createElement('button');
