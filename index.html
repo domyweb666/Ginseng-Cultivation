@@ -489,6 +489,10 @@ function renderLog(){
       <label class="f">身高 cm<input id="c-h" type="number" inputmode="decimal" step="0.5" min="120" max="230" required></label>
       <button class="btn" type="submit">儲存身高</button>
     </form>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:12px">
+      <button class="btn" type="button" id="exportBtn">匯出 JSON</button>
+      <p class="hint">會下載一個檔案，裡面是全部的量測、修煉紀錄和身高。檔案含身體數據，傳給別人前請留意。</p>
+    </div>
   </div>
   <div class="panel"><h2 class="label">量測紀錄</h2><div class="list" id="measList" style="margin-top:6px"></div></div>`;
   $('#l-date').value=today();$('#m-date').value=today();
@@ -607,6 +611,20 @@ function closeCelebrate(){$('#celebrate').hidden=true;cStop&&cStop();cStop=null;
 document.getElementById('celebrate').addEventListener('click',closeCelebrate);
 
 let tt;function toast(html){const t=$('#toast');t.innerHTML=html;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2600)}
+
+/* 匯出 JSON：格式跟 iOS 版匯入的一樣，{meas,lift,cfg}，紀錄原樣不改 */
+function exportData(){return {meas:state.meas||[],lift:state.lift||[],cfg:state.cfg||{}}}
+function exportJSON(){
+  try{
+    const data=exportData();
+    const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+    const a=document.createElement('a');a.href=url;a.download='rencan-'+today()+'.json';a.hidden=true;
+    document.body.appendChild(a);a.click();
+    setTimeout(()=>{a.remove();URL.revokeObjectURL(url)},60000);
+    toast(`已匯出：量測 ${data.meas.length} 筆、修煉 ${data.lift.length} 筆`);
+  }catch(err){toast('匯出失敗，請再試一次')}
+}
+document.addEventListener('click',e=>{if(e.target.closest('#exportBtn'))exportJSON()});
 
 init();
 </script>

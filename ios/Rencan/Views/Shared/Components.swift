@@ -90,7 +90,7 @@ struct ProgressBar: View {
                     .fill(Color.rencan.soft)
                 Capsule()
                     .fill(isMuted ? Color.rencan.textTertiary : Color.rencan.accent)
-                    .frame(width: proxy.size.width * max(0, min(100, percent)) / 100)
+                    .frame(width: proxy.size.width * CGFloat(max(0, min(100, percent)) / 100))
             }
         }
         .frame(height: RencanLayout.barHeight)

@@ -125,6 +125,7 @@ struct SteleView: View {
 
     private var progressLabel: String {
         let stage = Tables.stages[standing.stageIndex]
-        return "\(standing.realm.name)\(stage)走了百分之 \(Formulas.fmt(stele.stagePercent, digits: 0))"
+        let walked = Formulas.fmt(stele.stagePercent, digits: 0)
+        return "\(standing.realm.name)\(stage)走了百分之 \(walked)"
     }
 }

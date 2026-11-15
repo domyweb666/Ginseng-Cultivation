@@ -3,9 +3,11 @@ import SwiftUI
 // 彈出表單共用的外框（畫布 LogSheet、MeasureSheet）。
 
 /// 表單最上面那一列：左邊「取消」、中間標題。
+/// 只是看、沒有要存的頁（單一功法頁）把左邊換成「關閉」。
 struct SheetHeader: View {
     @Environment(AppFlow.self) private var flow
     let title: String
+    var dismissLabel = "取消"
 
     var body: some View {
         ZStack {
@@ -13,7 +15,7 @@ struct SheetHeader: View {
                 .font(RencanType.headline)
                 .accessibilityAddTraits(.isHeader)
             HStack {
-                Button("取消") {
+                Button(dismissLabel) {
                     flow.sheet = nil
                 }
                 .font(RencanType.body)

@@ -21,9 +21,8 @@ enum UITestSupport {
     static func seedIfAsked(_ services: AppServices) throws {
         #if DEBUG
             let arguments = ProcessInfo.processInfo.arguments
-            guard isUITest, let index = arguments.firstIndex(of: "-rencanSeed"),
-                arguments.indices.contains(index + 1)
-            else { return }
+            guard isUITest, let index = arguments.firstIndex(of: "-rencanSeed") else { return }
+            guard arguments.indices.contains(index + 1) else { return }
             try seed(arguments[index + 1], into: services)
         #endif
     }

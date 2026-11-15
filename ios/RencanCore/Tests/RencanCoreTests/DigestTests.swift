@@ -188,7 +188,7 @@ final class DigestMoveTests: XCTestCase {
     }
 
     func test練到大成以上的功法有幾門() throws {
-        XCTAssertEqual(try digest(body, fiveLifts()).masteredCount, 1)
+        XCTAssertEqual(try digest(body, fiveLifts()).accomplishedCount, 1)
     }
 
     func test這個月修煉幾天只算跟今天同一個月的() throws {

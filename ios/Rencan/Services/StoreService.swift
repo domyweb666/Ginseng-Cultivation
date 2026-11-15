@@ -138,8 +138,8 @@ final class StoreService {
     // MARK: 量測
 
     func measurement(on day: String) throws -> Measurement? {
-        let descriptor = FetchDescriptor<Measurement>(predicate: #Predicate { $0.day == day })
-        return try context.fetch(descriptor).first
+        let sameDay = #Predicate<Measurement> { $0.day == day }
+        return try context.fetch(FetchDescriptor<Measurement>(predicate: sameDay)).first
     }
 
     /// 存一筆量測，回這次是哪一種（根基不穩、踏入仙途、境界突破、結算）。

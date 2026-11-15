@@ -93,8 +93,8 @@ public struct Digest: Equatable {
     public let moveCards: [MoveCard]
 
     /// 練到大成以上的功法有幾門。
-    public var masteredCount: Int {
-        moveCards.filter { $0.level >= Digest.masteredLevel }.count
+    public var accomplishedCount: Int {
+        moveCards.filter { $0.level >= Digest.accomplishedLevel }.count
     }
 
     /// 日期壞掉時丟 RencanError.invalidDate，畫面要顯示錯誤，不能整頁空白。
@@ -167,7 +167,8 @@ public struct Digest: Equatable {
 
     // MARK: 組裝
 
-    private static let masteredLevel = 3
+    /// 「大成」在 Tables.levelNames 裡的位置。
+    private static let accomplishedLevel = 3
     private static let maximumKgToNext: Double = 9999
     private static let monthPrefixLength = 7
 

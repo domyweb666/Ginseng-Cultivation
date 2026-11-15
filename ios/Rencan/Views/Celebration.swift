@@ -118,6 +118,7 @@ extension Celebration {
         if move.usesBodyweight {
             return "相當於 \(ratio) 倍體重的拉力"
         }
-        return "估計 1RM \(Formulas.fmt(calc.estimatedOneRepMaxKg, digits: 0)) 公斤，\(ratio) 倍體重"
+        let oneRepMax = Formulas.fmt(calc.estimatedOneRepMaxKg, digits: 0)
+        return "估計 1RM \(oneRepMax) 公斤，\(ratio) 倍體重"
     }
 }

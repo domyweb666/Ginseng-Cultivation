@@ -13,6 +13,18 @@ class RencanUITestCase: XCTestCase {
     var app: XCUIApplication!
     private var shotIndex = 0
     private var shotDir: URL?
+    /// 正在截「失敗現場」。截圖自己出錯時不要再截一次。
+    private var isShootingFailure = false
+
+    /// 任何一個檢查沒過，先截一張「失敗現場」再照常記錄，看圖就知道當時畫面停在哪。
+    override func record(_ issue: XCTIssue) {
+        if !isShootingFailure {
+            isShootingFailure = true
+            shot("失敗現場")
+            isShootingFailure = false
+        }
+        super.record(issue)
+    }
 
     override func setUpWithError() throws {
         continueAfterFailure = false
@@ -68,7 +80,7 @@ class RencanUITestCase: XCTestCase {
     /// 文字裡含某一段的元素（數字會變的句子用這個找）。
     func textContaining(_ part: String) -> XCUIElement {
         let predicate = NSPredicate(format: "label CONTAINS %@", part)
-        return app.staticTexts.containing(predicate).firstMatch
+        return app.staticTexts.matching(predicate).firstMatch
     }
 
     /// 點一顆按鈕（用無障礙標籤找）。
@@ -76,5 +88,165 @@ class RencanUITestCase: XCTestCase {
         let button = app.buttons[label].firstMatch
         XCTAssertTrue(button.waitForExistence(timeout: timeout), "沒看到按鈕「\(label)」")
         button.tap()
+    }
+}
+
+// MARK: 等待與尋找
+
+extension RencanUITestCase {
+    /// 等到條件成立，沒等到回 false。每隔一小段重看一次，不是固定睡幾秒。
+    @discardableResult
+    func waitUntil(timeout: TimeInterval = 10, _ condition: () -> Bool) -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        while true {
+            if condition() { return true }
+            if Date() >= deadline { return false }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.2))
+        }
+    }
+
+    /// 等一個元素出現，沒出現就 fail。
+    @discardableResult
+    func require(
+        _ element: XCUIElement, _ what: String, timeout: TimeInterval = 10,
+        file: StaticString = #filePath, line: UInt = #line
+    ) -> XCUIElement {
+        let isThere = element.waitForExistence(timeout: timeout)
+        XCTAssertTrue(isThere, "沒看到\(what)", file: file, line: line)
+        return element
+    }
+
+    /// 用 identifier 找元素，不管它是哪一種元件。
+    func idQuery(_ identifier: String) -> XCUIElementQuery {
+        app.descendants(matching: .any).matching(identifier: identifier)
+    }
+
+    func element(id identifier: String) -> XCUIElement {
+        idQuery(identifier).firstMatch
+    }
+
+    /// label 含某段字的元素，不管哪一種元件（合併成一個元素的列、卡片用這個找）。
+    func anyElements(containing part: String) -> XCUIElementQuery {
+        let predicate = NSPredicate(format: "label CONTAINS %@", part)
+        return app.descendants(matching: .any).matching(predicate)
+    }
+
+    /// label 或 identifier 剛好是這個字。
+    func named(_ text: String) -> NSPredicate {
+        NSPredicate(format: "label == %@ OR identifier == %@", text, text)
+    }
+
+    /// 查詢結果裡現在真的在畫面上、點得到的那一個。左右兩頁、被表單蓋住的不算。
+    func visibleElement(in query: XCUIElementQuery) -> XCUIElement? {
+        query.allElementsBoundByIndex.first { $0.exists && $0.isHittable }
+    }
+
+    /// 等查詢裡有一個元素真的出現在畫面上，沒等到就 fail。
+    @discardableResult
+    func requireVisible(
+        _ query: XCUIElementQuery, _ what: String, timeout: TimeInterval = 15,
+        file: StaticString = #filePath, line: UInt = #line
+    ) -> XCUIElement {
+        var found: XCUIElement?
+        let isSeen = waitUntil(timeout: timeout) {
+            found = visibleElement(in: query)
+            return found != nil
+        }
+        XCTAssertTrue(isSeen, "畫面上沒看到\(what)", file: file, line: line)
+        return found ?? query.firstMatch
+    }
+
+    /// 等一段文字真的出現在畫面上（整段要一樣）。
+    @discardableResult
+    func seeText(
+        _ text: String, timeout: TimeInterval = 15, file: StaticString = #filePath,
+        line: UInt = #line
+    ) -> XCUIElement {
+        let query = app.staticTexts.matching(named(text))
+        return requireVisible(query, "文字「\(text)」", timeout: timeout, file: file, line: line)
+    }
+
+    /// 點畫面上看得到的那顆按鈕。三頁裡同名的按鈕（回境界）只點現在這頁的。
+    func tapVisibleButton(
+        _ label: String, timeout: TimeInterval = 15, file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let query = app.buttons.matching(named(label))
+        requireVisible(query, "按鈕「\(label)」", timeout: timeout, file: file, line: line).tap()
+    }
+
+    /// 幾個元素裡先出現的那一個；都沒出現回 nil。
+    func waitForAny(_ elements: [XCUIElement], timeout: TimeInterval) -> XCUIElement? {
+        let deadline = Date().addingTimeInterval(timeout)
+        repeat {
+            for element in elements where element.waitForExistence(timeout: 0.3) {
+                return element
+            }
+        } while Date() < deadline
+        return nil
+    }
+}
+
+// MARK: 手勢與輸入
+
+extension RencanUITestCase {
+    private func drag(fromY: CGFloat, toY: CGFloat) {
+        let from = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: fromY))
+        let target = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: toY))
+        from.press(
+            forDuration: 0.05, thenDragTo: target, withVelocity: .slow, thenHoldForDuration: 0.3
+        )
+    }
+
+    /// 把現在這頁往下捲大約半個螢幕。慢慢拖、放開前停一下，不會滑過頭漏掉中間的內容。
+    func scrollDown() {
+        drag(fromY: 0.72, toY: 0.28)
+    }
+
+    /// 往回捲同樣的距離。
+    func scrollUp() {
+        drag(fromY: 0.28, toY: 0.72)
+    }
+
+    /// 往下捲幾次，每捲一次截一張。
+    func scrollShots(_ name: String, count: Int) {
+        for index in 1...count {
+            scrollDown()
+            shot("\(name)-往下捲\(index)")
+        }
+    }
+
+    /// 一直往下捲到某個元素出現在畫面上。
+    @discardableResult
+    func scrollToSee(_ query: XCUIElementQuery, _ what: String, maxDrags: Int = 4) -> XCUIElement {
+        for _ in 0..<maxDrags where visibleElement(in: query) == nil {
+            scrollDown()
+        }
+        return requireVisible(query, what, timeout: 5)
+    }
+
+    /// 在數字欄打字。模擬器沒接硬體鍵盤，點了欄位等螢幕鍵盤出來再打。
+    func typeNumber(_ text: String, into identifier: String) {
+        let field = require(app.textFields[identifier], "輸入欄 \(identifier)")
+        field.tap()
+        _ = app.keyboards.firstMatch.waitForExistence(timeout: 3)
+        field.typeText(text)
+        let typed = field.value as? String
+        XCTAssertEqual(typed, text, "輸入欄 \(identifier) 打進去的字不對")
+    }
+
+    /// 全螢幕慶祝：等它出來、確認小標題、截圖、點一下、等它關掉。
+    /// 它 4.5 秒會自己關，所以點的是螢幕上的位置，不是元素：萬一已經自己關了也不會出錯。
+    func passCelebration(heading: String, shotName: String, sheetButton: XCUIElement) {
+        let celebration = element(id: "celebration")
+        require(celebration, "慶祝畫面「\(heading)」", timeout: 8)
+        let label = celebration.label
+        // 表單收回去、鍵盤降下去再截，才不會截到動畫的一半
+        waitUntil(timeout: 2) { !sheetButton.exists && !app.keyboards.firstMatch.exists }
+        shot(shotName)
+        XCTAssertTrue(label.contains(heading), "慶祝畫面不是「\(heading)」，上面寫的是：\(label)")
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.15)).tap()
+        let isClosed = waitUntil(timeout: 8) { !celebration.exists }
+        XCTAssertTrue(isClosed, "點了一下，慶祝畫面沒有關掉")
     }
 }
