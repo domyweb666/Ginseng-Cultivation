@@ -34,7 +34,19 @@ try {
   // filter[identifier] 是開頭比對，org.domyweb.rencan.widget 也會進來，所以再比一次全名
   const bundleId = bundleIds.data.find((item) => item.attributes.identifier === bundleIdentifier);
   if (!bundleId) {
-    fail(`Apple 後台沒有 App ID ${bundleIdentifier}。請照 ios/ci/README.md 第四段登記。`);
+    // 多半是登記時打錯一個字。把後台名字相近的 App ID 列出來（去掉最後一節再查一次），對一下就知道。
+    const stem = bundleIdentifier.split(".").slice(0, -1).join(".");
+    const near = await call(
+      "GET",
+      `/v1/bundleIds?filter[identifier]=${encodeURIComponent(stem)}&limit=200`,
+    );
+    const listed = near.data
+      .map((item) => `${item.attributes.identifier}（${item.attributes.name}）`)
+      .join("、");
+    fail(
+      `Apple 後台沒有 App ID ${bundleIdentifier}。請照 ios/ci/README.md 第四段登記。` +
+        `後台以 ${stem} 開頭的 App ID 有：${listed || "一個都沒有"}`,
+    );
   }
 
   const certificates = await call(
