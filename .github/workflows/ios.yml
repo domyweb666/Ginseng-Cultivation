@@ -24,7 +24,7 @@ env:
   BUNDLE_ID: org.domyweb.rencan
   # CI 每次向 Apple 申請的上架用描述檔叫這個名字（ios/ci/appstore_profile.mjs）
   PROFILE_NAME: Rencan CI App Store
-  TESTFLIGHT_NOTES: "骨架版：三個空頁（左右滑：設定／境界／分析），什麼都還不能做，這是正常的。"
+  TESTFLIGHT_NOTES: "記修煉、量體組成與境界、慶祝、健康 app 連動、匯出匯入、刪除全部、Siri、每月提醒、小人蔘都接上了。驗收照 docs/一次驗收清單.md 從頭走一遍。小工具還沒進這一版。"
 
 jobs:
   core-tests:
