@@ -64,8 +64,19 @@ final class HoldDeleteUITests: RencanUITestCase {
         let row = requireVisible(rows, "今天的推山掌那一筆")
         shot("按住之前")
 
-        row.press(forDuration: 1.2)
-        let delete = require(app.buttons["刪除"], "按住之後選單裡的「刪除」")
+        // 模擬器忙的時候，按住會被當成點一下而打開編輯表單（2026-11-16 檢查線紅過一次，
+        // Limrun 與前幾輪都正常）。沒跳出選單就把表單關掉，按久一點再試。
+        let delete = app.buttons["刪除"]
+        for duration in [1.2, 2.0, 3.0] {
+            row.press(forDuration: duration)
+            if delete.waitForExistence(timeout: 4) { break }
+            let cancel = app.buttons["取消"]
+            if cancel.waitForExistence(timeout: 2) {
+                cancel.tap()
+            }
+            _ = waitUntil(timeout: 2) { !cancel.exists }
+        }
+        require(delete, "按住之後選單裡的「刪除」")
         shot("按住跳出選單")
         delete.tap()
         undoDelete(of: rows, what: "推山掌那一筆")
