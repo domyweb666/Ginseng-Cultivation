@@ -138,7 +138,14 @@ extension RencanUITestCase {
 
     /// 查詢結果裡現在真的在畫面上、點得到的那一個。左右兩頁、被表單蓋住的不算。
     func visibleElement(in query: XCUIElementQuery) -> XCUIElement? {
-        query.allElementsBoundByIndex.first { $0.exists && $0.isHittable }
+        query.allElementsBoundByIndex.first { element in
+            guard element.exists else { return false }
+            // 選單、表單還在長出來的那一瞬間，元素的 frame 是空的；這時問 isHittable，XCUITest 會記一條
+            // 「Failed to determine hittability」的失敗（2026-11-16 提醒日選單紅過一次）。frame 還沒有就先當沒看到。
+            let frame = element.frame
+            guard !frame.isEmpty, frame.minX.isFinite, frame.minY.isFinite else { return false }
+            return element.isHittable
+        }
     }
 
     /// 等查詢裡有一個元素真的出現在畫面上，沒等到就 fail。
