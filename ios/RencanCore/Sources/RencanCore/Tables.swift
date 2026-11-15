@@ -59,6 +59,14 @@ public enum Tables {
     /// 還沒有任何穩固量測時的大境界序號（網頁版 realmMax 回 -1）。
     public static let noRealmIndex = -1
 
+    // 表單、Siri、匯入共用的合理範圍，跟網頁版表單的 min、max 一樣（index.html L462–489）。
+    public static let weightRangeKg = 30.0...200.0
+    public static let bodyFatRangePercent = 3.0...60.0
+    public static let leanMassRangeKg = 20.0...150.0
+    public static let heightRangeCm = 120.0...230.0
+    public static let repsRange = 1...50
+    public static let setsRange = 1...20
+
     public static let stages = ["初期", "中期", "後期"]
     public static let levelNames = ["未入門", "入門", "小成", "大成", "圓滿", "化境"]
 
