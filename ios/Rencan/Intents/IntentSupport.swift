@@ -20,7 +20,11 @@ extension AppServices {
     /// 現在的畫面摘要。讀法跟 RootTabView 一樣（量測照日期、修煉照建立時間、今天用 DayStamp），
     /// Siri 講的數字跟畫面上才會是同一份。
     func digest() throws -> Digest {
-        let context = container.mainContext
+        try AppServices.digest(in: container.mainContext)
+    }
+
+    /// 同一件事，直接給資料庫。存檔後寫小工具快照也用這個（片 G1），三邊的數字是同一份。
+    static func digest(in context: ModelContext) throws -> Digest {
         let byDay = FetchDescriptor<Measurement>(sortBy: [SortDescriptor(\.day)])
         let byCreation = FetchDescriptor<LiftRecord>(sortBy: [SortDescriptor(\.createdAt)])
         let measurements = try context.fetch(byDay)

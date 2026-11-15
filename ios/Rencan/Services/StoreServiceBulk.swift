@@ -61,7 +61,7 @@ extension StoreService {
 
     /// 刪掉本機全部的量測與修煉（PRD S28）。身高與性別留著；健康 app 裡的資料不歸這裡管。
     /// 不可逆：呼叫前畫面要先讓使用者再確認一次。存檔失敗會整個退回，一筆都不少。
-    /// 小工具快照（組塊 G1）做好之後，存檔成功後要在這裡一起清掉快照。
+    /// 小工具的快照不用另外清：save() 成功後會照刪完的狀態重寫一份（尚未入道、本週 0 天）。
     func deleteAllRecords() throws {
         for record in try context.fetch(FetchDescriptor<Measurement>()) {
             context.delete(record)

@@ -52,6 +52,9 @@ struct LiftSnapshot: Equatable {
 @Observable
 final class StoreService {
     let context: ModelContext
+    /// 每次存檔成功之後要做的事。AppServices 在這裡掛「寫小工具快照」（片 G1）；
+    /// 畫面與其他服務不要用它，改資料還是只走下面這些方法。
+    @ObservationIgnored var afterSave: (() -> Void)?
 
     init(context: ModelContext) {
         self.context = context
@@ -185,5 +188,6 @@ final class StoreService {
             context.rollback()
             throw RencanError.saveFailed
         }
+        afterSave?()
     }
 }

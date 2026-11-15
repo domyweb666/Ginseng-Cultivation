@@ -24,6 +24,9 @@ env:
   BUNDLE_ID: org.domyweb.rencan
   # CI 每次向 Apple 申請的上架用描述檔叫這個名字（ios/ci/appstore_profile.mjs）
   PROFILE_NAME: Rencan CI App Store
+  # 小工具 extension 自己的 App ID 與描述檔（組塊 G）
+  WIDGET_BUNDLE_ID: org.domyweb.rencan.widget
+  WIDGET_PROFILE_NAME: Rencan Widget CI App Store
   TESTFLIGHT_NOTES: "骨架版：三個空頁（左右滑：設定／境界／分析），什麼都還不能做，這是正常的。"
 
 jobs:
@@ -69,7 +72,7 @@ jobs:
       - name: swift-format（嚴格）
         run: |
           xcrun swift-format lint --strict --recursive --configuration ios/.swift-format \
-            ios/Rencan ios/RencanCore/Sources ios/RencanCore/Tests
+            ios/Rencan ios/RencanWidget ios/RencanCore/Sources ios/RencanCore/Tests
 
       - name: SwiftLint（嚴格）
         run: |
@@ -184,6 +187,9 @@ jobs:
           CERT_SERIAL="$(security find-certificate -c "Apple Distribution" -p "$KEYCHAIN_PATH" | openssl x509 -noout -serial | cut -d= -f2)"
           export CERT_SERIAL
           ASC_KEY_P8_PATH="$AUTH_KEY_PATH" node ios/ci/appstore_profile.mjs
+          # 小工具一張：同一支腳本換 App ID 與描述檔名字再跑一次
+          ASC_KEY_P8_PATH="$AUTH_KEY_PATH" BUNDLE_ID="$WIDGET_BUNDLE_ID" PROFILE_NAME="$WIDGET_PROFILE_NAME" \
+            node ios/ci/appstore_profile.mjs
 
       - name: 上傳 App Store Connect
         env:
@@ -193,6 +199,8 @@ jobs:
         run: |
           set -euo pipefail
           sed -e "s/TEAM_ID_PLACEHOLDER/$APPLE_TEAM_ID/" \
+            -e "s/WIDGET_ID_PLACEHOLDER/$WIDGET_BUNDLE_ID/" \
+            -e "s/WIDGET_PROFILE_PLACEHOLDER/$WIDGET_PROFILE_NAME/" \
             -e "s/BUNDLE_ID_PLACEHOLDER/$BUNDLE_ID/" \
             -e "s/PROFILE_NAME_PLACEHOLDER/$PROFILE_NAME/" \
             ios/ci/ExportOptions.plist > "$RUNNER_TEMP/ExportOptions.plist"

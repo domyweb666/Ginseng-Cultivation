@@ -85,6 +85,19 @@ openssl pkcs12 -export -inkey rencan.key -in distribution.pem -out rencan.p12 -n
 
 然後回到 Identifiers 清單點 `org.domyweb.rencan`，App Groups 那列按「Configure」，勾 `group.org.domyweb.rencan`，Save。
 
+### 小工具的 App ID（組塊 G 才需要，2026-11-16 加）
+
+小工具是 app 裡的另一個小程式，Apple 要它有自己的 App ID。分支 `work/widget` 併進 main 之前要先做完這段，不然主線簽章會紅。
+
+1. 同一頁按「+」，選「App IDs」，Continue；選「App」，Continue。
+2. Description 填 `Rencan Widget`。
+3. Bundle ID 選「Explicit」，填 `org.domyweb.rencan.widget`。
+4. Capabilities 只勾一個：**App Groups**（小工具不讀健康 app，不要勾 HealthKit）。
+5. Continue，Register。
+6. 回到清單點 `org.domyweb.rencan.widget`，App Groups 那列按「Configure」，勾 `group.org.domyweb.rencan`，Save。
+
+做完跟我說一聲，我把 `work/widget` 併進 main，CI 會自己替小工具申請描述檔。
+
 ## 第五段：App Store Connect 的「代送件」鑰匙（API 金鑰）
 
 1. 開 https://appstoreconnect.apple.com/access/integrations/api

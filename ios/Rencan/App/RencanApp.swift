@@ -17,6 +17,12 @@ struct AppServices {
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: inMemory)
         let container = try ModelContainer(for: schema, configurations: [configuration])
         let store = StoreService(context: container.mainContext)
+        // 每次存檔成功就照最新的資料重寫小工具的快照（片 G1）。
+        let bridge = WidgetBridge()
+        let context = container.mainContext
+        store.afterSave = {
+            bridge.publish { try AppServices.digest(in: context) }
+        }
         return AppServices(
             container: container, store: store, health: HealthKitService(),
             notifications: NotificationService()
@@ -36,6 +42,8 @@ struct RencanApp: App {
             made = try AppServices.shared()
             if let made {
                 try UITestSupport.seedIfAsked(made)
+                // 打開 app 就寫一次快照：剛裝好、剛更新、跨了一天，小工具都拿得到最新的。
+                made.store.afterSave?()
                 // 在這裡就開始聽：點通知把 app 叫起來那一下，畫面還沒出現也收得到。
                 made.notifications.startListening()
             }

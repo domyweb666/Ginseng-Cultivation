@@ -6,7 +6,7 @@
 // 改成自己申請描述檔，App Manager 金鑰就夠，也不用使用者到後台手動下載描述檔。
 //
 // 每次都把同名的舊描述檔刪掉重建：之後 App ID 多勾了能力（例如小工具），新的描述檔才會帶到。
-// 目前只有主 app 一個 bundle id；加小工具 extension 時這支要改成吃多個。
+// 一次只處理一個 bundle id；小工具 extension 那一張由 ios.yml 換環境變數再跑一次（組塊 G）。
 //
 // 用法（環境變數）：ASC_KEY_ID、ASC_ISSUER_ID、ASC_KEY_P8_PATH、BUNDLE_ID、PROFILE_NAME、
 // CERT_SERIAL（鑰匙圈裡那張發佈憑證的序號，十六進位）

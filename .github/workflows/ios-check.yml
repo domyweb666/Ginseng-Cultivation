@@ -47,7 +47,7 @@ jobs:
         continue-on-error: true
         run: |
           xcrun swift-format lint --strict --recursive --configuration ios/.swift-format \
-            ios/Rencan ios/RencanCore/Sources ios/RencanCore/Tests
+            ios/Rencan ios/RencanWidget ios/RencanCore/Sources ios/RencanCore/Tests
 
       - name: SwiftLint（嚴格）
         id: lint
@@ -100,6 +100,8 @@ jobs:
           xcrun simctl status_bar "$UDID" override \
             --time "9:41" --batteryState charged --batteryLevel 100 --wifiBars 3 --cellularBars 4
 
+      # 模擬器版用本機臨時簽章（不用憑證、不碰 secrets）：這樣 entitlements 才會包進去，
+      # 主 app 與小工具才讀得到同一個 App Group，Limrun 上才驗得到小工具（組塊 G）。
       - name: 編譯並跑 UI 測試
         working-directory: ios
         env:
@@ -116,7 +118,7 @@ jobs:
             -derivedDataPath "$PWD/DerivedData" \
             -resultBundlePath "$PWD/UITests.xcresult" \
             ONLY_ACTIVE_ARCH=NO \
-            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY=- \
             CODE_SIGNING_REQUIRED=NO \
             2>&1 | tee build-uitest.log \
             | grep -E --line-buffered "error:|warning:|Test Case|Test Suite|Executed|TEST |BUILD |XCTAssert|failed" || true

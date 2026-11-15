@@ -12,11 +12,21 @@
 	     之後只要加了會把資料送出手機的東西（分析、當機回報、雲端同步、帳號），這裡和 App Store 隱私標籤要一起改。 -->
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array/>
-	<!-- 需要申報理由的 API：2026-11-16 搜過 ios/Rencan 與 ios/RencanCore，UserDefaults、@AppStorage、檔案時間戳、
+	<!-- 需要申報理由的 API：2026-11-16 搜過 ios/Rencan 與 ios/RencanCore，@AppStorage、檔案時間戳、
 	     開機時間、磁碟空間、鍵盤清單都沒用到。
-	     小工具（組塊 G）若用 App Group 的 UserDefaults 放快照，這裡要補 NSPrivacyAccessedAPICategoryUserDefaults，
-	     小工具自己的 target 也要有一份 PrivacyInfo.xcprivacy；理由代碼到時候對 Apple 文件確認再填。 -->
+	     UserDefaults 只有一處：Services/WidgetBridge.swift 把小工具的快照寫進 App Group 那一格（組塊 G）。
+	     理由代碼 1C8F.1：只讀寫同一個 App Group 裡的 app 與 extension 自己放的資料。
+	     小工具的 target 有自己的一份（RencanWidget/PrivacyInfo.xcprivacy），兩邊要一起改。 -->
 	<key>NSPrivacyAccessedAPITypes</key>
-	<array/>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>1C8F.1</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
