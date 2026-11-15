@@ -13,6 +13,10 @@ final class UserSettings {
     var healthWriteEnabled: Bool = false
     /// 使用者有沒有在設定裡把「讀取體重與體脂」關掉。系統授權在健康 app 管，這是 app 自己的開關。
     var healthReadEnabled: Bool = true
+    /// 每月量測提醒有沒有開。預設關，打開那一刻才問通知權限。
+    var reminderEnabled: Bool = false
+    /// 每月幾號提醒（1 到 28）。
+    var reminderDay: Int = Reminder.defaultDay
 
     init() {}
 

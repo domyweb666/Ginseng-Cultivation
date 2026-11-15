@@ -1,6 +1,12 @@
 import RencanCore
 import SwiftUI
 
+/// 這一頁自己的版面常數。
+private enum Metrics {
+    /// 空狀態立繪旁邊的小人蔘：健康 app 正在讀、讀不出來時才出現，用最小的那一級
+    static let mascotHeight: CGFloat = 56
+}
+
 /// 境界頁（中頁，照畫布 Main 與 RealmEmpty）：境界碑、體組成來源列、三格天數、今天的修煉，
 /// 底部固定一顆「記一筆修煉」。記一筆與手動輸入都是彈出表單，掛在 PagesView。
 struct RealmView: View {
@@ -9,6 +15,8 @@ struct RealmView: View {
     let lifts: [LiftRecord]
     /// 最新那筆量測是手打的還是健康 app 帶進來的。
     let latestSource: RecordSource?
+    /// 健康 app 這條線現在怎麼樣（RootTabView 回到前景時去讀一次）。
+    let healthStatus: HealthLinkStatus
 
     var body: some View {
         ScrollView {
@@ -16,7 +24,10 @@ struct RealmView: View {
                 header
                 if let stele = digest.stele, let sex = digest.sex {
                     SteleView(stele: stele, sex: sex)
-                    sourceRow(stele.measurement)
+                    SourceRow(
+                        measurement: stele.measurement, source: latestSource,
+                        today: digest.today, status: healthStatus
+                    )
                 } else {
                     emptyStele
                 }
@@ -44,7 +55,8 @@ struct RealmView: View {
         }
     }
 
-    /// 還沒量過：雜役服立繪、一句說明、手動輸入的入口。
+    /// 還沒量過：雜役服立繪、一句說明、手動輸入的入口。健康 app 讀不到時照畫布 RealmEmpty
+    /// 多一顆「去設定打開讀取」；正在讀、讀不出來時小人蔘站在立繪旁邊（片 K4），版面不變。
     private var emptyStele: some View {
         VStack(spacing: RencanLayout.groupSpacing) {
             Image(RencanPortrait.name(realmIndex: 0, sex: digest.sex ?? .male))
@@ -57,61 +69,28 @@ struct RealmView: View {
                 .background(Color.rencan.tint)
                 .clipShape(RoundedRectangle(cornerRadius: RencanLayout.portraitCornerRadius))
                 .accessibilityLabel("雜役服人蔘立繪")
+                .overlay(alignment: .bottomTrailing) {
+                    if let action = HealthLinkText.mascot(for: healthStatus) {
+                        PortraitSideMascot(action: action, height: Metrics.mascotHeight)
+                    }
+                }
             Text("還沒量過體組成")
                 .font(RencanType.title3)
-            Text("輸入一次體重和體脂率，境界馬上算給你看。")
+            Text(HealthLinkText.emptyHint(for: healthStatus))
                 .font(RencanType.subheadline)
                 .foregroundStyle(Color.rencan.textSecondary)
                 .multilineTextAlignment(.center)
+                .accessibilityIdentifier("realm-empty-hint")
             Button("手動輸入體組成") {
                 flow.sheet = .measurementForm
             }
             .buttonStyle(RencanSecondaryButtonStyle())
+            if healthStatus == .needsGuide {
+                HealthGuideButton()
+            }
         }
         .frame(maxWidth: .infinity)
         .rencanCard(cornerRadius: RencanLayout.heroCornerRadius)
-    }
-
-    /// 體組成來源列：這筆數字哪來的、哪天量的，右邊是手動輸入。
-    private func sourceRow(_ measurement: MeasurementEntry) -> some View {
-        HStack(spacing: RencanLayout.groupSpacing) {
-            Image(systemName: "heart")
-                .foregroundStyle(Color.rencan.accent)
-                .frame(width: RencanLayout.sourceIconSize, height: RencanLayout.sourceIconSize)
-                .background(Color.rencan.soft, in: Circle())
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 0) {
-                Text(sourceName + "・" + DayStamp.monthDay(measurement.date) + "量測")
-                    .font(RencanType.footnote)
-                    .foregroundStyle(Color.rencan.textSecondary)
-                Text(reading(measurement))
-                    .font(RencanType.callout)
-            }
-            .accessibilityElement(children: .combine)
-            Spacer(minLength: 0)
-            Button("手動輸入") {
-                flow.sheet = .measurementForm
-            }
-            .font(RencanType.callout)
-            .foregroundStyle(Color.rencan.strong)
-            .frame(minHeight: RencanLayout.tapTarget)
-        }
-        .padding(.leading, RencanLayout.sectionSpacing)
-        .padding(.trailing, RencanLayout.groupSpacing)
-        .padding(.vertical, RencanLayout.itemSpacing)
-        .background(
-            Color.rencan.surface, in: RoundedRectangle(cornerRadius: RencanLayout.cardCornerRadius)
-        )
-    }
-
-    private var sourceName: String {
-        latestSource == .health ? "健康 app" : "手動輸入"
-    }
-
-    private func reading(_ measurement: MeasurementEntry) -> String {
-        let weight = Formulas.fmt(measurement.weightKg, digits: 1)
-        let bodyFat = Formulas.fmt(measurement.bodyFatPercent, digits: 1)
-        return "\(weight) 公斤・體脂 \(bodyFat)%"
     }
 
     private var stats: some View {

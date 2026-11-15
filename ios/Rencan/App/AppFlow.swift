@@ -52,6 +52,10 @@ final class AppFlow {
 
     /// 存檔或讀取出錯時給使用者看的那句話。
     func showError(_ error: Error) {
+        if let health = error as? HealthError {
+            toast = Toast(text: health.message)
+            return
+        }
         toast = Toast(text: RencanError.message(for: error))
     }
 }

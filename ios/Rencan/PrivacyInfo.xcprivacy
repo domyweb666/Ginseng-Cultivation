@@ -2,12 +2,20 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- 片 J1（2026-11-16）逐項判斷過，四個值都是查完才留空的，不是還沒填。依據寫在 docs/上架隱私填寫清單.md。 -->
+	<!-- 追蹤：沒有。app 不連網、沒有廣告、沒有第三方 SDK。 -->
 	<key>NSPrivacyTracking</key>
 	<false/>
 	<key>NSPrivacyTrackingDomains</key>
 	<array/>
+	<!-- 蒐集的資料：沒有。Apple 的「蒐集」指資料傳出裝置；健康資料只在手機上讀、算、存，沒有任何網路請求。
+	     之後只要加了會把資料送出手機的東西（分析、當機回報、雲端同步、帳號），這裡和 App Store 隱私標籤要一起改。 -->
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array/>
+	<!-- 需要申報理由的 API：2026-11-16 搜過 ios/Rencan 與 ios/RencanCore，UserDefaults、@AppStorage、檔案時間戳、
+	     開機時間、磁碟空間、鍵盤清單都沒用到。
+	     小工具（組塊 G）若用 App Group 的 UserDefaults 放快照，這裡要補 NSPrivacyAccessedAPICategoryUserDefaults，
+	     小工具自己的 target 也要有一份 PrivacyInfo.xcprivacy；理由代碼到時候對 Apple 文件確認再填。 -->
 	<key>NSPrivacyAccessedAPITypes</key>
 	<array/>
 </dict>

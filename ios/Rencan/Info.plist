@@ -8,10 +8,17 @@
 	<array>
 		<string>LXGWWenKaiTC-Regular.ttf</string>
 	</array>
+	<key>INAlternativeAppNames</key>
+	<array>
+		<dict>
+			<key>INAlternativeAppName</key>
+			<string>人參修煉</string>
+		</dict>
+	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSHealthShareUsageDescription</key>
-	<string>讀你的體重、體脂率、去脂體重和身高，用來算你的境界。</string>
+	<string>讀你的體重、體脂率、去脂體重、身高和生理性別，用來算你的境界。</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>只有你在設定裡打開回寫，才會把你手打的體重、體脂率、去脂體重存進健康 app。</string>
 </dict>

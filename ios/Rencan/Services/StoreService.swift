@@ -51,7 +51,7 @@ struct LiftSnapshot: Equatable {
 @MainActor
 @Observable
 final class StoreService {
-    private let context: ModelContext
+    let context: ModelContext
 
     init(context: ModelContext) {
         self.context = context
@@ -178,7 +178,7 @@ final class StoreService {
     // MARK: 存檔
 
     /// 寫不進去就把這次的改動整個退回，資料庫與畫面都不留半套。
-    private func save() throws {
+    func save() throws {
         do {
             try context.save()
         } catch {

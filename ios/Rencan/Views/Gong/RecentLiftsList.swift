@@ -11,6 +11,8 @@ private enum Metrics {
     /// 一列的最小高度與上下內距
     static let rowMinHeight: CGFloat = 60
     static let rowVerticalPadding: CGFloat = 10
+    /// 空狀態的小人蔘（片 K3）高度，跟境界段的空狀態一樣
+    static let mascotHeight: CGFloat = 96
 }
 
 /// 最近修煉（畫布 AnalysisGong）：最新的 20 筆，同一天的排在一起、新的在上，右邊寫日期。
@@ -26,15 +28,25 @@ struct RecentLiftsList: View {
             SectionTitle(text: "最近修煉")
                 .padding(.horizontal, Metrics.titleInset)
             if lifts.isEmpty {
-                Text(emptyText)
-                    .font(RencanType.subheadline)
-                    .foregroundStyle(Color.rencan.textSecondary)
-                    .rencanCard()
-                    .accessibilityIdentifier("gong-empty")
+                emptyState
             } else {
                 rows(Array(RecentLiftsList.newestFirst(lifts).prefix(Metrics.limit)))
             }
         }
+    }
+
+    /// 一筆都沒有時：小人蔘聳肩在上（置中），那句話在下、照舊靠左。
+    /// 小人蔘高度固定，字放大時只有那句話往下長。
+    private var emptyState: some View {
+        VStack(spacing: RencanLayout.groupSpacing) {
+            MascotView(action: .shrug, height: Metrics.mascotHeight)
+            Text(emptyText)
+                .font(RencanType.subheadline)
+                .foregroundStyle(Color.rencan.textSecondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityIdentifier("gong-empty")
+        }
+        .rencanCard()
     }
 
     /// 一筆都沒有時的那句話。網頁版叫人去「錄入」頁，這裡的入口是境界頁底下那顆按鈕。

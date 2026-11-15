@@ -137,10 +137,25 @@ async function drag(fromX, fromY, toX, toY, steps = 8) {
     return false;
   }
 }
+/// 按住不動一段時間再放開。
+async function hold(x, y, ms) {
+  try {
+    await client.performActions([
+      { type: "touchDown", x, y },
+      { type: "wait", durationMs: ms },
+      { type: "touchUp", x, y },
+    ]);
+    await sleep(700);
+    return true;
+  } catch (error) {
+    log("按住失敗", String(error?.message ?? error).slice(0, 140));
+    return false;
+  }
+}
 const scrollDown = () => drag(screen.width / 2, screen.height * 0.72, screen.width / 2, screen.height * 0.3);
 const scrollUp = () => drag(screen.width / 2, screen.height * 0.3, screen.width / 2, screen.height * 0.75);
 
-async function launch(seed) {
+async function launch(seed, extra = []) {
   try {
     await client.terminateApp(BUNDLE);
   } catch (error) {
@@ -149,6 +164,7 @@ async function launch(seed) {
   await sleep(600);
   const args = ["launch", "booted", BUNDLE, "-rencanUITest"];
   if (seed) args.push("-rencanSeed", seed);
+  args.push(...extra);
   try {
     const execution = client.simctl(args);
     if (typeof execution?.wait === "function") await execution.wait();
@@ -169,31 +185,31 @@ async function walkDemo() {
   await scrollDown();
   await shot("示範-境界頁往下");
 
-  // 左滑刪除會不會被左右換頁吃掉
+  // 按住一列跳出選單（左滑會被三頁左右滑攔掉，2026-11-16 在 Limrun 上實測，所以 app 改成按住）
   const row = (await nodes()).find((node) => /公斤 ×/.test(node.AXLabel ?? "") && node.frame);
   if (row) {
     const { x, y, width, height } = row.frame;
-    await drag(x + width * 0.85, y + height / 2, x + width * 0.3, y + height / 2, 10);
-    await shot("示範-左滑一列之後");
+    await hold(x + width / 2, y + height / 2, 900);
+    await shot("示範-按住一列之後");
     const sawDelete = await has("刪除");
-    check("今天的修煉：左滑露出刪除", sawDelete, sawDelete ? "" : "可能被左右換頁吃掉");
+    check("今天的修煉：按住跳出選單有刪除", sawDelete);
     if (sawDelete) {
-      await tap("刪除", { contains: true });
+      await tap("刪除");
       const sawUndo = await waitFor("復原", 3000);
       await shot("示範-刪除後");
       check("刪除後出現復原", sawUndo);
       if (sawUndo) await tap("復原");
       await shot("示範-復原後");
     } else {
-      await dump("左滑之後");
+      await dump("按住之後");
+      await client.tap(screen.width / 2, screen.height * 0.12);
     }
   } else {
     check("今天的修煉：找到一列", false, "示範資料今天沒有修煉，或標籤不含「公斤 ×」");
   }
-  if (!(await has("境界"))) await tap("回境界");
   await scrollUp();
 
-  check("到分析頁", (await tap("分析")) && (await waitFor("功法")));
+  check("到分析頁", (await tap("分析")) && (await waitFor("宗門身分")));
   await shot("示範-分析境界段");
   for (const index of [1, 2, 3]) {
     await scrollDown();
@@ -201,28 +217,43 @@ async function walkDemo() {
   }
   await tap("境界怎麼算", { contains: true });
   await shot("示範-境界怎麼算展開");
-  for (const index of [1, 2, 3]) await scrollUp();
-  check("切到功法段", await tap("功法"));
+  for (const index of [1, 2, 3, 4]) await scrollUp();
+  // 分段控制的兩段在 Limrun 的元件樹裡沒有標籤，直接點它右半邊的位置（頁標題下面那一列）
+  const title = (await nodes()).find((node) => node.AXLabel === "分析" && node.frame);
+  const segmentY = title ? title.frame.y + title.frame.height + 34 : screen.height * 0.155;
+  await client.tap(screen.width * 0.73, segmentY);
+  await sleep(900);
+  check("切到功法段", await has("累計修煉"));
   await shot("示範-功法段");
+  // 功法卡也沒有標籤可找時，點第一張卡大概的位置
+  const card = (await nodes()).find((node) => /坐馬樁/.test(node.AXLabel ?? "") && node.frame);
+  if (card) {
+    await tapNode(card);
+  } else {
+    await client.tap(screen.width * 0.27, screen.height * 0.5);
+    await sleep(800);
+  }
+  const opened = await waitFor("關閉", 4000);
+  check("點功法卡開單一功法頁", opened);
+  if (opened) {
+    await shot("示範-單一功法頁");
+    await tap("關閉");
+  } else {
+    await dump("功法段");
+  }
   for (const index of [1, 2]) {
     await scrollDown();
     await shot(`示範-功法段往下${index}`);
   }
-  for (const index of [1, 2]) await scrollUp();
-  const card = await findNode("move-card-squat");
-  if (card && (await tapNode(card))) {
-    check("點功法卡開單一功法頁", await waitFor("關閉", 4000));
-    await shot("示範-單一功法頁");
-    await scrollDown();
-    await shot("示範-單一功法頁往下");
-    await tap("關閉");
-  } else {
-    check("點功法卡開單一功法頁", false, "找不到 move-card-squat");
-    await dump("功法段");
-  }
+  for (const index of [1, 2, 3]) await scrollUp();
   await tap("回境界");
   check("到設定頁", (await tap("設定")) && (await waitFor("身體")));
   await shot("示範-設定頁");
+  for (const index of [1, 2, 3]) {
+    await scrollDown();
+    await shot(`示範-設定頁往下${index}`);
+  }
+  for (const index of [1, 2, 3, 4]) await scrollUp();
   await tap("回境界");
 
   try {
@@ -257,28 +288,27 @@ async function walkFresh() {
   await shot("全新-體組成表單");
   const fields = (await nodes()).filter((node) => /textfield/i.test(node.type ?? "") && node.frame);
   log("文字欄位數", fields.length);
+  // typeText 在這台模擬器會被當成注音輸入（打出「ㄢ」），所以直接點畫面上數字鍵盤的鍵
   const values = ["70", "15", "60"];
   for (let index = 0; index < Math.min(fields.length, values.length); index += 1) {
     await tapNode(fields[index], 500);
-    try {
-      await client.typeText(values[index]);
-    } catch (error) {
-      log("打字失敗", error?.message);
-    }
-    await sleep(400);
+    for (const digit of values[index]) await tap(digit, { wait: 150 });
+    await sleep(300);
   }
   await shot("全新-體組成填好");
   // 鍵盤可能蓋住按鈕：先試直接點，不行就往下拖收鍵盤再點
-  if (!(await tap("結算境界"))) {
+  if (!(await tap("結算境界", { wait: 0 }))) {
     await drag(screen.width / 2, screen.height * 0.3, screen.width / 2, screen.height * 0.6);
-    await tap("結算境界");
+    await tap("結算境界", { wait: 0 });
   }
-  await sleep(900);
-  await shot("全新-結算後一秒");
+  // 粒子只在剛出現的那一兩秒，連截三張
+  await sleep(250);
+  await shot("全新-結算後馬上");
+  await shot("全新-結算後再一張");
   const celebration = await findNode("celebration");
   check("第一次量測：出現慶祝畫面", Boolean(celebration), celebration?.AXLabel ?? "");
-  await sleep(1500);
-  await shot("全新-慶祝兩秒半");
+  await sleep(800);
+  await shot("全新-慶祝兩秒左右");
   await client.tap(screen.width / 2, screen.height / 2);
   await sleep(1000);
   await shot("全新-關掉慶祝後的境界碑");
@@ -296,6 +326,29 @@ async function walkFresh() {
   } else {
     check("開記一筆表單", false, "找不到「記一筆」");
     await dump("境界頁找記一筆");
+  }
+}
+
+/// 小人蔘：展示畫面（六個動作三種高度），以及沒資料時分析頁兩段的空狀態。
+/// 舊版本沒有展示畫面時會照常進 app，截到的就是第一次打開那頁，不算壞。
+async function walkMascot() {
+  await launch(null, ["-rencanMascotGallery"]);
+  await dump("小人蔘展示畫面");
+  await shot("小人蔘-展示畫面");
+  await scrollDown();
+  await shot("小人蔘-展示畫面往下");
+
+  await launch("profile");
+  if (await tap("分析")) {
+    await sleep(900);
+    await shot("空狀態-分析境界段");
+    const title = (await nodes()).find((node) => node.AXLabel === "分析" && node.frame);
+    const segmentY = title ? title.frame.y + title.frame.height + 34 : screen.height * 0.155;
+    await client.tap(screen.width * 0.73, segmentY);
+    await sleep(900);
+    await shot("空狀態-功法段");
+    await scrollDown();
+    await shot("空狀態-功法段往下");
   }
 }
 
@@ -347,6 +400,7 @@ try {
 
   await walkDemo();
   await walkFresh();
+  await walkMascot();
 } catch (error) {
   log("中斷：", error?.stack ?? String(error));
   check("整趟跑完", false, String(error?.message ?? error).slice(0, 200));

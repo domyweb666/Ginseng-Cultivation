@@ -2,19 +2,25 @@ import RencanCore
 import SwiftData
 import SwiftUI
 
-/// app 起來要用到的東西：資料庫與改資料的服務。
+/// app 起來要用到的東西：資料庫、改資料的服務、健康 app、通知。
 @MainActor
 struct AppServices {
     let container: ModelContainer
     let store: StoreService
+    let health: HealthKitService
+    let notifications: NotificationService
 
     /// 建本機資料庫（不開 iCloud，審核規範 5.1.3）。inMemory 給 UI 測試用，每次從乾淨狀態開始。
+    /// app 與 Siri 要拿同一份，所以外面一律呼叫 shared()（Intents/IntentSupport.swift），不直接叫這個。
     static func make(inMemory: Bool) throws -> AppServices {
         let schema = Schema([Measurement.self, LiftRecord.self, UserSettings.self])
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: inMemory)
         let container = try ModelContainer(for: schema, configurations: [configuration])
         let store = StoreService(context: container.mainContext)
-        return AppServices(container: container, store: store)
+        return AppServices(
+            container: container, store: store, health: HealthKitService(),
+            notifications: NotificationService()
+        )
     }
 }
 
@@ -27,9 +33,11 @@ struct RencanApp: App {
     init() {
         var made: AppServices?
         do {
-            made = try AppServices.make(inMemory: UITestSupport.isUITest)
+            made = try AppServices.shared()
             if let made {
                 try UITestSupport.seedIfAsked(made)
+                // 在這裡就開始聽：點通知把 app 叫起來那一下，畫面還沒出現也收得到。
+                made.notifications.startListening()
             }
         } catch {
             made = nil
@@ -39,14 +47,28 @@ struct RencanApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if let services {
-                RootTabView()
-                    .modelContainer(services.container)
-                    .environment(services.store)
-                    .environment(flow)
-            } else {
-                StartupErrorView()
-            }
+            #if DEBUG
+                if MascotGalleryView.isRequested {
+                    MascotGalleryView()
+                } else {
+                    mainContent
+                }
+            #else
+                mainContent
+            #endif
+        }
+    }
+
+    @ViewBuilder private var mainContent: some View {
+        if let services {
+            RootTabView()
+                .modelContainer(services.container)
+                .environment(services.store)
+                .environment(services.health)
+                .environment(services.notifications)
+                .environment(flow)
+        } else {
+            StartupErrorView()
         }
     }
 }

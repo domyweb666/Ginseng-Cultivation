@@ -24,8 +24,8 @@ private enum Metrics {
 }
 
 /// 設定頁（左頁，照畫布 Settings）：左邊文楷大標題、右邊回境界箭頭，下面一區一張卡。
-/// 這一輪只有「身體」區。健康 app、提醒、資料、刪除全部紀錄在組塊 E、F、I 才加；
-/// 還沒有功能的開關先不放，免得按了沒反應。
+/// 由上到下：身體、提醒、資料（匯出、匯入、刪除全部紀錄）、權限與關於。
+/// 每一區自己一個檔（Settings*Section.swift），這裡只管「身體」區與排順序。
 struct SettingsView: View {
     @Environment(AppFlow.self) private var flow
     @Environment(StoreService.self) private var store
@@ -39,6 +39,10 @@ struct SettingsView: View {
                 if let heightCm = digest.heightCm, let sex = digest.sex {
                     bodySection(heightCm: heightCm, sex: sex)
                 }
+                SettingsHealthSection(digest: digest)
+                SettingsReminderSection(digest: digest)
+                SettingsDataSection(digest: digest)
+                SettingsAboutSection()
             }
             .padding(.horizontal, RencanLayout.screenMargin)
             .padding(.bottom, RencanLayout.sectionSpacing)

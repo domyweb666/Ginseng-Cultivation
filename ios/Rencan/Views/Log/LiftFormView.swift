@@ -23,6 +23,8 @@ struct LiftFormView: View {
     private static let defaultReps = 5
     private static let defaultSets = 3
     private static let columns = Array(repeating: GridItem(.flexible()), count: 3)
+    /// 存檔失敗時紅字旁抓頭的小人蔘（片 K4）高度：一閃而過的位置用最小那一級
+    private static let mascotHeight: CGFloat = 56
 
     var body: some View {
         VStack(spacing: 0) {
@@ -36,10 +38,14 @@ struct LiftFormView: View {
                     )
                     preview
                     if let errorMessage {
-                        Text(errorMessage)
-                            .font(RencanType.subheadline)
-                            .foregroundStyle(Color.rencan.destructive)
-                            .accessibilityIdentifier("form-error")
+                        // 只有存檔失敗才有小人蔘；存成功表單直接收掉，不會出現（PRD S29）。
+                        HStack(spacing: RencanLayout.groupSpacing) {
+                            MascotView(action: .oops, height: LiftFormView.mascotHeight)
+                            Text(errorMessage)
+                                .font(RencanType.subheadline)
+                                .foregroundStyle(Color.rencan.destructive)
+                                .accessibilityIdentifier("form-error")
+                        }
                     }
                 }
                 .padding(.horizontal, RencanLayout.screenMargin)

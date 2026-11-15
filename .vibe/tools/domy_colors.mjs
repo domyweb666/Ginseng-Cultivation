@@ -38,6 +38,20 @@ const sets = {
   OnBright: [theme.light.onBright, theme.dark.onBright],
 };
 
+// 角色與粒子自己的顏色：深淺色同一個值，不來自 domy-design（2026-11-16 加）。
+// 小人蔘的色碼抄自 .uiux/小人蔘/頭套預覽.html；SparkJade 是慶祝粒子的翠綠。
+const fixed = {
+  MascotRim: '#8A6420',
+  MascotLeaf: '#8DBB52',
+  MascotVein: '#3F6B24',
+  MascotBerry: '#D8402F',
+  MascotWhite: '#FFFFFF',
+  MascotSweat: '#6FB7E0',
+  MascotGlow: '#FFF4D2',
+  SparkJade: '#4CAF8D',
+};
+for (const [name, hex] of Object.entries(fixed)) sets[name] = [hex, hex];
+
 // 舊的網頁版色票（藍圖第六節舊表），換成 domy 後刪掉
 const retired = ['Background', 'Paper', 'Ink', 'InkSecondary', 'Line', 'Jade', 'JadeSoft', 'Gold', 'GoldSoft', 'Warn', 'Scroll'];
 

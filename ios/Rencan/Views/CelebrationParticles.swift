@@ -65,7 +65,7 @@ struct CelebrationParticle {
     let velocityX: Double
     let velocityY: Double
     let radius: Double
-    /// 網頁版每三顆有一顆翠色；domy 金棕主題沒有翠色代號，改用第二種金
+    /// 網頁版每三顆有一顆翠色，這裡照做（色票的 sparkJade）
     let usesSecondColor: Bool
     /// 等幾幀才噴出來（第二波用）
     let delay: Double
@@ -148,6 +148,6 @@ struct CelebrationParticlesView: View {
     }
 
     private func color(of particle: CelebrationParticle) -> Color {
-        particle.usesSecondColor ? Color.rencan.accent : Color.rencan.bright
+        particle.usesSecondColor ? Color.rencan.sparkJade : Color.rencan.bright
     }
 }
