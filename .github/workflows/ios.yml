@@ -39,7 +39,9 @@ jobs:
   ios-build:
     name: 建置並上傳 TestFlight（macOS）
     needs: core-tests
-    runs-on: macos-15
+    # 2026-11-15 踩到：Apple 現在只收用 iOS 26 SDK（Xcode 26）編的 app，
+    # 用 Xcode 16 編的會在上傳驗證被退（SDK version issue）。所以機器跟 Xcode 都用 26。
+    runs-on: macos-26
     timeout-minutes: 60
     env:
       BUILD_NUMBER: ${{ github.run_number }}
@@ -57,9 +59,9 @@ jobs:
             echo "SIM_DERIVED_DATA=$RUNNER_TEMP/sim"
           } >> "$GITHUB_ENV"
 
-      - name: 選 Xcode 16
+      - name: 選 Xcode 26
         run: |
-          XCODE_APP="$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)"
+          XCODE_APP="$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)"
           sudo xcode-select -s "$XCODE_APP"
           xcodebuild -version
           swift --version
