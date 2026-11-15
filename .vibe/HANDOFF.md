@@ -1,6 +1,6 @@
 # Handoff: E、F、H、I、K、J1 綠了、已併 main 出 TestFlight 1.0（25）；小工具 G 寫完在分支 work/widget，等多米到 Apple 後台登記 App ID
 
-> 產出時間：2026-11-16 02:10
+> 產出時間：2026-11-16 02:10，03:25 更新（小工具在模擬器上截到圖、排版修好，work/widget 最後一輪全綠）
 > 前一會話的最後狀態，給下一個會話接續用。真相源是 `.vibe/切片帳本.md`。上一份備份在 `.vibe/handoff/archive/HANDOFF-2026-11-16-0135.md`。
 
 ## ✅ 這次完成了什麼
@@ -28,9 +28,9 @@
 
 ## 🚧 還沒做完 / 待決定
 
-- **小工具的樣子還沒有人看過。** `ios/RencanUITests/WidgetUITests.swift`（commit `dcecef3`）在 GitHub 的模擬器上走主畫面「按住圖示、編輯主畫面、編輯、加入小工具、搜尋、加入」並截圖，找不到任何一步就跳過不擋線。這一輪是 run 43744487735，寫這份時還在跑。接手時先 `bash .vibe/tools/dev/watch_check.sh`（要先 `git switch work/widget`）或 `gh run view 43744487735` 看結果，截圖檔名開頭是 `Widget-`。
-  - 有截到小工具：看小的、中的版面與字有沒有被切掉，境界是不是「金丹中期」、本週是不是 4 天。
-  - 被跳過：看 `Widget-NN-找不到-某某.png` 與紀錄裡 `WIDGET-DEBUG` 那段印的元件樹，照實際的按鈕名字改測試。
+- **小工具的樣子在模擬器上看過了，真機還沒。** `ios/RencanUITests/WidgetUITests.swift` 在 GitHub 的模擬器上走主畫面「按住圖示、Edit Home Screen、Edit、Add Widget、搜尋、點進去」，預覽頁照位置滑與點（那一頁的元件不在主畫面的元件樹裡），找不到任何一步就跳過不擋線。run 43747150455（commit `a45545d`）20 條全過，截圖 `Widget-05` 到 `Widget-08`：小的「境界 金丹中期、本週 4 天」，中的多「距金丹後期還差 0.6 公斤肌肉」，加到主畫面後一樣。
+  - 看圖發現中的那句斷在「公／斤」中間，改成一行一句（`WidgetSnapshot.detailLines`，commit `7b1c330`）。run 43749476412 全綠（20 條），截圖看過：中的右邊是「距金丹後期」「還差 0.6 公斤肌肉」兩行，排好了。
+  - 同一輪 run 43744487735 提醒日選單那條偶發紅過一次（Failed to determine hittability，選單動畫中），已在 `RencanUITestCase.visibleElement` 修掉（commit `8b93743`，work/app 的 run 43747120322 綠）。
 - **`work/widget` 不能併 main**，直到多米在 Apple 後台登記 `org.domyweb.rencan.widget` 並把 App Group 配給它（步驟在 `ios/ci/README.md`）。沒登記就併，主線申請描述檔那一步會紅，TestFlight 出不了版。
 - 併的時候 `ios.yml` 的 `TESTFLIGHT_NOTES` 兩邊不一樣，`work/widget` 那邊寫的是「這一版多了小工具」，以它為準。
 - archive 那一步是自動簽章，Xcode 會不會自己替小工具的 App ID 要到開發用描述檔還沒驗過。紅在那裡的話看錯誤訊息，多半是 App ID 的 App Group 沒配。
@@ -62,8 +62,8 @@
 
 ## ⏭️ 下一步從哪繼續
 
-1. `git status --short`、`git branch -vv`：`main` 與 `work/app` 應該只差交接用的文件 commit；`work/widget` 在前面。
-2. 看 run 43744487735（`work/widget`）的結果與 `Widget-` 開頭的截圖，照上面「還沒做完」第一條處理。
+1. `git status --short`、`git branch -vv`：`main` 比 `work/app` 少最後幾個只改文件與 UI 測試的 commit（下次有程式要併時一起帶上去）；`work/widget` 在前面。
+2. `work/widget` 最新是 `7b1c330`，檢查線綠的（run 43749476412）。沒有待修的東西，只等 App ID。
 3. 問多米兩件事：驗收清單走得怎麼樣；小工具的 App ID 登記了沒。
 4. 登記好了：`git switch work/widget && git merge work/app`，檢查線綠了就 fast-forward 併 main，看主線三個工作，尤其「向 Apple 申請上架用描述檔」與 archive。
 5. 多米回報的問題照 `docs/一次驗收清單.md` 的段落一條一條修，修完推 `work/app`，綠了併 main。
