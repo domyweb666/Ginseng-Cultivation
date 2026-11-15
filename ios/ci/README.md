@@ -2,6 +2,16 @@
 
 這份是片 A1 的操作說明。做完之後，GitHub 的機器就能用你的名義簽 app、送 TestFlight。整個流程一年重做一次（憑證到期那天），所以每一步都寫到不用懂憑證是什麼也能照做。
 
+## 2026-11-15 實際走通後的更正
+
+這份說明寫在第一次跑通之前。2026-11-15 整條線第一次全綠，過程中發現下面幾點跟原本寫的不一樣，以這一段為準：
+
+- **發佈憑證不用每個 app 各做一張。** 它是整個開發者帳號共用的。這個專案沿用 VoiceType 那張（檔案在你電腦上放 VoiceType 簽章檔的資料夾，路徑不寫在這份公開文件裡），第一到第三段可以跳過，直接把那個 .p12 和它的密碼放進 secret。
+- **`ASC_KEY_P8_BASE64` 兩種放法都可以**：轉成 base64 的一串，或直接貼 .p8 檔的原文。流程會自己判斷，放錯會在「還原 App Store Connect API 金鑰」那一步紅燈並說明原因。
+- **不用到後台手動下載描述檔。** 流程每次會自己向 Apple 申請一張叫「Rencan CI App Store」的上架用描述檔。API 金鑰 App Manager 等級就夠。
+- **編譯用 Xcode 26。** Apple 現在只收 iOS 26 SDK 編的 app。
+- **`LIM_API_KEY` 不是必要的。** 沒設的話流程會跳過 Limrun 那一步，必要的 secret 是另外六個。
+
 先講三件事：
 
 - 所有產生出來的檔案放 `E:\人篸修煉-secrets\`，這個資料夾在 repo 外面。repo 裡永遠不能有 .key、.csr、.cer、.p12、.p8，`.gitignore` 跟 pre-commit hook 都會擋，但你也不要手動複製進來。
@@ -163,4 +173,8 @@ Apple Distribution 憑證有效一年。到期前 Apple 會寄信。重做第一
 - 「No signing certificate "iOS Distribution" found」：.p12 沒匯進鑰匙圈。多半是 `APPLE_DIST_P12_PASSWORD` 打錯，或第三段沒加那三個加密參數。
 - 「Provisioning profile ... doesn't include the com.apple.developer.healthkit entitlement」：第四段 App ID 沒勾 HealthKit 或 App Groups，回去勾完再重跑。
 - 「App Store Connect 找不到 bundle id」：第六段沒建 app 記錄。
+- 「The specified item already exists in the keychain」：.p12 裡已經帶著 Apple 的中繼憑證。2026-11-15 起流程會把它當成過，不用處理。
+- 「Invalid authentication key credential ... keyPathInvalid」：API 金鑰還原出來是壞的。2026-11-15 起會提早在還原那一步紅燈，照訊息重放 `ASC_KEY_P8_BASE64`。
+- 「exportArchive Cloud signing permission error」：匯出走了自動簽章。`ios/ci/ExportOptions.plist` 的 signingStyle 要是 manual。
+- 「SDK version issue ... must be built with the iOS 26 SDK」：Xcode 太舊。等 Apple 再提高門檻時，把工作流的機器和「選 Xcode」那一步一起往上調。
 - 「Limrun 400 NoSubscription」：第九段用到舊帳號的金鑰，或新帳號點數用完。
