@@ -1,6 +1,6 @@
-# Handoff: E、F、H、I、K、J1 綠了、已併 main 出 TestFlight 1.0（25）；小工具 G 寫完在分支 work/widget，等多米到 Apple 後台登記 App ID
+# Handoff: E、F、H、I、K、J1 已出 TestFlight 1.0（25）；小工具 G 已併 main，但主線紅在「Apple 後台沒有小工具的 App ID」，等多米回後台確認
 
-> 產出時間：2026-11-16 02:10，03:25 更新（小工具在模擬器上截到圖、排版修好，work/widget 最後一輪全綠）
+> 產出時間：2026-11-16 02:10，03:45 更新（小工具併進 main；archive 改手動簽章；主線卡在小工具的 App ID 不在後台）
 > 前一會話的最後狀態，給下一個會話接續用。真相源是 `.vibe/切片帳本.md`。上一份備份在 `.vibe/handoff/archive/HANDOFF-2026-11-16-0135.md`。
 
 ## ✅ 這次完成了什麼
@@ -31,9 +31,14 @@
 - **小工具的樣子在模擬器上看過了，真機還沒。** `ios/RencanUITests/WidgetUITests.swift` 在 GitHub 的模擬器上走主畫面「按住圖示、Edit Home Screen、Edit、Add Widget、搜尋、點進去」，預覽頁照位置滑與點（那一頁的元件不在主畫面的元件樹裡），找不到任何一步就跳過不擋線。run 43747150455（commit `a45545d`）20 條全過，截圖 `Widget-05` 到 `Widget-08`：小的「境界 金丹中期、本週 4 天」，中的多「距金丹後期還差 0.6 公斤肌肉」，加到主畫面後一樣。
   - 看圖發現中的那句斷在「公／斤」中間，改成一行一句（`WidgetSnapshot.detailLines`，commit `7b1c330`）。run 43749476412 全綠（20 條），截圖看過：中的右邊是「距金丹後期」「還差 0.6 公斤肌肉」兩行，排好了。
   - 同一輪 run 43744487735 提醒日選單那條偶發紅過一次（Failed to determine hittability，選單動畫中），已在 `RencanUITestCase.visibleElement` 修掉（commit `8b93743`，work/app 的 run 43747120322 綠）。
-- **`work/widget` 不能併 main**，直到多米在 Apple 後台登記 `org.domyweb.rencan.widget` 並把 App Group 配給它（步驟在 `ios/ci/README.md`）。沒登記就併，主線申請描述檔那一步會紅，TestFlight 出不了版。
-- 併的時候 `ios.yml` 的 `TESTFLIGHT_NOTES` 兩邊不一樣，`work/widget` 那邊寫的是「這一版多了小工具」，以它為準。
-- archive 那一步是自動簽章，Xcode 會不會自己替小工具的 App ID 要到開發用描述檔還沒驗過。紅在那裡的話看錯誤訊息，多半是 App ID 的 App Group 沒配。
+- **main 現在是紅的，卡在小工具的 App ID。** 2026-11-16 03:30 多米說登記好了，`work/widget` 已 fast-forward 併進 main（三個分支現在同一條線）。主線連跑三輪：
+  - run 43752942573：archive 紅，「Your account has reached the maximum number of certificates」。跟小工具無關：archive 走自動簽章，CI 機器每跑一次就向 Apple 要一張新的開發憑證，累積到帳號上限。已改成手動簽章（commit `8b5afe5`）：先申請上架用描述檔，archive 直接用鑰匙圈裡的 Apple Distribution；`project.pbxproj` 兩個 target 的 Release 設定寫死 `CODE_SIGN_STYLE = Manual`、簽章身分與描述檔名字。
+  - run 43753350116：主 app 的描述檔申請成功，小工具那張回「Apple 後台沒有 App ID org.domyweb.rencan.widget」。
+  - run 43753698405（commit `5d4d51b`，腳本多印相近的 App ID）：後台以 `org.domyweb.rencan` 開頭的 App ID 只有 `org.domyweb.rencan（Rencan）` 一個。小工具的 App ID 不在這個開發者帳號裡。
+  - 所以手動簽章的 archive 與匯出還沒真的跑過，要等 App ID 有了才知道過不過。TestFlight 還停在 1.0（25），手機上的版本沒受影響。
+  - 等多米回後台確認（可能打錯字、沒按到 Register、或登在別的帳號）。確認好之後不用改程式：`gh run rerun 43753698405 --failed`，或推任何一個不帶 skip ci 的 commit。
+  - main 紅著的這段時間，多米回報的驗收問題修了也出不了版。如果 App ID 一時弄不好而有東西急著出，把小工具從 main 退掉（`git revert` 併小工具那幾個 commit，不要 force push），之後再併回來。
+- 帳號裡累積了很多 CI 要來的開發憑證（Apple Development，Created via API）。人蔘修煉這條線已經不再要新的，但多米其他照抄這條 CI 的 iOS 專案（archive 走自動簽章的）現在也會撞到同一個上限。要嘛那些專案也改手動簽章，要嘛多米到後台 Certificates 把用不到的開發憑證撤掉。撤憑證是他帳號的事，AI 不要自己動。
 - 鎖定畫面的圓形小工具只有真機驗得到。
 - 文件還沒跟上實作的地方：`.vibe/安全標準.md` 類別 8 寫「只申請四種讀取」，現在是五種（多了生理性別，多米 11-15 定的）；PRD S17、S26、S6 與代決清單裡寫的那幾處。片 J3 做安全閘門時一起對。
 - J2–J4（App Store Connect 的 app 記錄、截圖、說明、隱私問卷、送審）都要多米操作，還沒開始。
@@ -62,10 +67,10 @@
 
 ## ⏭️ 下一步從哪繼續
 
-1. `git status --short`、`git branch -vv`：`main` 比 `work/app` 少最後幾個只改文件與 UI 測試的 commit（下次有程式要併時一起帶上去）；`work/widget` 在前面。
-2. `work/widget` 最新是 `7b1c330`，檢查線綠的（run 43749476412）。沒有待修的東西，只等 App ID。
-3. 問多米兩件事：驗收清單走得怎麼樣；小工具的 App ID 登記了沒。
-4. 登記好了：`git switch work/widget && git merge work/app`，檢查線綠了就 fast-forward 併 main，看主線三個工作，尤其「向 Apple 申請上架用描述檔」與 archive。
+1. `git status --short`、`git branch -vv`：`main`、`work/app`、`work/widget` 應該在同一條線上（小工具已併）。之後只用 `work/app` 一個工作分支就好。
+2. `gh run list --workflow=ios.yml --limit 3` 看主線。紅在「向 Apple 申請上架用描述檔」代表小工具的 App ID 還沒有。
+3. 問多米兩件事：驗收清單走得怎麼樣；小工具的 App ID 回後台確認了沒（Identifiers 清單裡要看得到 `org.domyweb.rencan.widget`，而且是 CI 金鑰所屬的那個帳號）。
+4. 確認好了：重跑主線，盯「向 Apple 申請上架用描述檔」「archive」「上傳 App Store Connect」三步。archive 是第一次手動簽章，紅了看錯誤訊息（描述檔名字對不上、entitlements 與描述檔不合是最可能的兩種）。
 5. 多米回報的問題照 `docs/一次驗收清單.md` 的段落一條一條修，修完推 `work/app`，綠了併 main。
 6. 都過了再做 J2–J4。
 
