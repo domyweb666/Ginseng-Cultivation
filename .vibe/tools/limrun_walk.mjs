@@ -2,14 +2,16 @@
 // 親手走一遍主流程、每一步截圖，然後刪機器。Limrun 以分鐘計費，所以：
 //   - 不管成敗，finally 一定刪這次開的機器；另設閒置 3 分鐘、最長 12 分鐘自動關。
 //   - 結束前列出帳號下帶 project=rencan 標籤、還活著的機器，有就刪掉並印出來。
-// 用法：node .vibe/tools/limrun_walk.mjs <rencan-sim.zip> <截圖輸出資料夾>
+// 用法：node .vibe/tools/limrun_walk.mjs <rencan-sim.zip> <截圖輸出資料夾> [只走哪幾段]
+//   第三個參數不給就走 demo,best,fresh,mascot 四段；給「widget」只走小工具那段（要用 work/widget 的模擬器版）。
 // 金鑰：環境變數 LIM_API_KEY，沒有就讀 ~/.lim/config.yaml 的 api-key。模擬器裡只有合成資料。
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import Limrun, { Ios } from "@limrun/api";
 
-const [zipPath, outDir] = process.argv.slice(2);
+const [zipPath, outDir, onlyArg] = process.argv.slice(2);
+const parts = (onlyArg ?? "demo,best,fresh,mascot").split(",");
 if (!zipPath || !outDir) {
   console.error("用法：node limrun_walk.mjs <rencan-sim.zip> <截圖輸出資料夾>");
   process.exit(2);
@@ -401,6 +403,131 @@ async function walkMascot() {
   }
 }
 
+/// 小工具（組塊 G）：示範資料打開 app 寫好快照，回主畫面，按住空白處、編輯、加入小工具，
+/// 看小工具清單裡的預覽與放到主畫面後的樣子。主畫面的按鈕字隨系統語言不同，中英文都試。
+/// 每一步都把看到的標籤印出來：這段第一次跑，哪一步點不到看紀錄就知道。
+async function pressHome() {
+  await client.performActions([
+    { type: "buttonDown", button: "home" },
+    { type: "wait", durationMs: 80 },
+    { type: "buttonUp", button: "home" },
+  ]);
+  await sleep(1500);
+}
+async function tapAny(texts) {
+  for (const text of texts) {
+    if (await tap(text, { contains: true, wait: 1200 })) return true;
+  }
+  return false;
+}
+async function walkWidget() {
+  await launch("demo");
+  check("小工具：示範資料進到境界頁", await waitFor("境界"));
+  await sleep(1000);
+  await pressHome();
+  await shot("小工具-主畫面");
+  await dump("主畫面");
+  await hold(screen.width / 2, screen.height * 0.62, 1500);
+  await shot("小工具-按住空白處之後");
+  await dump("按住之後");
+  check("小工具：主畫面進編輯模式有編輯鈕", await tapAny(["Edit", "編輯"]));
+  await shot("小工具-點編輯之後");
+  await dump("點編輯之後");
+  check("小工具：點加入小工具", await tapAny(["Add Widget", "加入小工具"]));
+  // 清單第一次打開要載入好幾秒（2026-11-16 第一趟 2 秒時還是空的），每 3 秒截一張等它出來
+  for (const second of [3, 6, 9, 12]) {
+    await sleep(3000);
+    await shot(`小工具-小工具清單${second}秒`);
+    if (await has("人蔘修煉")) break;
+  }
+  await dump("小工具清單");
+  let found = await tapAny(["人蔘修煉", "Rencan"]);
+  for (let index = 0; index < 4 && !found; index += 1) {
+    await scrollDown();
+    await shot(`小工具-小工具清單往下${index + 1}`);
+    found = await tapAny(["人蔘修煉", "Rencan"]);
+  }
+  check("小工具：清單裡找得到人蔘修煉", found);
+  if (!found) return;
+  await sleep(1200);
+  await shot("小工具-預覽第一種");
+  await dump("預覽頁");
+  for (const index of [2, 3]) {
+    await drag(screen.width * 0.8, screen.height * 0.42, screen.width * 0.2, screen.height * 0.42);
+    await shot(`小工具-預覽第${index}種`);
+  }
+  check("小工具：按加入", await tapAny(["Add Widget", "加入小工具"]));
+  await sleep(1200);
+  await shot("小工具-加到主畫面");
+  await tapAny(["Done", "完成"]);
+  await pressHome();
+  await shot("小工具-主畫面上的樣子");
+  await dump("加完之後的主畫面");
+  check("小工具：主畫面上看得到境界", (await has("金丹")) || (await has("境界")));
+}
+
+/// 跑一個 simctl 指令，把它印的字收回來。
+function simctlOutput(args, ms = 15000) {
+  return new Promise((resolve) => {
+    const lines = [];
+    let done = false;
+    const finish = (note) => {
+      if (done) return;
+      done = true;
+      if (note) lines.push(note);
+      resolve(lines.join("\n"));
+    };
+    try {
+      const execution = client.simctl(args);
+      execution.on("line-stdout", (line) => lines.push(line));
+      execution.on("line-stderr", (line) => lines.push("[stderr] " + line));
+      execution.on("exit", (code) => finish(`[exit ${code}]`));
+      execution.on("error", (error) => finish(`[error ${error?.message}]`));
+    } catch (error) {
+      finish(`[throw ${error?.message}]`);
+    }
+    setTimeout(() => finish("[timeout]"), ms);
+  });
+}
+
+/// 小工具的快照有沒有真的寫進 App Group（片 G1）。雲端模擬器的「加入小工具」清單是空的
+/// （2026-11-16 兩趟都是，連系統內建的小工具都沒有），小工具的樣子在這裡看不到，
+/// 所以改看資料：示範資料打開 app 之後，App Group 的偏好設定檔裡要有 widgetSnapshot.v1 那一格。
+async function walkSnapshot() {
+  await launch("demo");
+  check("快照：示範資料進到境界頁", await waitFor("境界"));
+  await sleep(1500);
+  // Limrun 不准用 get_app_container，改用 appinfo：它的 GroupContainers 那段有 App Group 的路徑
+  const info = await simctlOutput(["appinfo", "booted", BUNDLE]);
+  log("appinfo：", info.slice(0, 2500));
+  const match = info.match(/"?group\.org\.domyweb\.rencan"?\s*=\s*"?(?:file:\/\/)?(\/[^";\n]+)/);
+  check("快照：主 app 有 App Group 容器", Boolean(match), match ? match[1] : "appinfo 裡沒有 group.org.domyweb.rencan");
+  if (!match) return;
+  const folder = decodeURIComponent(match[1]).replace(/\/$/, "");
+  const plist = `${folder}/Library/Preferences/group.org.domyweb.rencan`;
+  const listed = await simctlOutput(["spawn", "booted", "/bin/ls", "-la", `${folder}/Library/Preferences`]);
+  log("偏好設定資料夾：", listed);
+  const read = await simctlOutput(["spawn", "booted", "defaults", "read", plist]);
+  log("defaults read：", read.slice(0, 1500));
+  check("快照：App Group 裡有 widgetSnapshot.v1", read.includes("widgetSnapshot.v1") || listed.includes("group.org.domyweb.rencan.plist"));
+  // 空狀態的快照是 62 個位元組（只有 weekDays、updatedAtMs、isUnstable）。示範資料有境界與本週天數，
+  // 一定比它長。系統把偏好設定寫回磁碟有延遲，所以記一筆之後隔幾秒多讀幾次。
+  const sizeOf = (text) => Number(text.match(/length = (\d+)/)?.[1] ?? 0);
+  log("快照長度（剛打開）：", sizeOf(read));
+  if (await tap("記一筆", { contains: true })) {
+    await sleep(700);
+    await tap("記下", { wait: 1500 });
+  }
+  let longest = sizeOf(read);
+  for (const second of [2, 5, 9, 14]) {
+    await sleep(second === 2 ? 2000 : 3500);
+    const again = await simctlOutput(["spawn", "booted", "defaults", "read", plist]);
+    log(`快照長度（記一筆後約 ${second} 秒）：`, sizeOf(again), again.slice(0, 220).replace(/\s+/g, " "));
+    longest = Math.max(longest, sizeOf(again));
+  }
+  check("快照：示範資料的快照比空狀態長（有境界與本週天數）", longest > 62, `最長 ${longest} 位元組`);
+}
+
 // MARK: 主程式
 
 async function aliveOfOurs() {
@@ -447,10 +574,12 @@ try {
   if (root) screen = { width: root.frame.width, height: root.frame.height };
   log("螢幕", JSON.stringify(screen));
 
-  await walkDemo();
-  await walkLiftBest();
-  await walkFresh();
-  await walkMascot();
+  if (parts.includes("demo")) await walkDemo();
+  if (parts.includes("best")) await walkLiftBest();
+  if (parts.includes("fresh")) await walkFresh();
+  if (parts.includes("mascot")) await walkMascot();
+  if (parts.includes("widget")) await walkWidget();
+  if (parts.includes("snapshot")) await walkSnapshot();
 } catch (error) {
   log("中斷：", error?.stack ?? String(error));
   check("整趟跑完", false, String(error?.message ?? error).slice(0, 200));
