@@ -5,14 +5,14 @@ import SwiftUI
 /// 換頁的圖示按鈕：齒輪、分析圖示、回境界箭頭都是它。
 /// 標籤是 Limrun 自驗腳本找元件的依據（「設定」「分析」「回境界」），改字要一起改腳本。
 struct PageIconButton: View {
-    @Binding var page: RencanPage
+    @Environment(AppFlow.self) private var flow
     let target: RencanPage
     let systemImage: String
     let label: String
 
     var body: some View {
         Button {
-            withAnimation { page = target }
+            withAnimation { flow.page = target }
         } label: {
             Image(systemName: systemImage)
                 .font(.title3)
@@ -26,12 +26,10 @@ struct PageIconButton: View {
 
 /// 側頁共用的「回境界」按鈕。設定頁在左，箭頭朝右；分析頁在右，箭頭朝左。
 struct BackToRealmButton: View {
-    @Binding var page: RencanPage
     let edge: HorizontalEdge
 
     var body: some View {
         PageIconButton(
-            page: $page,
             target: .realm,
             systemImage: edge == .leading ? "chevron.left" : "chevron.right",
             label: "回境界"
@@ -69,6 +67,21 @@ struct RencanPrimaryButtonStyle: ButtonStyle {
             .frame(maxWidth: .infinity, minHeight: RencanLayout.buttonHeight)
             .background(
                 Color.rencan.accent,
+                in: RoundedRectangle(cornerRadius: RencanLayout.buttonCornerRadius)
+            )
+            .opacity(configuration.isPressed ? 0.8 : 1)
+    }
+}
+
+/// 次要按鈕：淺灰底，一個畫面可以有幾顆。
+struct RencanSecondaryButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(RencanType.headline)
+            .foregroundStyle(Color.rencan.textPrimary)
+            .frame(maxWidth: .infinity, minHeight: RencanLayout.secondaryButtonHeight)
+            .background(
+                Color.rencan.surfaceMuted,
                 in: RoundedRectangle(cornerRadius: RencanLayout.buttonCornerRadius)
             )
             .opacity(configuration.isPressed ? 0.8 : 1)

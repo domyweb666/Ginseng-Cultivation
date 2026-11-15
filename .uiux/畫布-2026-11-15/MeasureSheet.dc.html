@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<title>輸入體組成</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0}
+a{color:#7A5916;text-decoration:none}a:hover{color:#5E4410}
+input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+input:focus{outline:2px solid #916B1B;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #6F6C66; color: #1D1D1F; font-family: -apple-system, 'PingFang TC', 'Noto Sans TC', sans-serif">
+  <div role="dialog" aria-label="輸入體組成" style="position: absolute; left: 0; right: 0; top: 54px; bottom: 0; background: #F7F4EC; border-radius: 20px 20px 0 0; padding: 8px 20px 0; display: flex; flex-direction: column; gap: 16px">
+    <div style="align-self: center; width: 36px; height: 5px; border-radius: 999px; background: #D8D3C8"></div>
+
+    <div style="display: grid; grid-template-columns: 80px 1fr 80px; align-items: center; margin-top: -8px">
+      <a href="Main.dc.html" style="min-height: 44px; display: flex; align-items: center; font-size: 17px; color: #7A5916">取消</a>
+      <h1 style="margin: 0; text-align: center; font-size: 17px; line-height: 22px; font-weight: 600">輸入體組成</h1>
+      <span></span>
+    </div>
+
+    <div style="background: #FFFFFF; border-radius: 20px; padding: 0 16px">
+      <div style="min-height: 56px; display: flex; align-items: center; gap: 12px">
+        <label for="m-w" style="flex: 1; font-size: 17px">體重</label>
+        <input id="m-w" type="number" inputmode="decimal" step="0.1" value="{{w}}" onChange="{{setW}}" style="width: 96px; height: 40px; border: 0; border-radius: 10px; background: #F7F4EC; text-align: right; padding: 0 10px; font: inherit; font-size: 20px; font-weight: 600; color: #1D1D1F; box-sizing: border-box">
+        <span style="width: 32px; font-size: 15px; color: #66666D">公斤</span>
+      </div>
+      <div style="height: 1px; background: #E5E1D8"></div>
+      <div style="min-height: 56px; display: flex; align-items: center; gap: 12px">
+        <label for="m-bf" style="flex: 1; font-size: 17px">體脂率</label>
+        <input id="m-bf" type="number" inputmode="decimal" step="0.1" value="{{bf}}" onChange="{{setBf}}" style="width: 96px; height: 40px; border: 0; border-radius: 10px; background: #F7F4EC; text-align: right; padding: 0 10px; font: inherit; font-size: 20px; font-weight: 600; color: #1D1D1F; box-sizing: border-box">
+        <span style="width: 32px; font-size: 15px; color: #66666D">%</span>
+      </div>
+      <div style="height: 1px; background: #E5E1D8"></div>
+      <div style="min-height: 56px; display: flex; align-items: center; gap: 12px">
+        <label for="m-lean" style="flex: 1; font-size: 17px">去脂體重<span style="font-size: 13px; color: #66666D">（選填）</span></label>
+        <input id="m-lean" type="number" inputmode="decimal" step="0.1" placeholder="自動算" value="{{lean}}" onChange="{{setLean}}" style="width: 96px; height: 40px; border: 0; border-radius: 10px; background: #F7F4EC; text-align: right; padding: 0 10px; font: inherit; font-size: 20px; font-weight: 600; color: #1D1D1F; box-sizing: border-box">
+        <span style="width: 32px; font-size: 15px; color: #66666D">公斤</span>
+      </div>
+    </div>
+    <p style="margin: -8px 16px 0; font-size: 13px; line-height: 18px; color: #66666D">體脂秤有給去脂體重就填，比用體脂率換算準。</p>
+
+    <div style="background: #FFFFFF; border-radius: 20px; padding: 0 16px">
+      <button type="button" style="width: 100%; min-height: 52px; padding: 0; border: 0; background: transparent; font: inherit; color: inherit; display: flex; align-items: center; gap: 12px; text-align: left">
+        <span style="flex: 1; font-size: 17px">量測日期</span>
+        <span style="font-size: 17px; color: #66666D">今天・11 月 12 日</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+      </button>
+    </div>
+
+    <section aria-live="polite" aria-label="結算預覽" style="background: #FBF7ED; border: 1px solid #F1E6CC; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 6px">
+      <div style="font-size: 13px; line-height: 18px; color: #66666D">結算後</div>
+      <div style="display: flex; align-items: baseline; gap: 8px">
+        <span style="font-family: 'LXGW WenKai TC', serif; font-size: 30px; line-height: 38px; font-weight: 700; color: #7A5916">{{realm}}</span>
+        <sc-if value="{{up}}" hint-placeholder-val="{{ true }}">
+          <span style="padding: 3px 10px; border-radius: 999px; background: #916B1B; color: #FFFFFF; font-size: 12px; font-weight: 600">突破</span>
+        </sc-if>
+      </div>
+      <div style="font-size: 15px; line-height: 20px; color: #1D1D1F">FFMI {{ffmi}}・去脂 {{leanText}} 公斤</div>
+      <sc-if value="{{unstable}}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top: 4px; padding: 8px 12px; border-radius: 12px; background: #FBEDEB; color: #C4372C; font-size: 13px; line-height: 18px; font-weight: 500">體脂超過 20%，根基不穩：這次會記下，但不算突破。</div>
+      </sc-if>
+    </section>
+
+    <p style="margin: 0 16px; font-size: 13px; line-height: 18px; color: #66666D">今天已經有一筆量測的話，結算前會先問你要不要蓋掉。</p>
+
+    <a href="{{target}}" style="position: absolute; left: 20px; right: 20px; bottom: 34px; height: 52px; border-radius: 16px; background: #916B1B; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 600">結算境界</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { w: '73.0', bf: '14.4', lean: '' };
+  }
+  renderVals() {
+    const H = 174;
+    const REALMS = [
+      { n: '煉氣', lo: 16.5, hi: 18 }, { n: '築基', lo: 18, hi: 19.5 }, { n: '金丹', lo: 19.5, hi: 21 },
+      { n: '元嬰', lo: 21, hi: 22.5 }, { n: '化神', lo: 22.5, hi: 24 }, { n: '大乘', lo: 24, hi: 25.5 }, { n: '渡劫', lo: 25.5, hi: 27 }
+    ];
+    const STAGES = ['初期', '中期', '後期'];
+    const CURRENT_IDX = 8;
+    const s = this.state;
+    const w = parseFloat(s.w) || 0;
+    const bf = parseFloat(s.bf) || 0;
+    const lean = parseFloat(s.lean) || w * (1 - bf / 100);
+    const h = H / 100;
+    const f = lean / (h * h) + 6.1 * (1.8 - h);
+    let i = REALMS.findIndex((r) => f < r.hi);
+    if (i < 0) i = REALMS.length - 1;
+    const r = REALMS[i];
+    const st = Math.max(0, Math.min(2, Math.floor((f - r.lo) / 0.5)));
+    const unstable = bf > 20;
+    const up = !unstable && i * 3 + st > CURRENT_IDX;
+    const field = (k) => (e) => this.setState({ [k]: e.target.value });
+    return {
+      w: s.w, bf: s.bf, lean: s.lean,
+      setW: field('w'), setBf: field('bf'), setLean: field('lean'),
+      realm: f < 16.5 ? '未入煉氣' : r.n + STAGES[st],
+      ffmi: f.toFixed(1),
+      leanText: lean.toFixed(1),
+      up: up,
+      unstable: unstable,
+      target: up ? 'Celebrate.dc.html' : 'Main.dc.html'
+    };
+  }
+}
+</script>
+</body>
+</html>

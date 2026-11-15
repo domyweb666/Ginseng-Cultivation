@@ -1,70 +1,95 @@
-# Handoff: 人蔘修煉 PWA → iOS 原生 app：從考古到切片全部定案，停在第一片動工前的走查
+# Handoff: 組塊 B 規則引擎做完並上 main；多米要「整個 app 做完再一次驗收」，組塊 C＋D 寫到一半停在分支 work/app（還沒編譯過）
 
-> 產出時間：2026-11-07 16:37
-> 前一會話的最後狀態，給下一個會話接續用。session-start hook 會自動把這份、規矩檔、state.json 注入新會話。
+> 產出時間：2026-11-15 23:24
+> 前一會話的最後狀態，給下一個會話接續用。真相源是 `.vibe/切片帳本.md`；這份只補帳本沒寫的「做到一半的細節」。
 
 ## ✅ 這次完成了什麼
-- 把 GitHub repo（domyweb666/Ginseng-Cultivation，使用者自己的）clone 到 `E:\人篸修煉` 當專案根目錄；origin 仍指向它，main 之上多了 12 個 VibeRails commit，**全部未 push**
-- 鋪 VibeRails 安全網：`.vibe/`、三個 Claude Code hook（`.claude/settings.json`）、tag `pre-viberails`（採用前原始狀態）
-- 考古三件套＋意圖落差清單：`.vibe/考古版-flowmap.html`、`考古版藍圖.md`、`考古版產品定稿.md`、`意圖落差清單.md`
-- 拷問完成 → `.vibe/產品定稿.md`；PRD 28 條故事 → `.vibe/PRD.md`
-- 正式架構藍圖 `.vibe/架構藍圖.md`，兩張待掛點流程圖（規格 `.vibe/flowmap/app.json`、`delivery.json`，工具 `.vibe/tools/flowmap_build.js`）
-- 安全標準 `.vibe/安全標準.md`（MASVS＋CWE＋App Store 5.1.3），已掛進規矩檔
-- 切片帳本 `.vibe/切片帳本.md`：10 組塊 36 片（組塊 A 後來加了 A5 變 37 片）；`.vibe/組塊核准讀稿.md` 使用者全部放行
-- voice-lock：憲法寫進 `.vibe/規矩檔.md`「專案特定規矩」；pre-commit hook `.vibe/hooks/pre-commit.js`（`git config core.hooksPath .vibe/githooks` 已設，實測攔下故意放的 5 個違規）；`ios/.swift-format`、`ios/.swiftlint.yml` 給 CI；`.gitattributes` 統一 LF
-- 片 A1（憑證）＋A2（骨架）的 `.vibe/標準清單.md` 與 `.vibe/黃金行為.md`
-- 查證 Limrun 並納入交付線：帳本新片 A5、交付圖 d13／d14、PRD 黑箱盲點、藍圖第二節、安全標準類別 9
+
+- 組塊 B（B1–B5）全部做完、推上 `main`、帳本打勾。最後一輪 run 43724808643：187 條中文名測試全過、swift-format 與 SwiftLint 嚴格都綠、TestFlight build 23。五片都是第一次推就綠。
+- 多米點頭的事：採用 11/9 的標準清單、B5 放行、B3 兩張白話表（含補的三處）、七張女性立繪原檔進版控。
+- 多米 2026-11-15 深夜的指示：「都做完，我再一次驗收」，並在選項裡選「整個 app 做完」。組塊 C 到 K 的程式全部做完才請他驗收，組塊 B 的人驗併到那一次。只停三種事：上架送審、要他登入 Apple 後台的、刪除真實資料。中途要他選的（Siri 語句、小人蔘 K2–K4 放行）照建議代決並記進 `.vibe/代決清單.md`。
+- 建好「檢查線」（分支 `work/app`）：`.github/workflows/ios-check.yml` 在推到 `work/**` 時跑 Linux 測試、排版與 lint、模擬器編譯、UI 測試截圖，不碰 secrets、不上傳 TestFlight。UI 測試目標 `RencanUITests` 已加進 pbxproj 與 scheme。第一輪 run 43728269942 全綠，三張截圖看過正常。
+- 補做組塊 B 的簡版體檢（記在帳本跳過紀錄）。
+- 規則引擎加了畫面要用的東西（都在 `work/app`，還沒上過 CI）：`Digest.swift`（境界碑、功法卡、記一筆預覽、走勢點）、`Formulas.stageProgressPercent`、`Formulas.bodyFatGate`、`Formulas.fmt`、`Breakthrough.ffmi`、三種新錯誤（profileMissing、sameDayMeasurement、saveFailed）、`DigestTests.swift`（26 條）。
+- 組塊 C＋D 的 app 程式寫了大約一半（清單在下面），**一次都還沒編譯過**。
 
 ## 🚧 還沒做完 / 待決定
-- **片 A1／A2 的真實情境走查沒做**：使用者沒用自己的話講「推上去之後我會怎麼操作、期望看到什麼」。下個會話第一件事（或他選「照標準開做」也行，但要留痕）。
-- **組塊 A 加了 A5，組成變了，讀稿要他重新放行 A**（其他九塊放行不變）。
-- **Limrun 帳號**：使用者有沒有帳號、試用 120 點夠做 A5 首驗、要不要付 Entry（20 美元/月）都沒問。
-- plan-readback 還沒跑（走查過了才跑）。
-- 全部 commit 未 push；push 前要問使用者（repo 公開，`.vibe/` 文件會公開在 GitHub Pages 上）。
-- 架構藍圖第十節的切片順序建議裡「CI 可以提早到第一片之後就建」已被帳本採納（A3 在組塊 A）。
+
+### 分支 work/app 現在編不過，缺這些才會過
+
+- `Views/Analysis/AnalysisView.swift` 還是舊的（收 `page` binding）。要改成 `AnalysisView(digest:lifts:)`，分段境界／功法。
+- `Views/Settings/SettingsView.swift` 還是舊的。要改成 `SettingsView(digest:)`，先做「身體」區：身高（用 `HeightStepper`）與性別分段，改了呼叫 `store.saveProfile`。
+- `Views/Gong/GongView.swift` 還是空殼。要做：統計格（累計修煉、這個月、練到大成幾門）、六張功法卡兩欄、最近修煉 20 筆（點了進編輯）、「功法等級怎麼算」。
+- 還沒有的檔：
+  - `Views/CelebrationView.swift`：收 `Celebration`，深色底（對整個 view 下 `.environment(\.colorScheme, .dark)` 就能用同一套代號）、立繪、大字、說明、4.5 秒進度條、點任何地方關閉；`.task` 裡用 `Task.pause(seconds: AppFlow.celebrationSeconds)` 自動關。粒子照網頁版 `burst`（index.html L582–596），系統開「減少動態效果」不噴。
+  - `Views/Gong/MoveDetailView.swift`：`MoveDetailView(key:digest:lifts:)`，那門功法的 1RM 走勢（Swift Charts）加全部紀錄。
+  - 功法卡（MoveCardView）：功法名、等級標籤、`SegmentBar(total: 5, filled: level)`、「1RM X 公斤」「Y 倍體重」、走勢線、「再加 N 公斤升Z」／「已到化境」／「還沒有紀錄」／「先量一次體重」。
+  - 分析頁境界段：宗門卡（身分、說明、進度條、下一步、六個身分一排標出現在的）、FFMI 走勢圖（境界門檻畫虛線；只有一筆時顯示一句話）、突破紀錄（新的在上：「金丹後期」「11 月 3 日・距上次 62 天」或「第一次量測」「FFMI 20.6」）、天梯（七列，範圍用 `sex.displayedRealmBounds()`，現在那一列標「你在這裡・後期」）、「境界怎麼算」。沒量過時顯示一句空狀態。
+- `ios/RencanUITests/ShellUITests.swift` 要改：現在 app 第一次打開會先到問身高那頁，測試要帶 `-rencanSeed profile` 才進得了三頁。另外要加測試：第一次打開（選性別、開始）、記一筆（看到預覽、記下、今天的修煉多一行）、手動量體組成（踏入仙途的慶祝）、`-rencanSeed demo` 截境界頁與分析兩段、編輯與左滑刪除加復原。
+- `Formulas.fmt` 還沒有測試。網頁版算出來的標準答案：`fmt(0.125,2)="0.13"`、`fmt(20.316852,2)="20.32"`、`fmt(0.5544984,1)="0.6"`、`fmt(116.666,0)="117"`、`fmt(2.5,0)="3"`、`fmt(1.005,2)="1.00"`、`fmt(72,1)="72.0"`、`fmt(19.995,2)="20.00"`。
+- 文件還沒跟上：`.vibe/架構藍圖.md` 第三節要補這次新增的檔（下面「重要的檔案」列的那些）；帳本要補組塊 C、D 的 plan-readback 與「本片動到的檔」；PRD 的 S1 要從「只問身高」改成「問身高與性別」（多米 11-15 定女性版時已經決定）。
+
+### 之後的組塊（照帳本順序，每塊綠了併 main 出一版）
+
+- **E 健康 app**：UI 測試模式（`-rencanUITest`）不碰 HealthKit。真機才驗得到，列進最後的驗收清單。
+- **F 資料帶得走**：匯出匯入用 RencanCore 的 `WebExport`；`index.html` 只加一顆匯出鈕；「刪除全部紀錄」要二次確認。
+- **G 小工具**：要第二個 App ID `org.domyweb.rencan.widget` 加上 App Group，App Group 指派用 API 做不到，要多米進 Apple 後台。所以小工具做到模擬器能驗，**不要併進 main 的 archive**，免得主線簽章紅掉、多米最後沒版本可驗。`ios/ci/appstore_profile.mjs` 也只吃一個 bundle id。
+- **H Siri**：App Intents 放在主 app target，不用新 target。語句照帳本建議代決。
+- **I 提醒與設定收尾**、**K 小人蔘**（K1 多米選了頭套款；K2 的角度答案在 `.uiux/小人蔘/頭套預覽.html` 的 `<script id="core">`）。
+- **J 上架**：J1 隱私文稿可以先寫；J2–J4 是多米的事，不做。
+
+### 留給後面的提醒
+
+- 身高沒過 `Validation.check(heightCm:)` 不准呼叫 `ffmi`（傳 0 會算出渡劫後期）。現在 `saveProfile` 有擋。
+- PRD S6「補登的量測不進突破紀錄」跟網頁版每次重排重算的做法有落差，組塊 D 做突破紀錄畫面時要記進代決清單或問多米。
+- 刪除修煉現在是「立刻刪、5 秒內可復原」，藍圖寫的是「逾時才真刪」。使用者看到的一樣，app 在 5 秒內被殺掉時兩者不同。要記進代決清單。
+- 記一筆表單照設計畫布只有加減鈕（重量一次 2.5 公斤），打不出 41 這種數字。最後驗收清單要提醒多米看這點。
 
 ## 📌 關鍵決策（這次定下來的，下次別再爭論）
-- 路線：SwiftUI 原生重寫，iOS 17 起，SwiftData 本機；零第三方套件
-- 編譯：沒有 Mac。GitHub Actions（repo 公開，macOS runner 免費）建 TestFlight 版；Limrun 建模擬器版給 AI 自驗；lim xcode sync 只當卡編譯時的快速內圈
-- 帳號：付費 Apple Developer；上架給陌生人；免費
-- 第一版範圍：原樣移植＋HealthKit＋震動＋小工具＋Siri＋每月提醒
-- 核心功能：境界那一刻；成功：陌生人三個月後還在量；最怕：欄位多的健身記錄 app（欄位數定死）
-- 給誰用：有在重訓的人含新手；男女兩套（2026-11-15 改，規則在 .vibe/女性版規則.md）
-- 體脂數字必要；引導只問身高（能抓健康 app 就不問）；授權讀取第一次打開一次問四種
-- 訓練模型：丙，單筆不動＋今天的修煉清單
-- **不做 iCloud**（App Store 5.1.3 不准健康資料存 iCloud）；換手機靠健康 app 重建＋匯出匯入
-- 體脂 >20%：顯示境界但根基不穩，突破與宗門只採計穩固；精進煙火要 1RM 真的變高；bwAt 不再預設 65 kg
-- 設定加「刪除全部紀錄」（安全標準要求）
-- Bundle ID org.domyweb.rencan；App 名稱人蔘修煉；繁中；隱私政策放 domyweb.org
-- 規則引擎 RencanCore 純 Swift、只 import Foundation、日期用 yyyy-MM-dd 字串跟網頁版算法一樣；黃金集用 node 跑原版 index.html 的 JS 產標準答案（不用真實個人資料）
-- 設計代號照網頁版 CSS（藍圖第六節），畫面不准寫死色碼（hook 擋）
+
+- 中途一律推 `work/app` 跑檢查線，一整塊綠了才併 `main`（併 main 才會出 TestFlight 版本）。`main` 的 `ios.yml` 沒動。
+- 畫面的機器自審＝UI 測試在 GitHub 的模擬器截圖，AI 下載回來用 Read 看圖。Limrun 不用了。
+- 畫面要的數字全部由 RencanCore 的 `Digest` 算好，畫面只排版。`RootTabView` 用 `@Query` 讀一次資料、算一份 `Digest` 往下傳。
+- 跟性別有關的函式 `sex` 沒有預設值；不帶 sex 的版本在 `WebParity.swift`（internal，只給測試對網頁版用）。
+- SwiftData 的日期存成「yyyy-MM-dd」字串（`day`），用西曆（`DayStamp`），不用 `Calendar.current`（民國曆會出錯）。
+- 三頁共用的流程狀態（哪張表單、小提示、慶祝、復原、現在哪一頁）放在 `AppFlow`（@Observable，從 environment 注入）。換頁按鈕讀它，不再傳 `page` binding。
+- 資料只透過 `StoreService` 改，全部 throws，存檔失敗會 rollback 並丟 `RencanError.saveFailed`。
+- Debug 版才認的啟動參數：`-rencanUITest`（記憶體資料庫）、`-rencanSeed profile|demo|female`。Release 版一律無視。
+- 文字與版面照九張設計畫布，已存一份在 `.uiux/畫布-2026-11-15/*.dc.html`（Main、RealmEmpty、LogSheet、MeasureSheet、AnalysisRealm、AnalysisGong、Settings、Onboard、Celebrate）。
+- 這台沒有 Swift 編譯器，寫 Swift 要守的（組塊 B 五片零紅燈就是靠這些）：
+  - 不寫多行陣列字面值（swift-format 要尾逗號、SwiftLint 不准）。
+  - 不寫 `try?`、空 catch、強制解包、`print`；畫面檔不准出現色碼，顏色只從 `Color.rencan.*` 取。
+  - 每行最多 100 字元；變數名至少 3 個字（`id`、`kg`、`x`、`y`、`i` 例外）；tuple 最多 2 個成員；函式本體最多 40 行、檔案最多 400 行、型別本體最多 250 行。
+  - `if`／`guard` 的條件不要拆成多行（SwiftLint 的 opening_brace）。
+  - 測試名不能有小數點，寫「70點4」。
+  - 推之前跑 `node .vibe/tools/dev/swift_check.js ios/Rencan` 與 `ios/RencanCore`（粗篩；「全形當 2 欄會超過 100」那種只是提醒）。
+- Bash heredoc 會把兩個反斜線折成一個：含 `\(` 的 Swift 內容用 Write／Edit 工具，不要用 heredoc 裡的 node 字串替換。
 
 ## 📂 下個會話最重要的檔案
-- `.vibe/規矩檔.md` ← 憲法在「專案特定規矩」，hook 會自動注入
-- `.vibe/安全標準.md` ← **下一個會話必讀**（security-gate 的契約）
-- `.vibe/切片帳本.md` ← 真相源；「進行中」欄位還是空的
-- `.vibe/標準清單.md`、`.vibe/黃金行為.md` ← 片 A1／A2 的「怎樣算對」
-- `.vibe/架構藍圖.md` ← 第三節檔案計畫、第四節資料模型、第五節規則引擎介面、第六節設計代號、第二節交付線（含 Limrun）
-- `.vibe/PRD.md`、`.vibe/產品定稿.md` ← 終點；偏離先回來改
-- `.vibe/組塊核准讀稿.md` ← 組塊 A 要重新放行
-- `index.html` ← 原版規則在 L203–331，移植 Tables／Formulas 時逐行對照
-- `.vibe/iOS轉製建議.md` ← 當初的判斷，只當背景
+
+- `.vibe/切片帳本.md`：進度真相源。組塊 C 起的片都還沒打勾。
+- `.vibe/代決清單.md`：替多米決定的事，最後要給他看。
+- `.uiux/畫布-2026-11-15/*.dc.html`：九張畫面的文字與尺寸。
+- `ios/RencanCore/Sources/RencanCore/Digest.swift`：畫面拿數字的介面。
+- 已寫好、等編譯的 app 檔（都在 `ios/Rencan/`）：
+  - `App/`：`RencanApp.swift`、`RootTabView.swift`（含 `PagesView`、`DataErrorView`）、`AppFlow.swift`、`FirstLaunchView.swift`（含 `HeightStepper`）、`UITestSupport.swift`、`Theme.swift`（加了字體、版面常數、立繪名）
+  - `Models/`：`Measurement.swift`、`LiftRecord.swift`、`UserSettings.swift`
+  - `Services/`：`StoreService.swift`、`DayStamp.swift`、`HapticsService.swift`
+  - `Views/`：`Celebration.swift`（慶祝的文案，還沒有畫面）、`Realm/RealmView.swift`、`Realm/SteleView.swift`、`Log/LiftFormView.swift`、`Log/LiftFieldsView.swift`、`Log/LiftRow.swift`、`Log/TodayListView.swift`、`Log/EditRecordView.swift`、`Log/MeasurementFormView.swift`、`Shared/Components.swift`、`Shared/SheetChrome.swift`、`Shared/PageChrome.swift`
+- `ios/RencanUITests/RencanUITestCase.swift`：截圖底座（`launch`、`shot`、`waitForText`、`tapButton`）。
+- `.vibe/tools/dev/watch_check.sh`：等檢查線跑完、印錯誤行、把截圖抓回來。`.vibe/tools/dev/swift_check.js`：推之前的粗篩。
 
 ## ⏭️ 下一步從哪繼續
-1. 讀這份、`.vibe/安全標準.md`、`.vibe/切片帳本.md` 組塊 A。
-2. 問使用者兩件事：(a) 組塊 A 加了 A5，重新放行？(b) 走查：用他的話講「我說推上去了之後，你會怎麼操作、期望看到什麼」。他講的跟 `.vibe/標準清單.md` 有出入 → 以他為準改標準。
-3. 跑 `vibe-plan-readback` 覆誦 A1／A2／A3／A5 的做法，他點頭才動工。
-4. 做 A1：寫 `ios/ci/README.md`：openssl 做 key＋CSR（檔案放 `E:\人篸修煉-secrets\`，repo 外）、Apple 後台建 Apple Distribution 憑證、合成 .p12、註冊 App ID `org.domyweb.rencan`（勾 HealthKit、App Groups）、App Store Connect 建 API 金鑰（App Manager）與 app 記錄、GitHub 6 個 secrets（`APPLE_DIST_P12_BASE64`、`APPLE_DIST_P12_PASSWORD`、`APPLE_TEAM_ID`、`ASC_KEY_ID`、`ASC_ISSUER_ID`、`ASC_KEY_P8_BASE64`）＋ `LIM_API_KEY`；base64 轉法用 Git Bash 的 `base64 -w0`；Limrun 註冊、API key、`claude mcp add --transport http limrun https://mcp.limrun.com/mcp` 再 `/mcp` 授權、`npm install --global lim@<查最新版>`。
-5. 做 A2：手寫 Xcode 16 專案（`PBXFileSystemSynchronizedRootGroup` 資料夾同步格式，objectVersion 77）、兩個 target（Rencan、RencanWidget 可先只做 Rencan，Widget 在組塊 G 加）、三分頁空殼、Assets 顏色集（藍圖第六節）、AppIcon（img/icon-512.png）、立繪 webp→png（python 3.10 有 PIL）、LXGW 文楷 TC 字型檔（OFL，要下載 .ttf 進 Resources/Fonts 並在 Info.plist 的 UIAppFonts 登記，用 `INFOPLIST_KEY_*` 建置設定或 Info.plist 檔）、entitlements（HealthKit、App Group `group.org.domyweb.rencan`）、PrivacyInfo 空殼、RencanCore 空套件＋一個會過的測試。
-6. 做 A3：`.github/workflows/ios.yml`：job 1 ubuntu `swift test`（RencanCore）；job 2 macOS：swift-format lint --strict、swiftlint --strict、還原憑證到暫時鑰匙圈、`xcodebuild archive -allowProvisioningUpdates` 加 API 金鑰、`-exportArchive` 用 `ios/ci/ExportOptions.plist`（method app-store-connect、destination upload）、模擬器版 `-sdk iphonesimulator` 建置後 zip、`lim asset upload`；`if: always()` 刪鑰匙圈。
-7. A5：用 Limrun MCP 開模擬器裝最新 asset，截圖三個分頁存 `.vibe/evidence/`，刪機器。
-8. 每片做完照迴圈：vibe-self-review（在乾淨 subagent 跑，Limrun 截圖當證據）→ vibe-simplify → vibe-regression-guard → 存機器存檔點；立即驗的片攔使用者走 vibe-audit。
+
+1. 讀這份，再讀 `.vibe/切片帳本.md` 開頭兩段註記與 `.vibe/代決清單.md` 最後幾條。
+2. `git checkout work/app`（`main` 不要直接動）。
+3. 把「分支 work/app 現在編不過」那一段缺的檔補齊，改 UI 測試，跑 `swift_check.js`，commit 後推 `work/app`。
+4. 背景跑 `bash .vibe/tools/dev/watch_check.sh`。第一次編 SwiftUI 幾乎一定會紅幾輪，照錯誤行修到綠，再把截圖一張張用 Read 看過。
+5. C、D 都綠、截圖對得上畫布後：補帳本（C1–C5、D1–D4 的機器層證據）、藍圖、PRD S1，把 `work/app` 併進 `main`（fast-forward，不要 force push）出一版，確認主線三個工作全綠。
+6. 接著照帳本做 E、F、G、H、I、K、J1。全部做完後整理一份「一次驗收清單」給多米：手機上要看什麼、哪些只有真機驗得到（震動、體脂秤、Siri 語音）、哪些要他進 Apple 後台（小工具的 App ID 與 App Group、上架）。
 
 ## 🗑️ 這次會話的雜訊（下次別重新討論）
-- 女性標準表：11-07 砍掉，11-15 使用者又改成要做，照 .vibe/女性版規則.md
-- iCloud 同步：查證 5.1.3 後砍，別再提
-- 訓練資料模型三選一：選丙，別再提
-- 免費 Apple ID 能不能開 HealthKit：已查（官方表格有勾），而且使用者有付費帳號，無關
-- Bash 的 quoted heredoc 寫含大量單引號的大檔會炸：大檔用 Write 工具
-- 這台 Windows：Git Bash、node 24、python 3.10＋PIL、ffmpeg；沒有 Swift 工具鏈；Claude Code 的 hook 只在以 `E:\人篸修煉` 為專案目錄開會話時生效；新 clone 要重跑 `git config core.hooksPath .vibe/githooks`
-- 使用者回答習慣：多半只按框裡的按鈕，開放題要放進框裡才會答
+
+- 「都做完」的範圍已經問過，答案是整個 app。
+- 組塊 B 每片的推送授權、B2 的做法沒被明確回覆這些細節，都已經記在代決清單，不用再提。
+- 檢查腳本一開始放在暫存區，現在在 `.vibe/tools/dev/`，暫存區那份可以不管。

@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<title>分析・功法</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0}
+a{color:#7A5916;text-decoration:none}a:hover{color:#5E4410}
+</style>
+</helmet>
+<div style="width: 390px; height: 1500px; position: relative; overflow: hidden; background: #F7F4EC; color: #1D1D1F; font-family: -apple-system, 'PingFang TC', 'Noto Sans TC', sans-serif">
+  <div style="padding: 54px 20px 40px; display: flex; flex-direction: column; gap: 20px">
+
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 4px; margin-left: -10px">
+        <a href="Main.dc.html" aria-label="回境界" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 999px; color: #7A5916">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+        </a>
+        <h1 style="margin: 0; font-family: 'LXGW WenKai TC', serif; font-size: 34px; line-height: 41px; font-weight: 700">分析</h1>
+      </div>
+      <nav aria-label="分段" style="height: 36px; padding: 2px; border-radius: 12px; background: #EFEBE3; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px">
+        <a href="AnalysisRealm.dc.html" style="border-radius: 10px; color: #66666D; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 500">境界</a>
+        <a href="AnalysisGong.dc.html" aria-current="page" style="border-radius: 10px; background: #FFFFFF; color: #1D1D1F; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; box-shadow: 0 1px 3px rgba(25, 22, 20, 0.12)">功法</a>
+      </nav>
+    </div>
+
+    <div style="background: #FBF7ED; border: 1px solid #F1E6CC; border-radius: 20px; padding: 14px 16px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+      <div>
+        <div style="font-size: 22px; line-height: 28px; font-weight: 700">62<span style="font-size: 13px; font-weight: 600"> 天</span></div>
+        <div style="font-size: 13px; line-height: 18px; color: #66666D">累計修煉</div>
+      </div>
+      <div>
+        <div style="font-size: 22px; line-height: 28px; font-weight: 700">12<span style="font-size: 13px; font-weight: 600"> 天</span></div>
+        <div style="font-size: 13px; line-height: 18px; color: #66666D">這個月</div>
+      </div>
+      <div>
+        <div style="font-size: 22px; line-height: 28px; font-weight: 700">4<span style="font-size: 13px; font-weight: 600"> 門</span></div>
+        <div style="font-size: 13px; line-height: 18px; color: #66666D">練到大成</div>
+      </div>
+    </div>
+
+    <section style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0 4px; font-size: 20px; line-height: 25px; font-weight: 600">六門功法</h2>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+
+        <sc-for list="{{moves}}" as="m" hint-placeholder-count="6">
+          <article style="background: #FFFFFF; border-radius: 20px; padding: 14px; display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start">
+              <div>
+                <div style="font-family: 'LXGW WenKai TC', serif; font-size: 20px; line-height: 26px; font-weight: 700; color: #7A5916">{{m.f}}</div>
+                <div style="font-size: 13px; line-height: 18px; color: #66666D">{{m.n}}</div>
+              </div>
+              <span style="padding: 3px 8px; border-radius: 999px; background: #F1E6CC; color: #7A5916; font-size: 12px; font-weight: 600">{{m.lv}}</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 3px" role="img" aria-label="{{m.aria}}">
+              <sc-for list="{{m.segs}}" as="s" hint-placeholder-count="5">
+                <span style="height: 6px; border-radius: 999px; background: {{s.bg}}"></span>
+              </sc-for>
+            </div>
+            <div>
+              <div style="font-size: 17px; line-height: 22px; font-weight: 600">1RM {{m.rm}} 公斤</div>
+              <div style="font-size: 13px; line-height: 18px; color: #66666D">{{m.ratio}} 倍體重</div>
+            </div>
+            <svg width="100%" height="30" viewBox="0 0 130 30" preserveAspectRatio="none" aria-hidden="true">
+              <polyline points="{{m.spark}}" fill="none" stroke="#916B1B" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"></polyline>
+            </svg>
+            <div style="font-size: 12px; line-height: 16px; color: #66666D">{{m.next}}</div>
+          </article>
+        </sc-for>
+
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0 4px; font-size: 20px; line-height: 25px; font-weight: 600">最近修煉</h2>
+      <div style="background: #FFFFFF; border-radius: 20px; padding: 0 16px">
+        <sc-for list="{{recent}}" as="r" hint-placeholder-count="4">
+          <div style="min-height: 60px; padding: 10px 0; display: flex; align-items: center; gap: 12px; border-top: {{r.border}}">
+            <div style="flex: 1">
+              <div style="font-size: 17px; line-height: 22px"><span style="font-family: 'LXGW WenKai TC', serif; font-weight: 700">{{r.f}}</span>・{{r.n}}</div>
+              <div style="font-size: 13px; line-height: 18px; color: #66666D">{{r.meta}}</div>
+            </div>
+            <span style="font-size: 13px; color: #66666D">{{r.date}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 8px">
+      <div style="background: #FFFFFF; border-radius: 20px; padding: 0 16px">
+        <button type="button" style="width: 100%; min-height: 52px; padding: 0; border: 0; background: transparent; font: inherit; color: inherit; display: flex; align-items: center; gap: 12px; text-align: left">
+          <span style="flex: 1; font-size: 17px">功法等級怎麼算</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+        </button>
+      </div>
+      <p style="margin: 0 16px; font-size: 13px; line-height: 18px; color: #66666D">每一筆都換算成 1RM，再除以當時體重。未入門、入門、小成、大成、圓滿、化境，共六級。</p>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const ON = '#916B1B', OFF = '#F1E6CC';
+    const LV = ['未入門', '入門', '小成', '大成', '圓滿', '化境'];
+    const raw = [
+      { f: '坐馬樁', n: '深蹲', l: 3, rm: '105', ratio: '1.46', next: '再加 3 公斤升圓滿', spark: '2,26 27,22 52,20 77,15 102,12 128,6' },
+      { f: '拔山式', n: '硬舉', l: 3, rm: '140', ratio: '1.94', next: '再加 4 公斤升圓滿', spark: '2,24 27,24 52,18 77,14 102,10 128,5' },
+      { f: '推山掌', n: '臥推', l: 3, rm: '82', ratio: '1.13', next: '再加 8 公斤升圓滿', spark: '2,25 27,21 52,21 77,17 102,13 128,10' },
+      { f: '托天式', n: '肩推', l: 2, rm: '44', ratio: '0.61', next: '再加 3 公斤升大成', spark: '2,22 27,20 52,20 77,18 102,16 128,14' },
+      { f: '挽弓式', n: '划船', l: 3, rm: '89', ratio: '1.23', next: '再加 1 公斤升圓滿', spark: '2,27 27,23 52,18 77,16 102,11 128,7' },
+      { f: '攀雲梯', n: '引體向上', l: 2, rm: '91', ratio: '1.27', next: '再加 5 公斤升大成', spark: '2,20 27,20 52,17 77,17 102,15 128,13' }
+    ];
+    const moves = raw.map((m) => ({
+      ...m,
+      lv: LV[m.l],
+      aria: m.f + ' ' + LV[m.l] + '，五格亮 ' + m.l + ' 格',
+      segs: [1, 2, 3, 4, 5].map((i) => ({ bg: i <= m.l ? ON : OFF }))
+    }));
+    const recentRaw = [
+      { f: '坐馬樁', n: '深蹲', meta: '90 公斤 × 5 下 × 3 組', date: '今天' },
+      { f: '推山掌', n: '臥推', meta: '70 公斤 × 5 下 × 3 組', date: '今天' },
+      { f: '拔山式', n: '硬舉', meta: '120 公斤 × 5 下 × 2 組', date: '11/10' },
+      { f: '攀雲梯', n: '引體向上', meta: '自重 × 8 下 × 3 組', date: '11/10' }
+    ];
+    const recent = recentRaw.map((r, i) => ({ ...r, border: i === 0 ? '0' : '1px solid #E5E1D8' }));
+    return { moves, recent };
+  }
+}
+</script>
+</body>
+</html>

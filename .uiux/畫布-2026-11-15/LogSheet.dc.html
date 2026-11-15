@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<title>記一筆修煉</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0}
+a{color:#7A5916;text-decoration:none}a:hover{color:#5E4410}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #6F6C66; color: #1D1D1F; font-family: -apple-system, 'PingFang TC', 'Noto Sans TC', sans-serif">
+  <div role="dialog" aria-label="記一筆修煉" style="position: absolute; left: 0; right: 0; top: 54px; bottom: 0; background: #F7F4EC; border-radius: 20px 20px 0 0; padding: 8px 20px 0; display: flex; flex-direction: column; gap: 16px">
+    <div style="align-self: center; width: 36px; height: 5px; border-radius: 999px; background: #D8D3C8"></div>
+
+    <div style="display: grid; grid-template-columns: 80px 1fr 80px; align-items: center; margin-top: -8px">
+      <a href="Main.dc.html" style="min-height: 44px; display: flex; align-items: center; font-size: 17px; color: #7A5916">取消</a>
+      <h1 style="margin: 0; text-align: center; font-size: 17px; line-height: 22px; font-weight: 600">記一筆修煉</h1>
+      <span></span>
+    </div>
+
+    <fieldset style="margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 8px">
+      <legend style="padding: 0 4px 8px; font-size: 13px; line-height: 18px; color: #66666D">功法</legend>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+        <sc-for list="{{moves}}" as="m" hint-placeholder-count="6">
+          <button type="button" aria-pressed="{{m.on}}" onClick="{{m.pick}}" style="min-height: 56px; border: 0; border-radius: 14px; background: {{m.bg}}; color: {{m.fg}}; font: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px">
+            <span style="font-family: 'LXGW WenKai TC', serif; font-size: 17px; line-height: 22px; font-weight: 700">{{m.f}}</span>
+            <span style="font-size: 12px; line-height: 16px">{{m.n}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </fieldset>
+
+    <div style="background: #FFFFFF; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px">
+      <div style="font-size: 13px; line-height: 18px; color: #66666D">{{kgLabel}}</div>
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <button type="button" aria-label="重量減 2.5 公斤" onClick="{{kgDown}}" style="width: 44px; height: 44px; border: 0; border-radius: 999px; background: #EFEBE3; color: #1D1D1F; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+        <div style="display: flex; align-items: baseline; gap: 6px"><span style="font-size: 40px; line-height: 46px; font-weight: 700; font-variant-numeric: tabular-nums">{{kgText}}</span><span style="font-size: 17px; color: #66666D">公斤</span></div>
+        <button type="button" aria-label="重量加 2.5 公斤" onClick="{{kgUp}}" style="width: 44px; height: 44px; border: 0; border-radius: 999px; background: #EFEBE3; color: #1D1D1F; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+      <div style="background: #FFFFFF; border-radius: 20px; padding: 12px; display: flex; flex-direction: column; gap: 4px">
+        <div style="font-size: 13px; line-height: 18px; color: #66666D; padding-left: 4px">次數</div>
+        <div style="display: flex; align-items: center; justify-content: space-between">
+          <button type="button" aria-label="次數減一" onClick="{{repsDown}}" style="width: 44px; height: 44px; border: 0; border-radius: 999px; background: #EFEBE3; color: #1D1D1F; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+          <span style="font-size: 28px; line-height: 34px; font-weight: 700; font-variant-numeric: tabular-nums">{{reps}}</span>
+          <button type="button" aria-label="次數加一" onClick="{{repsUp}}" style="width: 44px; height: 44px; border: 0; border-radius: 999px; background: #EFEBE3; color: #1D1D1F; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+        </div>
+      </div>
+      <div style="background: #FFFFFF; border-radius: 20px; padding: 12px; display: flex; flex-direction: column; gap: 4px">
+        <div style="font-size: 13px; line-height: 18px; color: #66666D; padding-left: 4px">組數</div>
+        <div style="display: flex; align-items: center; justify-content: space-between">
+          <button type="button" aria-label="組數減一" onClick="{{setsDown}}" style="width: 44px; height: 44px; border: 0; border-radius: 999px; background: #EFEBE3; color: #1D1D1F; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+          <span style="font-size: 28px; line-height: 34px; font-weight: 700; font-variant-numeric: tabular-nums">{{sets}}</span>
+          <button type="button" aria-label="組數加一" onClick="{{setsUp}}" style="width: 44px; height: 44px; border: 0; border-radius: 999px; background: #EFEBE3; color: #1D1D1F; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border-radius: 20px; padding: 0 16px">
+      <button type="button" style="width: 100%; min-height: 52px; padding: 0; border: 0; background: transparent; font: inherit; color: inherit; display: flex; align-items: center; gap: 12px; text-align: left">
+        <span style="flex: 1; font-size: 17px">日期</span>
+        <span style="font-size: 17px; color: #66666D">今天・11 月 12 日</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+      </button>
+    </div>
+
+    <div aria-live="polite" style="background: #FBF7ED; border: 1px solid #F1E6CC; border-radius: 16px; padding: 12px 16px; display: flex; align-items: center; gap: 12px">
+      <div style="flex: 1">
+        <div style="font-size: 15px; line-height: 20px; font-weight: 600">預估 1RM {{rm}} 公斤・{{ratio}} 倍體重</div>
+        <div style="font-size: 13px; line-height: 18px; color: #66666D">{{nextText}}</div>
+      </div>
+      <span style="padding: 4px 10px; border-radius: 999px; background: #F1E6CC; color: #7A5916; font-size: 12px; font-weight: 600">{{lvText}}</span>
+    </div>
+
+    <a href="Main.dc.html" style="position: absolute; left: 20px; right: 20px; bottom: 34px; height: 52px; border-radius: 16px; background: #916B1B; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 600">記下</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { move: 'squat', kg: 90, reps: 5, sets: 3 };
+  }
+  renderVals() {
+    const BW = 72;
+    const LV = ['未入門', '入門', '小成', '大成', '圓滿', '化境'];
+    const MOVES = [
+      { k: 'squat', n: '深蹲', f: '坐馬樁', th: [0.75, 1.0, 1.25, 1.5, 2.0], d: 90 },
+      { k: 'dead', n: '硬舉', f: '拔山式', th: [1.0, 1.25, 1.5, 2.0, 2.5], d: 120 },
+      { k: 'bench', n: '臥推', f: '推山掌', th: [0.5, 0.75, 1.0, 1.25, 1.5], d: 70 },
+      { k: 'ohp', n: '肩推', f: '托天式', th: [0.35, 0.5, 0.65, 0.8, 1.0], d: 37.5 },
+      { k: 'row', n: '划船', f: '挽弓式', th: [0.5, 0.75, 1.0, 1.25, 1.5], d: 70 },
+      { k: 'pull', n: '引體向上', f: '攀雲梯', th: [1.03, 1.17, 1.33, 1.5, 1.67], bw: true, d: 0 }
+    ];
+    const s = this.state;
+    const m = MOVES.find((x) => x.k === s.move);
+    const load = m.bw ? BW + s.kg : s.kg;
+    const e = s.reps <= 1 ? load : load * (1 + s.reps / 30);
+    const ratio = e / BW;
+    let l = 0;
+    m.th.forEach((t, i) => { if (ratio >= t) l = i + 1; });
+    const nextT = m.th[l];
+    const nextText = nextT ? '1RM 再加 ' + Math.max(1, Math.ceil(nextT * BW - e)) + ' 公斤升' + LV[l + 1] : '已到化境';
+    const set = (patch) => () => this.setState(patch);
+    return {
+      moves: MOVES.map((x) => ({
+        f: x.f, n: x.n,
+        on: x.k === s.move,
+        bg: x.k === s.move ? '#916B1B' : '#FFFFFF',
+        fg: x.k === s.move ? '#FFFFFF' : '#1D1D1F',
+        pick: set({ move: x.k, kg: x.d })
+      })),
+      kgLabel: m.bw ? '額外負重（自重 72 公斤另計）' : '重量',
+      kgText: s.kg % 1 ? s.kg.toFixed(1) : String(s.kg),
+      kgDown: set({ kg: Math.max(0, s.kg - 2.5) }),
+      kgUp: set({ kg: s.kg + 2.5 }),
+      reps: s.reps,
+      repsDown: set({ reps: Math.max(1, s.reps - 1) }),
+      repsUp: set({ reps: s.reps + 1 }),
+      sets: s.sets,
+      setsDown: set({ sets: Math.max(1, s.sets - 1) }),
+      setsUp: set({ sets: s.sets + 1 }),
+      rm: Math.round(e),
+      ratio: ratio.toFixed(2),
+      lvText: LV[l],
+      nextText: nextText
+    };
+  }
+}
+</script>
+</body>
+</html>

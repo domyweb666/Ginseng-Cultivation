@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<title>分析・境界</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0}
+a{color:#7A5916;text-decoration:none}a:hover{color:#5E4410}
+</style>
+</helmet>
+<div style="width: 390px; height: 1500px; position: relative; overflow: hidden; background: #F7F4EC; color: #1D1D1F; font-family: -apple-system, 'PingFang TC', 'Noto Sans TC', sans-serif">
+  <div style="padding: 54px 20px 40px; display: flex; flex-direction: column; gap: 20px">
+
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 4px; margin-left: -10px">
+        <a href="Main.dc.html" aria-label="回境界" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 999px; color: #7A5916">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+        </a>
+        <h1 style="margin: 0; font-family: 'LXGW WenKai TC', serif; font-size: 34px; line-height: 41px; font-weight: 700">分析</h1>
+      </div>
+      <nav aria-label="分段" style="height: 36px; padding: 2px; border-radius: 12px; background: #EFEBE3; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px">
+        <a href="AnalysisRealm.dc.html" aria-current="page" style="border-radius: 10px; background: #FFFFFF; color: #1D1D1F; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; box-shadow: 0 1px 3px rgba(25, 22, 20, 0.12)">境界</a>
+        <a href="AnalysisGong.dc.html" style="border-radius: 10px; color: #66666D; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 500">功法</a>
+      </nav>
+    </div>
+
+    <section aria-label="宗門身分" style="background: #FFFFFF; border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 18px rgba(25, 22, 20, 0.06)">
+      <div>
+        <div style="font-size: 13px; line-height: 18px; color: #66666D">宗門身分</div>
+        <div style="font-family: 'LXGW WenKai TC', serif; font-size: 30px; line-height: 38px; font-weight: 700; color: #7A5916">真傳弟子</div>
+        <div style="font-size: 15px; line-height: 20px; color: #66666D">結成金丹，宗門重點栽培</div>
+      </div>
+      <div style="height: 8px; border-radius: 999px; background: #F1E6CC; overflow: hidden" role="img" aria-label="升長老進度 12%"><div style="width: 12%; height: 8px; background: #916B1B"></div></div>
+      <div style="font-size: 15px; line-height: 20px">再修煉 88 天、突破至元嬰，升長老</div>
+      <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; padding-top: 4px; border-top: 1px solid #E5E1D8">
+        <div style="padding-top: 8px; text-align: center; font-size: 12px; line-height: 16px; color: #66666D">雜役</div>
+        <div style="padding-top: 8px; text-align: center; font-size: 12px; line-height: 16px; color: #66666D">外門</div>
+        <div style="padding-top: 8px; text-align: center; font-size: 12px; line-height: 16px; color: #66666D">內門</div>
+        <div style="margin-top: 4px; padding: 4px 0; border-radius: 999px; background: #916B1B; text-align: center; font-size: 12px; line-height: 16px; font-weight: 600; color: #FFFFFF">真傳</div>
+        <div style="padding-top: 8px; text-align: center; font-size: 12px; line-height: 16px; color: #66666D">長老</div>
+        <div style="padding-top: 8px; text-align: center; font-size: 12px; line-height: 16px; color: #66666D">太上</div>
+      </div>
+    </section>
+
+    <section style="background: #FFFFFF; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <h2 style="margin: 0; font-size: 17px; line-height: 22px; font-weight: 600">FFMI 走勢</h2>
+        <span style="font-size: 13px; line-height: 18px; color: #66666D">近 6 個月</span>
+      </div>
+      <svg width="318" height="190" viewBox="0 0 318 190" role="img" aria-label="FFMI 從 6 月 19.2 一路升到 11 月 20.6，7 月跨過金丹線">
+        <rect x="36" y="35" width="282" height="75" fill="#FBF7ED"></rect>
+        <line x1="36" y1="35" x2="318" y2="35" stroke="#D8D3C8" stroke-dasharray="4 4"></line>
+        <line x1="36" y1="110" x2="318" y2="110" stroke="#D8D3C8" stroke-dasharray="4 4"></line>
+        <line x1="36" y1="160" x2="318" y2="160" stroke="#E5E1D8"></line>
+        <text x="0" y="39" font-size="11" fill="#66666D">元嬰 21</text>
+        <text x="0" y="114" font-size="11" fill="#66666D">金丹 19.5</text>
+        <text x="16" y="74" font-size="12" fill="#7A5916" font-family="LXGW WenKai TC, serif" font-weight="700">金丹</text>
+        <polyline points="44,125 96,105 148,90 200,80 252,65 304,55" fill="none" stroke="#916B1B" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></polyline>
+        <circle cx="44" cy="125" r="3.5" fill="#FFFFFF" stroke="#916B1B" stroke-width="2"></circle>
+        <circle cx="96" cy="105" r="3.5" fill="#FFFFFF" stroke="#916B1B" stroke-width="2"></circle>
+        <circle cx="148" cy="90" r="3.5" fill="#FFFFFF" stroke="#916B1B" stroke-width="2"></circle>
+        <circle cx="200" cy="80" r="3.5" fill="#FFFFFF" stroke="#916B1B" stroke-width="2"></circle>
+        <circle cx="252" cy="65" r="3.5" fill="#FFFFFF" stroke="#916B1B" stroke-width="2"></circle>
+        <circle cx="304" cy="55" r="5" fill="#916B1B"></circle>
+        <text x="304" y="44" font-size="12" font-weight="700" fill="#1D1D1F" text-anchor="middle">20.6</text>
+        <text x="44" y="180" font-size="11" fill="#66666D" text-anchor="middle">6 月</text>
+        <text x="96" y="180" font-size="11" fill="#66666D" text-anchor="middle">7 月</text>
+        <text x="148" y="180" font-size="11" fill="#66666D" text-anchor="middle">8 月</text>
+        <text x="200" y="180" font-size="11" fill="#66666D" text-anchor="middle">9 月</text>
+        <text x="252" y="180" font-size="11" fill="#66666D" text-anchor="middle">10 月</text>
+        <text x="304" y="180" font-size="11" fill="#66666D" text-anchor="middle">11 月</text>
+      </svg>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0 4px; font-size: 20px; line-height: 25px; font-weight: 600">突破紀錄</h2>
+      <div style="background: #FFFFFF; border-radius: 20px; padding: 0 16px">
+        <div style="min-height: 60px; padding: 10px 0; display: flex; align-items: center; gap: 12px">
+          <div style="flex: 1">
+            <div style="font-family: 'LXGW WenKai TC', serif; font-size: 18px; line-height: 24px; font-weight: 700; color: #7A5916">金丹後期</div>
+            <div style="font-size: 13px; line-height: 18px; color: #66666D">11 月 3 日・距上次 62 天</div>
+          </div>
+          <span style="font-size: 15px; color: #66666D">FFMI 20.6</span>
+        </div>
+        <div style="height: 1px; background: #E5E1D8"></div>
+        <div style="min-height: 60px; padding: 10px 0; display: flex; align-items: center; gap: 12px">
+          <div style="flex: 1">
+            <div style="font-family: 'LXGW WenKai TC', serif; font-size: 18px; line-height: 24px; font-weight: 700">金丹中期</div>
+            <div style="font-size: 13px; line-height: 18px; color: #66666D">9 月 2 日・距上次 62 天</div>
+          </div>
+          <span style="font-size: 15px; color: #66666D">FFMI 20.1</span>
+        </div>
+        <div style="height: 1px; background: #E5E1D8"></div>
+        <div style="min-height: 60px; padding: 10px 0; display: flex; align-items: center; gap: 12px">
+          <div style="flex: 1">
+            <div style="font-family: 'LXGW WenKai TC', serif; font-size: 18px; line-height: 24px; font-weight: 700">金丹初期</div>
+            <div style="font-size: 13px; line-height: 18px; color: #66666D">7 月 2 日・距上次 31 天</div>
+          </div>
+          <span style="font-size: 15px; color: #66666D">FFMI 19.6</span>
+        </div>
+        <div style="height: 1px; background: #E5E1D8"></div>
+        <div style="min-height: 60px; padding: 10px 0; display: flex; align-items: center; gap: 12px">
+          <div style="flex: 1">
+            <div style="font-family: 'LXGW WenKai TC', serif; font-size: 18px; line-height: 24px; font-weight: 700">築基後期</div>
+            <div style="font-size: 13px; line-height: 18px; color: #66666D">6 月 1 日・第一次量測</div>
+          </div>
+          <span style="font-size: 15px; color: #66666D">FFMI 19.2</span>
+        </div>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0 4px; font-size: 20px; line-height: 25px; font-weight: 600">天梯</h2>
+      <div style="background: #FFFFFF; border-radius: 20px; padding: 6px 8px">
+        <div style="min-height: 44px; padding: 0 8px; display: flex; align-items: center; gap: 12px"><span style="width: 44px; font-family: 'LXGW WenKai TC', serif; font-size: 17px; font-weight: 700">渡劫</span><span style="flex: 1; font-size: 13px; color: #66666D">自然人極限</span><span style="font-size: 13px; color: #66666D">25.5–27</span></div>
+        <div style="min-height: 44px; padding: 0 8px; display: flex; align-items: center; gap: 12px"><span style="width: 44px; font-family: 'LXGW WenKai TC', serif; font-size: 17px; font-weight: 700">大乘</span><span style="flex: 1; font-size: 13px; color: #66666D">天賦上限附近</span><span style="font-size: 13px; color: #66666D">24–25.5</span></div>
+        <div style="min-height: 44px; padding: 0 8px; display: flex; align-items: center; gap: 12px"><span style="width: 44px; font-family: 'LXGW WenKai TC', serif; font-size: 17px; font-weight: 700">化神</span><span style="flex: 1; font-size: 13px; color: #66666D">菁英</span><span style="font-size: 13px; color: #66666D">22.5–24</span></div>
+        <div style="min-height: 44px; padding: 0 8px; display: flex; align-items: center; gap: 12px"><span style="width: 44px; font-family: 'LXGW WenKai TC', serif; font-size: 17px; font-weight: 700">元嬰</span><span style="flex: 1; font-size: 13px; color: #66666D">資深健身者</span><span style="font-size: 13px; color: #66666D">21–22.5</span></div>
+        <div style="min-height: 44px; padding: 0 8px; border-radius: 12px; background: #F1E6CC; display: flex; align-items: center; gap: 12px"><span style="width: 44px; font-family: 'LXGW WenKai TC', serif; font-size: 17px; font-weight: 700; color: #7A5916">金丹</span><span style="flex: 1; font-size: 13px; color: #7A5916; font-weight: 600">你在這裡・後期</span><span style="font-size: 13px; color: #7A5916">19.5–21</span></div>
+        <div style="min-height: 44px; padding: 0 8px; display: flex; align-items: center; gap: 12px"><span style="width: 44px; font-family: 'LXGW WenKai TC', serif; font-size: 17px; font-weight: 700">築基</span><span style="flex: 1; font-size: 13px; color: #66666D">有基礎</span><span style="font-size: 13px; color: #66666D">18–19.5</span></div>
+        <div style="min-height: 44px; padding: 0 8px; display: flex; align-items: center; gap: 12px"><span style="width: 44px; font-family: 'LXGW WenKai TC', serif; font-size: 17px; font-weight: 700">煉氣</span><span style="flex: 1; font-size: 13px; color: #66666D">一般未訓練</span><span style="font-size: 13px; color: #66666D">16.5–18</span></div>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 8px">
+      <div style="background: #FFFFFF; border-radius: 20px; padding: 0 16px">
+        <button type="button" style="width: 100%; min-height: 52px; padding: 0; border: 0; background: transparent; font: inherit; color: inherit; display: flex; align-items: center; gap: 12px; text-align: left">
+          <span style="flex: 1; font-size: 17px">境界怎麼算</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+        </button>
+      </div>
+      <p style="margin: 0 16px; font-size: 13px; line-height: 18px; color: #66666D">境界看 FFMI，每 0.5 分一期。標準只有一張男性表；體脂超過 20% 算根基不穩，那次量測不算突破。</p>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

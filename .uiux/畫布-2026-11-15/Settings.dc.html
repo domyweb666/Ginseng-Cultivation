@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<title>設定</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0}
+a{color:#7A5916;text-decoration:none}a:hover{color:#5E4410}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #F7F4EC; color: #1D1D1F; font-family: -apple-system, 'PingFang TC', 'Noto Sans TC', sans-serif">
+  <div style="padding: 54px 20px 0; display: flex; flex-direction: column; gap: 14px">
+
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <h1 style="margin: 0 4px; font-family: 'LXGW WenKai TC', serif; font-size: 34px; line-height: 41px; font-weight: 700">設定</h1>
+      <a href="Main.dc.html" aria-label="回境界" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 999px; color: #7A5916">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+      </a>
+    </div>
+
+    <section style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0 4px; font-size: 20px; line-height: 25px; font-weight: 600">身體</h2>
+      <div style="background: #FFFFFF; border-radius: 20px; padding: 0 16px">
+        <button type="button" style="width: 100%; min-height: 52px; padding: 0; border: 0; background: transparent; font: inherit; color: inherit; display: flex; align-items: center; gap: 12px; text-align: left">
+          <span style="flex: 1; font-size: 17px">身高</span>
+          <span style="font-size: 17px; color: #66666D">174 公分</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+        </button>
+        <div style="height: 1px; background: #E5E1D8"></div>
+        <div style="min-height: 52px; display: flex; align-items: center; gap: 12px">
+          <span id="sex-label" style="flex: 1; font-size: 17px">性別</span>
+          <div role="group" aria-labelledby="sex-label" style="height: 34px; padding: 2px; border-radius: 10px; background: #EFEBE3; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; width: 116px; box-sizing: border-box">
+            <button type="button" aria-pressed="{{male.on}}" onClick="{{male.pick}}" style="border: 0; border-radius: 8px; background: {{male.bg}}; color: {{male.fg}}; font: inherit; font-size: 15px; font-weight: 600; box-shadow: {{male.shadow}}">男</button>
+            <button type="button" aria-pressed="{{female.on}}" onClick="{{female.pick}}" style="border: 0; border-radius: 8px; background: {{female.bg}}; color: {{female.fg}}; font: inherit; font-size: 15px; font-weight: 600; box-shadow: {{female.shadow}}">女</button>
+          </div>
+        </div>
+      </div>
+      <p style="margin: 0 16px; font-size: 13px; line-height: 18px; color: #66666D">換性別，境界、功法門檻和立繪會照那一套重算。</p>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0 4px; font-size: 20px; line-height: 25px; font-weight: 600">健康 app</h2>
+      <div style="background: #FFFFFF; border-radius: 20px; padding: 0 16px">
+        <div style="min-height: 52px; display: flex; align-items: center; gap: 12px">
+          <span style="flex: 1; font-size: 17px">讀取體重與體脂</span>
+          <button type="button" role="switch" aria-checked="{{t1.on}}" aria-label="讀取體重與體脂" onClick="{{t1.flip}}" style="width: 51px; height: 31px; padding: 2px; border: 0; border-radius: 999px; display: flex; justify-content: {{t1.justify}}; background: {{t1.bg}}"><span style="width: 27px; height: 27px; border-radius: 999px; background: #FFFFFF; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15)"></span></button>
+        </div>
+        <div style="height: 1px; background: #E5E1D8"></div>
+        <div style="min-height: 52px; display: flex; align-items: center; gap: 12px">
+          <span style="flex: 1; font-size: 17px">量測寫回健康 app</span>
+          <button type="button" role="switch" aria-checked="{{t2.on}}" aria-label="量測寫回健康 app" onClick="{{t2.flip}}" style="width: 51px; height: 31px; padding: 2px; border: 0; border-radius: 999px; display: flex; justify-content: {{t2.justify}}; background: {{t2.bg}}"><span style="width: 27px; height: 27px; border-radius: 999px; background: #FFFFFF; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15)"></span></button>
+        </div>
+      </div>
+      <p style="margin: 0 16px; font-size: 13px; line-height: 18px; color: #66666D">只讀體重、體脂率、去脂體重、身高、生理性別五項。</p>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0 4px; font-size: 20px; line-height: 25px; font-weight: 600">提醒</h2>
+      <div style="background: #FFFFFF; border-radius: 20px; padding: 0 16px">
+        <div style="min-height: 52px; display: flex; align-items: center; gap: 12px">
+          <span style="flex: 1; font-size: 17px">每月量測提醒</span>
+          <button type="button" role="switch" aria-checked="{{t3.on}}" aria-label="每月量測提醒" onClick="{{t3.flip}}" style="width: 51px; height: 31px; padding: 2px; border: 0; border-radius: 999px; display: flex; justify-content: {{t3.justify}}; background: {{t3.bg}}"><span style="width: 27px; height: 27px; border-radius: 999px; background: #FFFFFF; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15)"></span></button>
+        </div>
+        <div style="height: 1px; background: #E5E1D8"></div>
+        <div style="min-height: 52px; display: flex; align-items: center; gap: 12px">
+          <span style="flex: 1; font-size: 17px">提醒日</span>
+          <button type="button" style="height: 34px; padding: 0 12px; border: 0; border-radius: 999px; background: #F1E6CC; color: #7A5916; font: inherit; font-size: 15px; font-weight: 600">每月 1 日 08:00</button>
+        </div>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0 4px; font-size: 20px; line-height: 25px; font-weight: 600">資料</h2>
+      <div style="background: #FFFFFF; border-radius: 20px; padding: 0 16px">
+        <button type="button" style="width: 100%; min-height: 52px; padding: 0; border: 0; background: transparent; font: inherit; color: inherit; display: flex; align-items: center; gap: 12px; text-align: left">
+          <span style="flex: 1; font-size: 17px">匯出紀錄</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+        </button>
+        <div style="height: 1px; background: #E5E1D8"></div>
+        <button type="button" style="width: 100%; min-height: 52px; padding: 0; border: 0; background: transparent; font: inherit; color: inherit; display: flex; align-items: center; gap: 12px; text-align: left">
+          <span style="flex: 1; font-size: 17px">匯入紀錄</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+        </button>
+      </div>
+    </section>
+
+    <div style="background: #FFFFFF; border-radius: 20px; padding: 0 16px">
+      <button type="button" style="width: 100%; min-height: 52px; padding: 0; border: 0; background: transparent; font: inherit; font-size: 17px; color: #C4372C; text-align: left">刪除全部紀錄</button>
+    </div>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 26px; display: flex; justify-content: center; gap: 8px" role="img" aria-label="第 1 頁，共 3 頁">
+    <span style="width: 18px; height: 7px; border-radius: 999px; background: #916B1B"></span>
+    <span style="width: 7px; height: 7px; border-radius: 999px; background: #A1A1A6"></span>
+    <span style="width: 7px; height: 7px; border-radius: 999px; background: #A1A1A6"></span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { t1: true, t2: false, t3: true, sex: 'm' };
+  }
+  seg(key) {
+    const on = this.state.sex === key;
+    return {
+      on: on,
+      bg: on ? '#FFFFFF' : 'transparent',
+      fg: on ? '#1D1D1F' : '#66666D',
+      shadow: on ? '0 1px 3px rgba(25, 22, 20, 0.12)' : 'none',
+      pick: () => this.setState({ sex: key })
+    };
+  }
+  sw(key) {
+    const on = this.state[key];
+    return {
+      on: on,
+      justify: on ? 'flex-end' : 'flex-start',
+      bg: on ? '#916B1B' : '#D8D3C8',
+      flip: () => this.setState({ [key]: !on })
+    };
+  }
+  renderVals() {
+    return { t1: this.sw('t1'), t2: this.sw('t2'), t3: this.sw('t3'), male: this.seg('m'), female: this.seg('f') };
+  }
+}
+</script>
+</body>
+</html>

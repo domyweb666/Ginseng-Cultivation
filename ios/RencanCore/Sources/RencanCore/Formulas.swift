@@ -46,6 +46,8 @@ public struct Breakthrough: Equatable {
     public let isFirst: Bool
     /// 距上一階幾天；第一筆是 0。
     public let daysSincePrevious: Int
+    /// 那次量測的 FFMI（使用者真實的數字，女性不換算）。
+    public let ffmi: Double
 }
 
 /// 一筆修煉算出來的結果。
@@ -122,6 +124,23 @@ public enum Formulas {
         return StageGap(nextLabel: nextStanding.label, leanNeededKg: max(0, needed))
     }
 
+    /// 這一期走了百分之幾（網頁版境界碑的進度條，index.html L354）。最少畫 2，才看得到一點點。
+    public static func stageProgressPercent(ffmi: Double, standing: RealmStanding) -> Double {
+        guard let nextFFMI = standing.nextFFMI else { return fullStagePercent }
+        let raw = (ffmi - standing.fromFFMI) / (nextFFMI - standing.fromFFMI) * fullStagePercent
+        return max(minimumStagePercent, min(fullStagePercent, raw))
+    }
+
+    /// 體脂對根基的影響（網頁版 index.html L357–361）。男性：超過 20 不穩、18 到 20 浮動、
+    /// 低於 10 偏低。女性各加 7 個百分點。
+    public static func bodyFatGate(bodyFatPercent: Double, sex: Sex) -> BodyFatGate {
+        let limit = sex.bodyFatStableThresholdPercent
+        if bodyFatPercent > limit { return .unstable(overBy: bodyFatPercent - limit) }
+        if bodyFatPercent > limit - Tables.bodyFatWaveringBandPercent { return .wavering }
+        if bodyFatPercent < limit - Tables.bodyFatLowBelowLimitPercent { return .low }
+        return .stable
+    }
+
     /// 突破紀錄：照日期排，只採計體脂在門檻以下的量測，每次到達更高的期別記一筆。
     public static func breakthroughs(
         measurements: [MeasurementEntry], heightCm: Double, sex: Sex
@@ -143,7 +162,8 @@ public enum Formulas {
             result.append(
                 Breakthrough(
                     date: measurement.date, stageRank: standing.stageRank, label: standing.label,
-                    isFirst: highestRank < 0, daysSincePrevious: daysSincePrevious
+                    isFirst: highestRank < 0, daysSincePrevious: daysSincePrevious,
+                    ffmi: measuredFFMI
                 )
             )
             highestRank = standing.stageRank
@@ -249,6 +269,13 @@ public enum Formulas {
         return months == 0 ? "\(years) 年" : "\(years) 年 \(months) 個月"
     }
 
+    /// 數字寫成固定小數位（網頁版的 fmt，index.html L336）：先四捨五入（5 一律進位）再補零。
+    public static func fmt(_ value: Double, digits: Int) -> String {
+        let scale = pow(10, Double(digits))
+        let rounded = (value * scale + 0.5).rounded(.down) / scale
+        return String(format: "%.\(digits)f", rounded)
+    }
+
     /// 照日期排序；同一天照建立時間。網頁版是把日期和時間接成一個字串來比。
     public static func byDate(_ measurements: [MeasurementEntry]) -> [MeasurementEntry] {
         let keys = measurements.map { $0.date + String($0.createdAtMs) }
@@ -262,6 +289,8 @@ public enum Formulas {
 // MARK: 日期與常數
 
 extension Formulas {
+    private static let minimumStagePercent: Double = 2
+    private static let fullStagePercent: Double = 100
     /// 查下一期叫什麼名字時，在門檻上多加的一點點。
     private static let nextStageProbe = 0.001
     private static let daysShownAsDaysBelow = 60

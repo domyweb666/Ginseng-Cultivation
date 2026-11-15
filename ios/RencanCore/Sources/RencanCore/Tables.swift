@@ -53,6 +53,9 @@ public enum Tables {
 
     /// 女性的體脂率門檻（%）。依據 ACE 體脂分級，男性 20% 對過去是 27%（女性版規則第二節）。
     public static let femaleBodyFatStableThresholdPercent: Double = 27
+    /// 體脂離門檻不到 2 個百分點算「根基浮動」；比門檻低 10 個百分點以上算偏低（網頁版 18 與 10）。
+    public static let bodyFatWaveringBandPercent: Double = 2
+    public static let bodyFatLowBelowLimitPercent: Double = 10
     /// 女性換算的兩個對齊點（女性版規則第一節）：一般人 FFMI 正常範圍下緣、自然訓練極限。
     public static let maleBaselineFFMI = 16.7
     public static let femaleBaselineFFMI = 14.6

@@ -1,7 +1,7 @@
 {
-  "station": "audit-batch",
-  "note": "2026-11-15 組塊 B 五片機器層都過（run 43724808643，187 條測試，build 23）。等多米做組塊 B 驗收：看 Actions 綠燈、讀中文測試名。下一塊 C 記修煉，開工前補跑 vibe-health-check。",
-  "updated_at": "2026-11-15T22:40:00+08:00",
+  "station": "impl",
+  "note": "2026-11-15 23:24 交接：多米要整個 app 做完再一次驗收。組塊 B 已在 main（build 23）。組塊 C＋D 寫到一半，在分支 work/app，還沒編譯過；細節在 .vibe/HANDOFF.md。中途推 work/app 跑 ios-check.yml，一整塊綠了才併 main。",
+  "updated_at": "2026-11-15T23:24:00+08:00",
   "updated_by": "vibe-traffic-control",
   "pieces": {
     "todo": 31,

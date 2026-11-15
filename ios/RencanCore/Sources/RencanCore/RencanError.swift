@@ -16,6 +16,12 @@ public enum RencanError: Error, Equatable, CaseIterable {
     case wrongFieldType
     case duplicateID
     case notJSON
+    /// 還沒填身高、還沒選性別，算不出境界。
+    case profileMissing
+    /// 同一天已經有一筆量測，要先問使用者要不要蓋掉。
+    case sameDayMeasurement
+    /// 寫進資料庫失敗。
+    case saveFailed
 
     public var message: String {
         switch self {
@@ -45,6 +51,17 @@ public enum RencanError: Error, Equatable, CaseIterable {
             return "同一筆紀錄出現兩次"
         case .notJSON:
             return "檔案不是網頁版匯出的格式"
+        case .profileMissing:
+            return "先填身高和性別"
+        case .sameDayMeasurement:
+            return "這一天已經有一筆量測"
+        case .saveFailed:
+            return "沒存成功，請再試一次"
         }
+    }
+
+    /// 任何錯誤要給使用者看的那句話。不是規則引擎自己的錯誤就說沒存成功，不把系統訊息原樣丟出去。
+    public static func message(for error: Error) -> String {
+        (error as? RencanError)?.message ?? RencanError.saveFailed.message
     }
 }
