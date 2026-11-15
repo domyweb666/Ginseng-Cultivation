@@ -1,11 +1,11 @@
 {
-  "station": "impl",
-  "note": "2026-11-15 組塊 A 驗收通過（A5 延後）。組塊 B 開工，B1 進行中；多米已放行 B5、採用標準清單、白話表點頭。",
-  "updated_at": "2026-11-15T12:00:00+08:00",
+  "station": "audit-batch",
+  "note": "2026-11-15 組塊 B 五片機器層都過（run 43724808643，187 條測試，build 23）。等多米做組塊 B 驗收：看 Actions 綠燈、讀中文測試名。下一塊 C 記修煉，開工前補跑 vibe-health-check。",
+  "updated_at": "2026-11-15T22:40:00+08:00",
   "updated_by": "vibe-traffic-control",
   "pieces": {
-    "todo": 36,
-    "machine_verified": 0,
+    "todo": 31,
+    "machine_verified": 5,
     "human_verified": 5
   },
   "chunks": [
@@ -19,7 +19,7 @@
     {
       "name": "B：規則引擎",
       "total": 5,
-      "machine_done": 0,
+      "machine_done": 5,
       "human_verified": false,
       "approved": true
     },
@@ -88,5 +88,9 @@
     }
   ],
   "pending_immediate_verify": [],
-  "skipped_gates": []
+  "skipped_gates": [
+    "B：每 3 片體檢沒跑",
+    "B1–B5：立即驗改整塊驗",
+    "B2–B5：自審沒開獨立審查員"
+  ]
 }
