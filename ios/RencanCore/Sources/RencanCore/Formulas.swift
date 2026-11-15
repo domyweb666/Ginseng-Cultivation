@@ -11,6 +11,7 @@ import Foundation
 //   3. 「今天」由呼叫端傳日期字串進來，規則引擎不看時鐘，測試才不會隔天就變。
 //   4. 日期字串壞掉時丟 RencanError.invalidDate（網頁版會算出 NaN）。
 //   5. bestByMove 的 excludeId 參數網頁版沒人用，不搬。
+//   6. sectOf 把境界序號夾在 -1 到 6 之間，離譜的輸入不會查表查出界（網頁版沒夾）。
 
 /// realmOf 的結果：在哪個大境界、哪一期、下一期與這一期的 FFMI 門檻。
 public struct RealmStanding: Equatable {

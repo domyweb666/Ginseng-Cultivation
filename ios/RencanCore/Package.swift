@@ -10,6 +10,11 @@ let package = Package(
     ],
     targets: [
         .target(name: "RencanCore"),
-        .testTarget(name: "RencanCoreTests", dependencies: ["RencanCore"]),
+        .testTarget(
+            name: "RencanCoreTests",
+            dependencies: ["RencanCore"],
+            // 黃金集的假資料與答案（片 B2），測試用 Bundle.module 讀
+            resources: [.copy("Fixtures")]
+        ),
     ]
 )
