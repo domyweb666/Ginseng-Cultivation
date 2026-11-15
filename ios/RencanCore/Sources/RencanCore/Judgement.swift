@@ -6,6 +6,7 @@ import Foundation
 //   1. 功法精進改看估計 1RM 有沒有比這門功法歷來最高的還高（網頁版看比值，減重也會放）。
 //   2. 體脂超過門檻是獨立的一種結果「根基不穩」（網頁版只是換一句提示）。
 //   3. 沒有任何體重可用時只判宗門晉升，其餘一律修煉 +1（網頁版用 65 公斤硬算）。
+//   4. 男女的體脂門檻、功法門檻、境界換算不同，由 sex 決定（片 B5，.vibe/女性版規則.md）。
 // 這裡只回答「這次是哪一種」和畫面要寫的數字，不碰畫面、震動、資料庫。
 
 /// 記一筆修煉的五種結果。
@@ -76,15 +77,19 @@ public enum Judgement {
     /// 記一筆修煉是哪一種。lifts 是存這筆之前的全部修煉。
     public static func liftOutcome(
         new lift: LiftEntry, before lifts: [LiftEntry], measurements: [MeasurementEntry],
-        heightCm: Double
+        heightCm: Double, sex: Sex
     ) throws -> LiftJudgement {
         let daysBefore = Formulas.trainDays(lifts: lifts)
         let isNewDay = !lifts.contains { $0.date == lift.date }
         let daysAfter = isNewDay ? daysBefore + 1 : daysBefore
-        let realmIndex = try Formulas.realmMax(measurements: measurements, heightCm: heightCm)
+        let realmIndex = try Formulas.realmMax(
+            measurements: measurements, heightCm: heightCm, sex: sex
+        )
         let sectBefore = Formulas.sectOf(trainDays: daysBefore, realmIndex: realmIndex)
         let sectAfter = Formulas.sectOf(trainDays: daysAfter, realmIndex: realmIndex)
-        let progress = moveProgress(new: lift, before: lifts, measurements: measurements)
+        let progress = moveProgress(
+            new: lift, before: lifts, measurements: measurements, sex: sex
+        )
         let outcome = pick(isSectChanged: sectAfter.title != sectBefore.title, progress: progress)
         return LiftJudgement(
             outcome: outcome, calc: progress?.calc, level: progress?.level,
@@ -105,10 +110,11 @@ public enum Judgement {
     }
 
     private static func moveProgress(
-        new lift: LiftEntry, before lifts: [LiftEntry], measurements: [MeasurementEntry]
+        new lift: LiftEntry, before lifts: [LiftEntry], measurements: [MeasurementEntry],
+        sex: Sex
     ) -> MoveProgress? {
         guard let calc = Formulas.liftCalc(lift, measurements: measurements) else { return nil }
-        let level = Formulas.moveLevel(move: calc.move, ratio: calc.ratio)
+        let level = Formulas.moveLevel(move: calc.move, ratio: calc.ratio, sex: sex)
         let earlier = lifts.filter { $0.move == lift.move }.compactMap {
             Formulas.liftCalc($0, measurements: measurements)
         }
@@ -120,7 +126,7 @@ public enum Judgement {
             )
         }
         // 功法突破看比值（減重跨過門檻也算），功法精進看 1RM 本身（減重不算）。
-        let previousLevel = Formulas.moveLevel(move: calc.move, ratio: bestRatio)
+        let previousLevel = Formulas.moveLevel(move: calc.move, ratio: bestRatio, sex: sex)
         let gainKg = calc.estimatedOneRepMaxKg - bestOneRepMaxKg
         return MoveProgress(
             calc: calc, level: level, isFirst: false, isLevelUp: level > previousLevel,
@@ -131,11 +137,11 @@ public enum Judgement {
     /// 量一次體組成是哪一種。measurements 是存這筆之前的全部量測。
     public static func measurementOutcome(
         new measurement: MeasurementEntry, before measurements: [MeasurementEntry],
-        lifts: [LiftEntry], heightCm: Double
+        lifts: [LiftEntry], heightCm: Double, sex: Sex
     ) throws -> MeasurementJudgement {
         let leanMassKg = Formulas.leanOf(measurement)
         let ffmi = Formulas.ffmi(leanMassKg: leanMassKg, heightCm: heightCm)
-        let standing = Formulas.realmOf(ffmi: ffmi)
+        let standing = Formulas.realmOf(ffmi: ffmi, sex: sex)
         func judged(
             _ outcome: MeasurementOutcome, days: Int? = nil, promoted: String? = nil
         ) -> MeasurementJudgement {
@@ -144,10 +150,12 @@ public enum Judgement {
                 promotedSectTitle: promoted
             )
         }
-        guard measurement.bodyFatPercent <= Tables.bodyFatStableThresholdPercent else {
+        guard measurement.bodyFatPercent <= sex.bodyFatStableThresholdPercent else {
             return judged(.unstable)
         }
-        let history = try Formulas.breakthroughs(measurements: measurements, heightCm: heightCm)
+        let history = try Formulas.breakthroughs(
+            measurements: measurements, heightCm: heightCm, sex: sex
+        )
         let realmBefore = history.last.map { $0.stageRank / Tables.stages.count }
         let promoted = promotedSectTitle(
             lifts: lifts, realmBefore: realmBefore ?? Tables.noRealmIndex,

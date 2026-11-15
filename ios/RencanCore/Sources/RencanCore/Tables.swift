@@ -32,6 +32,8 @@ public struct Move: Equatable {
     public let name: String
     public let artName: String
     public let thresholds: [Double]
+    /// 女性的五階門檻（.vibe/女性版規則.md 第三節）。thresholds 是網頁版原本的男性門檻，不動。
+    public let femaleThresholds: [Double]
     /// 引體向上這種要把自身體重算進負重的動作。
     public let usesBodyweight: Bool
 }
@@ -48,6 +50,14 @@ public struct Rank: Equatable {
 public enum Tables {
     /// 體脂率門檻（%）：高於這個值境界顯示「根基不穩」，突破與宗門只採計穩固的（產品定稿）。
     public static let bodyFatStableThresholdPercent: Double = 20
+
+    /// 女性的體脂率門檻（%）。依據 ACE 體脂分級，男性 20% 對過去是 27%（女性版規則第二節）。
+    public static let femaleBodyFatStableThresholdPercent: Double = 27
+    /// 女性換算的兩個對齊點（女性版規則第一節）：一般人 FFMI 正常範圍下緣、自然訓練極限。
+    public static let maleBaselineFFMI = 16.7
+    public static let femaleBaselineFFMI = 14.6
+    public static let maleCeilingFFMI: Double = 25
+    public static let femaleCeilingFFMI: Double = 22
 
     /// 每一期的 FFMI 寬度（網頁版 realmOf 裡的 0.5）。
     public static let stageWidthFFMI = 0.5
@@ -98,27 +108,27 @@ public enum Tables {
 
     private static let squat = Move(
         key: .squat, name: "深蹲", artName: "坐馬樁", thresholds: [0.75, 1.0, 1.25, 1.5, 2.0],
-        usesBodyweight: false
+        femaleThresholds: [0.525, 0.7, 0.875, 1.05, 1.4], usesBodyweight: false
     )
     private static let dead = Move(
         key: .dead, name: "硬舉", artName: "拔山式", thresholds: [1.0, 1.25, 1.5, 2.0, 2.5],
-        usesBodyweight: false
+        femaleThresholds: [0.7, 0.875, 1.05, 1.4, 1.75], usesBodyweight: false
     )
     private static let bench = Move(
         key: .bench, name: "臥推", artName: "推山掌", thresholds: [0.5, 0.75, 1.0, 1.25, 1.5],
-        usesBodyweight: false
+        femaleThresholds: [0.3, 0.45, 0.6, 0.75, 0.9], usesBodyweight: false
     )
     private static let ohp = Move(
         key: .ohp, name: "肩推", artName: "托天式", thresholds: [0.35, 0.5, 0.65, 0.8, 1.0],
-        usesBodyweight: false
+        femaleThresholds: [0.21, 0.3, 0.39, 0.48, 0.6], usesBodyweight: false
     )
     private static let row = Move(
         key: .row, name: "划船", artName: "挽弓式", thresholds: [0.5, 0.75, 1.0, 1.25, 1.5],
-        usesBodyweight: false
+        femaleThresholds: [0.3, 0.45, 0.6, 0.75, 0.9], usesBodyweight: false
     )
     private static let pull = Move(
         key: .pull, name: "引體向上", artName: "攀雲梯", thresholds: [1.03, 1.17, 1.33, 1.5, 1.67],
-        usesBodyweight: true
+        femaleThresholds: [1.0, 1.1, 1.2, 1.33, 1.5], usesBodyweight: true
     )
 
     private static let rank0 = Rank(

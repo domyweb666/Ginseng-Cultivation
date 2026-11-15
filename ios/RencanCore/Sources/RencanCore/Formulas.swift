@@ -12,6 +12,8 @@ import Foundation
 //   4. 日期字串壞掉時丟 RencanError.invalidDate（網頁版會算出 NaN）。
 //   5. bestByMove 的 excludeId 參數網頁版沒人用，不搬。
 //   6. sectOf 把境界序號夾在 -1 到 6 之間，離譜的輸入不會查表查出界（網頁版沒夾）。
+//   7. 跟性別有關的函式都要傳 sex（片 B5，.vibe/女性版規則.md）；男性的算法跟網頁版一樣。
+//      不帶 sex 的版本在 WebParity.swift，只給測試對網頁版用。
 
 /// realmOf 的結果：在哪個大境界、哪一期、下一期與這一期的 FFMI 門檻。
 public struct RealmStanding: Equatable {
@@ -81,51 +83,58 @@ public enum Formulas {
         return measurement.weightKg * (1 - measurement.bodyFatPercent / 100)
     }
 
-    public static func realmOf(ffmi: Double) -> RealmStanding {
+    /// 查境界。女性先把 FFMI 換成男性等值再查同一張表，回傳的門檻再換回她自己的 FFMI；
+    /// 男性原樣不動（.vibe/女性版規則.md 第一節）。
+    public static func realmOf(ffmi: Double, sex: Sex) -> RealmStanding {
+        let equivalent = sex.maleEquivalentFFMI(ffmi)
         let lastRealmIndex = Tables.realms.count - 1
         let lastStageIndex = Tables.stages.count - 1
-        let realmIndex = Tables.realms.firstIndex { ffmi < $0.upperFFMI } ?? lastRealmIndex
+        let realmIndex = Tables.realms.firstIndex { equivalent < $0.upperFFMI } ?? lastRealmIndex
         let lower = Tables.realms[realmIndex].lowerFFMI
         // 先在浮點數裡夾住再轉整數，離譜的輸入才不會讓 Int 轉換當掉。
-        let rawStage = ((ffmi - lower) / Tables.stageWidthFFMI).rounded(.down)
+        let rawStage = ((equivalent - lower) / Tables.stageWidthFFMI).rounded(.down)
         let stageIndex = Int(max(0, min(Double(lastStageIndex), rawStage)))
-        let nextFFMI: Double?
-        if ffmi < lower {
-            nextFFMI = lower
+        let nextEquivalent: Double?
+        if equivalent < lower {
+            nextEquivalent = lower
         } else if realmIndex == lastRealmIndex && stageIndex == lastStageIndex {
-            nextFFMI = nil
+            nextEquivalent = nil
         } else {
-            nextFFMI = lower + Double(stageIndex + 1) * Tables.stageWidthFFMI
+            nextEquivalent = lower + Double(stageIndex + 1) * Tables.stageWidthFFMI
         }
         // 網頁版低於煉氣下限時 fromF 寫死 16.5；那時一定是煉氣初期，下限加 0 就是 16.5。
-        let fromFFMI = lower + Double(stageIndex) * Tables.stageWidthFFMI
+        let fromEquivalent = lower + Double(stageIndex) * Tables.stageWidthFFMI
         return RealmStanding(
-            realmIndex: realmIndex, stageIndex: stageIndex, nextFFMI: nextFFMI, fromFFMI: fromFFMI
+            realmIndex: realmIndex, stageIndex: stageIndex,
+            nextFFMI: nextEquivalent.map { sex.ownFFMI(fromMaleEquivalent: $0) },
+            fromFFMI: sex.ownFFMI(fromMaleEquivalent: fromEquivalent)
         )
     }
 
     /// 距下一期還差多少肌肉；已是渡劫後期回 nil。
-    public static func nextStageGap(leanMassKg: Double, heightCm: Double) -> StageGap? {
-        let standing = realmOf(ffmi: ffmi(leanMassKg: leanMassKg, heightCm: heightCm))
+    /// 女性的下一期門檻已經在 realmOf 換回她自己的 FFMI，所以這裡的算法男女一樣。
+    public static func nextStageGap(leanMassKg: Double, heightCm: Double, sex: Sex) -> StageGap? {
+        let standing = realmOf(ffmi: ffmi(leanMassKg: leanMassKg, heightCm: heightCm), sex: sex)
         guard let nextFFMI = standing.nextFFMI else { return nil }
         // 網頁版用「門檻再多一點點」去查下一期叫什麼名字。
-        let nextStanding = realmOf(ffmi: nextFFMI + nextStageProbe)
+        let nextStanding = realmOf(ffmi: nextFFMI + nextStageProbe, sex: sex)
         let needed = leanFor(ffmi: nextFFMI, heightCm: heightCm) - leanMassKg
         return StageGap(nextLabel: nextStanding.label, leanNeededKg: max(0, needed))
     }
 
     /// 突破紀錄：照日期排，只採計體脂在門檻以下的量測，每次到達更高的期別記一筆。
     public static func breakthroughs(
-        measurements: [MeasurementEntry], heightCm: Double
+        measurements: [MeasurementEntry], heightCm: Double, sex: Sex
     ) throws -> [Breakthrough] {
         let stable = byDate(measurements).filter {
-            $0.bodyFatPercent <= Tables.bodyFatStableThresholdPercent
+            $0.bodyFatPercent <= sex.bodyFatStableThresholdPercent
         }
         var result: [Breakthrough] = []
         var highestRank = -1
         var previousDate: String?
         for measurement in stable {
-            let standing = realmOf(ffmi: ffmi(leanMassKg: leanOf(measurement), heightCm: heightCm))
+            let measuredFFMI = ffmi(leanMassKg: leanOf(measurement), heightCm: heightCm)
+            let standing = realmOf(ffmi: measuredFFMI, sex: sex)
             guard standing.stageRank > highestRank else { continue }
             var daysSincePrevious = 0
             if let previousDate {
@@ -144,8 +153,10 @@ public enum Formulas {
     }
 
     /// 曾到達的最高大境界序號；還沒有任何穩固量測回 -1。
-    public static func realmMax(measurements: [MeasurementEntry], heightCm: Double) throws -> Int {
-        let all = try breakthroughs(measurements: measurements, heightCm: heightCm)
+    public static func realmMax(
+        measurements: [MeasurementEntry], heightCm: Double, sex: Sex
+    ) throws -> Int {
+        let all = try breakthroughs(measurements: measurements, heightCm: heightCm, sex: sex)
         guard let top = all.last else { return Tables.noRealmIndex }
         return top.stageRank / Tables.stages.count
     }
@@ -158,10 +169,10 @@ public enum Formulas {
         return loadKg * (1 + Double(reps) / Tables.epleyRepsDivisor)
     }
 
-    /// 比值過了幾個門檻就是第幾階（0 是未入門）。
-    public static func moveLevel(move: Move, ratio: Double) -> Int {
+    /// 比值過了幾個門檻就是第幾階（0 是未入門）。男女的門檻不一樣。
+    public static func moveLevel(move: Move, ratio: Double, sex: Sex) -> Int {
         var level = 0
-        for (index, threshold) in move.thresholds.enumerated() where ratio >= threshold {
+        for (index, threshold) in move.thresholds(for: sex).enumerated() where ratio >= threshold {
             level = index + 1
         }
         return level
