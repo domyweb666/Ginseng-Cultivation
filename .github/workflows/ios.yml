@@ -156,28 +156,13 @@ jobs:
           set -euo pipefail
           bash ios/ci/restore_asc_key.sh "$AUTH_KEY_PATH"
 
-      - name: archive（自動簽章，描述檔由 Apple 當場發）
-        env:
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-        run: |
-          set -euo pipefail
-          xcodebuild archive \
-            -project ios/Rencan.xcodeproj \
-            -scheme Rencan \
-            -configuration Release \
-            -destination "generic/platform=iOS" \
-            -archivePath "$ARCHIVE_PATH" \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$AUTH_KEY_PATH" \
-            -authenticationKeyID "$ASC_KEY_ID" \
-            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
-            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-            CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
-
-      # 匯出不走自動簽章：那條路 Xcode 會要雲端簽章，App Manager 等級的 API 金鑰沒有權限。
-      # 改成自己申請描述檔，用鑰匙圈裡那張 Apple Distribution 憑證手動簽。
+      # 簽章全程手動：自己向 Apple 申請上架用描述檔，用鑰匙圈裡那張 Apple Distribution 憑證簽。
+      # 不走自動簽章的兩個原因：
+      #   1. 匯出走自動簽章時 Xcode 會要雲端簽章，App Manager 等級的 API 金鑰沒有權限（2026-11-15）。
+      #   2. archive 走自動簽章時，這台用完就丟的機器每跑一次都向 Apple 要一張新的開發憑證，
+      #      累積到帳號上限後整步變紅：「Your account has reached the maximum number of certificates」（2026-11-16）。
+      # 描述檔的名字（PROFILE_NAME、WIDGET_PROFILE_NAME）要跟 project.pbxproj 兩個 target 的 Release 設定裡
+      # PROVISIONING_PROFILE_SPECIFIER 寫的一字不差。
       - name: 向 Apple 申請上架用描述檔
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
@@ -190,6 +175,20 @@ jobs:
           # 小工具一張：同一支腳本換 App ID 與描述檔名字再跑一次
           ASC_KEY_P8_PATH="$AUTH_KEY_PATH" BUNDLE_ID="$WIDGET_BUNDLE_ID" PROFILE_NAME="$WIDGET_PROFILE_NAME" \
             node ios/ci/appstore_profile.mjs
+
+      - name: archive（手動簽章，用上一步的描述檔）
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          xcodebuild archive \
+            -project ios/Rencan.xcodeproj \
+            -scheme Rencan \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath "$ARCHIVE_PATH" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
 
       - name: 上傳 App Store Connect
         env:
