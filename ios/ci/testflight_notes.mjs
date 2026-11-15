@@ -1,54 +1,13 @@
 // 等 App Store Connect 把剛上傳的建置處理完，然後填 TestFlight 的「測試內容」說明
 // （標準清單 A2：使用者在 TestFlight 要看到「骨架版：三個空頁」那一行，知道空殼不是壞掉）。
-// 只用 node 內建的 crypto 與 fetch 簽 App Store Connect API 的 JWT，零套件。
+// API 的簽章與呼叫在 asc_api.mjs，零套件。
 // 用法（環境變數）：ASC_KEY_ID、ASC_ISSUER_ID、ASC_KEY_P8_PATH、BUNDLE_ID、BUILD_NUMBER、TESTFLIGHT_NOTES
-import { createPrivateKey, sign } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { ascClient, env } from "./asc_api.mjs";
 
-const env = (name) => {
-  const value = process.env[name];
-  if (!value) {
-    console.error(`缺環境變數 ${name}`);
-    process.exit(2);
-  }
-  return value;
-};
-const keyId = env("ASC_KEY_ID");
-const issuerId = env("ASC_ISSUER_ID");
-const privateKey = createPrivateKey(readFileSync(env("ASC_KEY_P8_PATH"), "utf8"));
+const call = ascClient();
 const bundleId = env("BUNDLE_ID");
 const buildNumber = env("BUILD_NUMBER");
 const notes = env("TESTFLIGHT_NOTES");
-
-const API = "https://api.appstoreconnect.apple.com";
-const base64url = (input) => Buffer.from(input).toString("base64url");
-
-// JWT 有效 20 分鐘；每次呼叫重新簽，避免輪詢半小時後過期
-function token() {
-  const now = Math.floor(Date.now() / 1000);
-  const header = base64url(JSON.stringify({ alg: "ES256", kid: keyId, typ: "JWT" }));
-  const payload = base64url(
-    JSON.stringify({ iss: issuerId, iat: now, exp: now + 20 * 60, aud: "appstoreconnect-v1" }),
-  );
-  const signature = sign("sha256", Buffer.from(`${header}.${payload}`), {
-    key: privateKey,
-    dsaEncoding: "ieee-p1363",
-  });
-  return `${header}.${payload}.${signature.toString("base64url")}`;
-}
-
-async function call(method, path, body) {
-  const response = await fetch(API + path, {
-    method,
-    headers: { Authorization: `Bearer ${token()}`, "Content-Type": "application/json" },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  const text = await response.text();
-  if (!response.ok) {
-    throw new Error(`${method} ${path} 回 ${response.status}：${text.slice(0, 500)}`);
-  }
-  return text ? JSON.parse(text) : null;
-}
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 

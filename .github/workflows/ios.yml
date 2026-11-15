@@ -22,6 +22,8 @@ concurrency:
 
 env:
   BUNDLE_ID: org.domyweb.rencan
+  # CI 每次向 Apple 申請的上架用描述檔叫這個名字（ios/ci/appstore_profile.mjs）
+  PROFILE_NAME: Rencan CI App Store
   TESTFLIGHT_NOTES: "骨架版：三個空頁（左右滑：設定／境界／分析），什麼都還不能做，這是正常的。"
 
 jobs:
@@ -169,6 +171,18 @@ jobs:
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
             CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
 
+      # 匯出不走自動簽章：那條路 Xcode 會要雲端簽章，App Manager 等級的 API 金鑰沒有權限。
+      # 改成自己申請描述檔，用鑰匙圈裡那張 Apple Distribution 憑證手動簽。
+      - name: 向 Apple 申請上架用描述檔
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          CERT_SERIAL="$(security find-certificate -c "Apple Distribution" -p "$KEYCHAIN_PATH" | openssl x509 -noout -serial | cut -d= -f2)"
+          export CERT_SERIAL
+          ASC_KEY_P8_PATH="$AUTH_KEY_PATH" node ios/ci/appstore_profile.mjs
+
       - name: 上傳 App Store Connect
         env:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
@@ -176,7 +190,10 @@ jobs:
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
         run: |
           set -euo pipefail
-          sed "s/TEAM_ID_PLACEHOLDER/$APPLE_TEAM_ID/" ios/ci/ExportOptions.plist > "$RUNNER_TEMP/ExportOptions.plist"
+          sed -e "s/TEAM_ID_PLACEHOLDER/$APPLE_TEAM_ID/" \
+            -e "s/BUNDLE_ID_PLACEHOLDER/$BUNDLE_ID/" \
+            -e "s/PROFILE_NAME_PLACEHOLDER/$PROFILE_NAME/" \
+            ios/ci/ExportOptions.plist > "$RUNNER_TEMP/ExportOptions.plist"
           xcodebuild -exportArchive \
             -archivePath "$ARCHIVE_PATH" \
             -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
