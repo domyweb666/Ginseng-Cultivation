@@ -38,15 +38,17 @@ final class WidgetUITests: RencanUITestCase {
         let row = try find(cell, "清單裡的人蔘修煉", timeout: 10)
         row.tap()
 
-        let addButton = try find(firstExisting(["Add Widget", "加入小工具"]), "預覽頁的加入小工具")
-        shot("預覽-第一種")
-        springboard.swipeLeft()
-        shot("預覽-第二種")
-        springboard.swipeLeft()
-        shot("預覽-第三種")
-        springboard.swipeRight()
-        springboard.swipeRight()
-        addButton.tap()
+        // 預覽頁裡的東西不在主畫面的元件樹裡（2026-11-16 第一趟印出來的樹只有主畫面的圖示），
+        // 所以這一頁照位置操作：中間那排左右滑換尺寸，最下面那顆藍色的是「Add Widget」。
+        _ = waitUntil(timeout: 2.5) { false }
+        shot("預覽-小的")
+        let carouselRight = springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.8, dy: 0.57))
+        let carouselLeft = springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.2, dy: 0.57))
+        carouselRight.press(forDuration: 0.05, thenDragTo: carouselLeft)
+        _ = waitUntil(timeout: 1.5) { false }
+        shot("預覽-中的")
+        springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.905)).tap()
+        _ = waitUntil(timeout: 2) { false }
         shot("加到主畫面")
 
         let done = firstExisting(["Done", "完成"])
