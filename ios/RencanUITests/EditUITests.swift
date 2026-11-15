@@ -55,36 +55,20 @@ final class EditUITests: RencanUITestCase {
     }
 }
 
-/// 左滑一列露出「刪除」，刪掉後底部出現「復原」，按了那一筆回來。
-/// 清單是 List 的 swipeActions，放在左右滑的三頁裡；左滑有可能被換頁手勢吃掉，
-/// 這條測試紅了就是這件事，要改的是 app，不是測試。
-final class SwipeDeleteUITests: RencanUITestCase {
-    func test左滑刪除再復原() {
+/// 按住一列跳出選單，選「刪除」，底部出現「復原」，按了那一筆回來。
+/// 原本是左滑刪除；2026-11-16 檢查線實測，左滑被左右換頁攔掉，所以 app 改成按住。
+final class HoldDeleteUITests: RencanUITestCase {
+    func test按住一筆刪除再復原() {
         launchDemoAtTodayList()
         let rows = anyElements(containing: "62.5 公斤 × 5 下 × 3 組")
         let row = requireVisible(rows, "今天的推山掌那一筆")
-        shot("左滑之前")
+        shot("按住之前")
 
-        swipeRowLeft(row)
-        let delete = app.buttons["刪除"].firstMatch
-        let undo = app.buttons["復原"].firstMatch
-        let shown = waitForAny([delete, undo], timeout: 6)
-        XCTAssertNotNil(shown, "左滑沒出現刪除鈕（可能被左右換頁吃掉，看失敗現場那張圖停在哪一頁）")
-        // 拖得夠遠時系統會整列滑到底直接刪掉，那就不用再按「刪除」
-        if shown === delete {
-            shot("左滑露出刪除")
-            delete.tap()
-        }
+        row.press(forDuration: 1.2)
+        let delete = require(app.buttons["刪除"], "按住之後選單裡的「刪除」")
+        shot("按住跳出選單")
+        delete.tap()
         undoDelete(of: rows, what: "推山掌那一筆")
-    }
-
-    /// 從列的中間偏右往左慢慢拖一小段。不用 swipeLeft：那是整列快滑，分不出是露出按鈕還是換頁。
-    private func swipeRowLeft(_ row: XCUIElement) {
-        let from = row.coordinate(withNormalizedOffset: CGVector(dx: 0.7, dy: 0.5))
-        let target = row.coordinate(withNormalizedOffset: CGVector(dx: 0.3, dy: 0.5))
-        from.press(
-            forDuration: 0.05, thenDragTo: target, withVelocity: .slow, thenHoldForDuration: 0.2
-        )
     }
 }
 

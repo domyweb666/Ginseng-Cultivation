@@ -97,6 +97,7 @@ struct MoveDetailView: View {
             .foregroundStyle(Color.rencan.accent)
         }
         .chartXAxis(.hidden)
+        .chartXScale(domain: 1...card.history.count)
         .chartYScale(domain: .automatic(includesZero: false))
         .frame(height: Metrics.chartHeight)
     }

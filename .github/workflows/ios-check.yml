@@ -115,11 +115,36 @@ jobs:
             -destination "id=$UDID" \
             -derivedDataPath "$PWD/DerivedData" \
             -resultBundlePath "$PWD/UITests.xcresult" \
+            ONLY_ACTIVE_ARCH=NO \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             2>&1 | tee build-uitest.log \
             | grep -E --line-buffered "error:|warning:|Test Case|Test Suite|Executed|TEST |BUILD |XCTAssert|failed" || true
           grep -q "TEST SUCCEEDED" build-uitest.log
+
+      # 模擬器版（Debug、兩種架構）留一份，AI 抓回本機再上傳 Limrun 雲端模擬器親手走流程。
+      # 這條線不碰 secrets，所以不在這裡上傳 Limrun。UI 測試紅了也留，只要編得出來就有。
+      - name: 包模擬器版
+        id: simzip
+        if: always()
+        working-directory: ios
+        run: |
+          APP="DerivedData/Build/Products/Debug-iphonesimulator/Rencan.app"
+          if [ -d "$APP" ]; then
+            (cd "$(dirname "$APP")" && zip -qry "$RUNNER_TEMP/rencan-sim.zip" Rencan.app)
+            ls -l "$RUNNER_TEMP/rencan-sim.zip"
+            echo "made=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "沒有編出 Rencan.app，這一輪沒有模擬器版"
+          fi
+
+      - name: 留下模擬器版
+        if: always() && steps.simzip.outputs.made == 'yes'
+        uses: actions/upload-artifact@v4
+        with:
+          name: rencan-sim-app
+          path: ${{ runner.temp }}/rencan-sim.zip
+          retention-days: 7
 
       - name: 留下截圖
         if: always()

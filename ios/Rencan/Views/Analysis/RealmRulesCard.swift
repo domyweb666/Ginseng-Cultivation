@@ -81,9 +81,9 @@ struct RealmRulesCard: View {
         let gate = "體脂超過 \(bodyFatLimit)% 算根基不穩，那次量測不算突破。"
         switch sex {
         case .male:
-            return "境界看 FFMI，每 \(stageWidth) 分一期。標準只有一張男性表；" + gate
+            return "境界看 FFMI，每 \(stageWidth) 分一期。" + gate
         case .female:
-            return "境界看 FFMI。標準只有一張男性表，女性的 FFMI 會先換算再查，門檻看天梯；" + gate
+            return "境界看 FFMI。女性的 FFMI 會先換算成男性等值再查，門檻看天梯。" + gate
         }
     }
 

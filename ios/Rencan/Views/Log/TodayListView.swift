@@ -1,8 +1,9 @@
 import RencanCore
 import SwiftUI
 
-/// 今天的修煉（住在境界頁）。左滑刪除，底部出現「復原」5 秒；點一筆進編輯（PRD S15）。
-/// 左滑是隱藏手勢，所以編輯表單裡也有刪除鈕，不會只有一條路。
+/// 今天的修煉（住在境界頁）。點一筆進編輯；按住一筆跳出選單可以刪除，底部出現「復原」5 秒（PRD S15）。
+/// 原本寫的是左滑刪除，但這一頁往左滑是換到分析頁，同方向的手勢會被換頁攔掉（2026-11-16 檢查線實測），
+/// 所以改成按住。編輯表單裡也有刪除鈕，不會只有一條路。
 struct TodayListView: View {
     @Environment(AppFlow.self) private var flow
     @Environment(StoreService.self) private var store
@@ -27,41 +28,48 @@ struct TodayListView: View {
         }
     }
 
-    /// 用 List 才有系統的左滑刪除。外面已經是 ScrollView，所以關掉它自己的捲動、高度寫死。
+    /// 一張卡，裡面一列一筆。
     private var rows: some View {
-        List {
+        VStack(spacing: 0) {
             ForEach(lifts) { record in
-                LiftRow(record: record) {
-                    if let entry = record.entry, let level = digest.level(of: entry) {
-                        RencanChip(text: Tables.levelNames[level])
-                    }
+                if record.uid != lifts.first?.uid {
+                    RowDivider()
                 }
-                .frame(height: rowHeight)
-                .listRowInsets(
-                    EdgeInsets(
-                        top: 0, leading: RencanLayout.cardPadding, bottom: 0,
-                        trailing: RencanLayout.cardPadding
-                    )
-                )
-                .listRowBackground(Color.rencan.surface)
-                .listRowSeparatorTint(Color.rencan.separator)
-                .onTapGesture {
-                    flow.sheet = .editLift(record)
-                }
-                .swipeActions(edge: .trailing) {
-                    Button(role: .destructive) {
-                        delete(record)
-                    } label: {
-                        Label("刪除", systemImage: "trash")
-                    }
-                }
+                row(record)
             }
         }
-        .listStyle(.plain)
-        .scrollDisabled(true)
-        .environment(\.defaultMinListRowHeight, 0)
-        .frame(height: rowHeight * CGFloat(lifts.count))
-        .clipShape(RoundedRectangle(cornerRadius: RencanLayout.cardCornerRadius))
+        .padding(.horizontal, RencanLayout.cardPadding)
+        .background(
+            Color.rencan.surface, in: RoundedRectangle(cornerRadius: RencanLayout.cardCornerRadius)
+        )
+    }
+
+    /// 點一下進編輯，按住跳出選單（編輯、刪除）。
+    private func row(_ record: LiftRecord) -> some View {
+        Button {
+            flow.sheet = .editLift(record)
+        } label: {
+            LiftRow(record: record) {
+                if let entry = record.entry, let level = digest.level(of: entry) {
+                    RencanChip(text: Tables.levelNames[level])
+                }
+            }
+            .frame(minHeight: rowHeight)
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint("點一下編輯，按住可以刪除")
+        .contextMenu {
+            Button {
+                flow.sheet = .editLift(record)
+            } label: {
+                Label("編輯", systemImage: "pencil")
+            }
+            Button(role: .destructive) {
+                delete(record)
+            } label: {
+                Label("刪除", systemImage: "trash")
+            }
+        }
     }
 
     private func delete(_ record: LiftRecord) {
