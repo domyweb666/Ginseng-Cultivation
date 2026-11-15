@@ -8,11 +8,22 @@ import SwiftData
 ///   -rencanSeed profile    預先填好身高 174、男
 ///   -rencanSeed demo       另外塞幾筆量測與修煉，畫面有東西可以截圖
 ///   -rencanSeed female     身高 160、女，加一筆量測
+///   -rencanHoldCelebration 全螢幕慶祝不自己關，等測試點掉（XCUITest 用；Limrun 走流程不帶）
 @MainActor
 enum UITestSupport {
     static var isUITest: Bool {
         #if DEBUG
             return ProcessInfo.processInfo.arguments.contains("-rencanUITest")
+        #else
+            return false
+        #endif
+    }
+
+    /// 慶祝畫面要不要等人點才關。XCUITest 每個動作前會等 app 閒下來，等得久的時候
+    /// 4.5 秒的慶祝已經自己關了，測試就看不到（第三輪檢查線紅過一次，Limrun 實機上是正常的）。
+    static var holdsCelebration: Bool {
+        #if DEBUG
+            return isUITest && ProcessInfo.processInfo.arguments.contains("-rencanHoldCelebration")
         #else
             return false
         #endif

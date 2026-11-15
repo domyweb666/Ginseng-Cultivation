@@ -46,7 +46,7 @@ class RencanUITestCase: XCTestCase {
 
     /// 開 app。extra 是這支測試另外要的啟動參數（例如預先塞好的示範資料）。
     func launch(_ extra: [String] = []) {
-        app.launchArguments = ["-rencanUITest"] + extra
+        app.launchArguments = ["-rencanUITest", "-rencanHoldCelebration"] + extra
         app.launch()
     }
 
@@ -236,7 +236,8 @@ extension RencanUITestCase {
     }
 
     /// 全螢幕慶祝：等它出來、確認小標題、截圖、點一下、等它關掉。
-    /// 它 4.5 秒會自己關，所以點的是螢幕上的位置，不是元素：萬一已經自己關了也不會出錯。
+    /// 測試啟動時帶了 -rencanHoldCelebration，慶祝不會自己關，等這裡點掉：XCUITest 每個動作前
+    /// 會等 app 閒下來，等得久的時候 4.5 秒的慶祝已經關了。點的是螢幕上的位置，不是元素。
     func passCelebration(heading: String, shotName: String, sheetButton: XCUIElement) {
         let celebration = element(id: "celebration")
         require(celebration, "慶祝畫面「\(heading)」", timeout: 8)

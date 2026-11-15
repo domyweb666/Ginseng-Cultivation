@@ -271,6 +271,55 @@ async function walkDemo() {
   }
 }
 
+/// 示範資料記一筆破紀錄的坐馬樁（100 加到 102.5 公斤）：要跳「功法精進」的全螢幕慶祝。
+/// 第三輪檢查線這一步紅過（按「記下」後 XCUITest 等 app 閒下來等了 17 秒，慶祝 4.5 秒就關了），
+/// 所以這裡每隔一小段記一次「離按下多久、元件樹回得多快、慶祝在不在」，看 app 有沒有真的卡住。
+async function walkLiftBest() {
+  await launch("demo");
+  check("破紀錄：進到境界頁", await waitFor("境界"));
+  if (!(await tap("記一筆", { contains: true }))) {
+    check("破紀錄：開記一筆表單", false, "找不到「記一筆」");
+    return;
+  }
+  await sleep(700);
+  const picked = await tap("坐馬樁", { contains: true });
+  const added = await tap("重量加 2.5 公斤");
+  await shot("破紀錄-表單102點5公斤");
+  check("破紀錄：選坐馬樁並加到 102.5 公斤", picked && added, await has("預估 1RM 120") ? "預覽 1RM 120" : "");
+  await tap("記下", { wait: 0 });
+  const pressed = Date.now();
+  let seenAt = null;
+  let goneAt = null;
+  let label = "";
+  let shots = 0;
+  while (Date.now() - pressed < 12000) {
+    const asked = Date.now();
+    const node = await findNode("celebration");
+    const answered = Date.now();
+    log(`破紀錄 +${asked - pressed}ms 元件樹花 ${answered - asked}ms 慶祝${node ? "在" : "不在"}`);
+    if (node && seenAt === null) {
+      seenAt = answered - pressed;
+      label = node.AXLabel ?? "";
+    }
+    if (node && shots < 3) {
+      shots += 1;
+      await shot(`破紀錄-慶祝第${shots}張`);
+    }
+    if (!node && seenAt !== null && goneAt === null) {
+      goneAt = answered - pressed;
+      break;
+    }
+    await sleep(250);
+  }
+  check("破紀錄：出現慶祝畫面", seenAt !== null, `第一次看到 +${seenAt}ms｜${label}`);
+  check("破紀錄：慶祝寫的是功法精進", label.includes("功法精進"), label);
+  check("破紀錄：慶祝自己關掉", goneAt !== null, `+${goneAt}ms`);
+  await shot("破紀錄-慶祝關掉之後");
+  await scrollDown();
+  check("破紀錄：今天的修煉有 102.5 公斤那一筆", await has("102.5 公斤"));
+  await shot("破紀錄-今天的修煉");
+}
+
 async function walkFresh() {
   await launch(null);
   check("全新：看到問身高與性別", await waitFor("開始"));
@@ -399,6 +448,7 @@ try {
   log("螢幕", JSON.stringify(screen));
 
   await walkDemo();
+  await walkLiftBest();
   await walkFresh();
   await walkMascot();
 } catch (error) {

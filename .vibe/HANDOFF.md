@@ -1,6 +1,6 @@
-# Handoff: 組塊 C＋D 綠了、已併 main 出版；E、F、H、I、K、J1 的程式與測試都寫好接好，全部還沒 commit、還沒編譯過
+# Handoff: 組塊 C＋D 綠了、已併 main 出版；E、F、H、I、K、J1 的程式與測試都接好推上 work/app（commit cd54529），第三輪檢查線是它們第一次編譯
 
-> 產出時間：2026-11-16 00:40，01:10 更新（第二輪綠、Limrun 跑過、已併 main）
+> 產出時間：2026-11-16 00:40，01:35 更新（C＋D 已併 main 且主線 run 43737447494 全綠；第二、三波已 commit 推上 work/app）
 > 前一會話的最後狀態，給下一個會話接續用。真相源是 `.vibe/切片帳本.md`（組塊 C 起的片都還沒打勾，這份寫的進度比帳本新）。
 
 ## ✅ 這次完成了什麼
@@ -35,9 +35,9 @@
 
 `gh run download <run id> -n rencan-sim-app --dir <暫存資料夾>` 抓 `rencan-sim.zip`，再 `node .vibe/tools/limrun_walk.mjs <rencan-sim.zip> <截圖輸出資料夾>`。它走示範資料、全新安裝、小人蔘展示畫面與空狀態三段，每步截圖，`finally` 一定刪機器，另設閒置 3 分鐘、最長 12 分鐘自動關。跑完看最後幾行確認「模擬器已刪」與「還活著的模擬器：0 台」。一趟約 2 到 3 分鐘。
 
-### 工作目錄裡沒 commit 的東西（約 52 個檔）
+### 01:35 更新：下面這些已經全部 commit（`cd54529`）推上 `work/app`
 
-這些都還沒編譯過，等 C＋D 綠了、併完 main 再 commit、推 `work/app` 跑檢查線。`git status --short` 看得到全貌。
+第三輪檢查線就是這批第一次編譯。接手時 `gh run list --workflow=ios-check.yml --limit 3` 找 `cd54529` 那一輪看結果，紅了照錯誤行修。健康 app 的畫面也交件並接好了（`setHealthRead` 已補；今天剛量的那一筆照手動結算放慶祝，見代決清單）。下面的清單留著當「這批有哪些東西」的索引。
 
 - **第二波的新檔**：
   - E 健康 app：`Services/HealthKitService.swift`、`HealthKitQueries.swift`、RencanCore `HealthImport.swift` 加測試

@@ -22,6 +22,8 @@ struct MeasurementFormView: View {
     @Query private var settingsRows: [UserSettings]
     let digest: Digest
 
+    private static let mascotHeight: CGFloat = 56
+
     @State private var weightText = ""
     @State private var bodyFatText = ""
     @State private var leanText = ""
@@ -74,10 +76,14 @@ struct MeasurementFormView: View {
                 datePicker
                 preview
                 if let errorMessage {
-                    Text(errorMessage)
-                        .font(RencanType.subheadline)
-                        .foregroundStyle(Color.rencan.destructive)
-                        .accessibilityIdentifier("form-error")
+                    // 跟記一筆修煉同一個樣子：出錯才有抓頭的小人蔘（PRD S29）。
+                    HStack(spacing: RencanLayout.groupSpacing) {
+                        MascotView(action: .oops, height: MeasurementFormView.mascotHeight)
+                        Text(errorMessage)
+                            .font(RencanType.subheadline)
+                            .foregroundStyle(Color.rencan.destructive)
+                            .accessibilityIdentifier("form-error")
+                    }
                 }
             }
             .padding(.horizontal, RencanLayout.screenMargin)

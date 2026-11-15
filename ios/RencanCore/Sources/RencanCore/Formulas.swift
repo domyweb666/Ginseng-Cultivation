@@ -244,16 +244,22 @@ public enum Formulas {
 
     /// 本週修煉天數：這週一（含）以後有記錄的日子有幾天。
     public static func weekCount(lifts: [LiftEntry], today: String) throws -> Int {
+        try daysThisWeek(lifts.map(\.date), today: today).count
+    }
+
+    /// 這週一（含）以後有出現的日子，不重複、由早到晚。
+    /// 小工具的快照只帶這幾個日期，過了一週它自己拿當天再算一次，天數才會歸零。
+    public static func daysThisWeek(_ days: [String], today: String) throws -> [String] {
         let todayNumber = try dayNumber(of: today)
         // 餘數再加 7 取一次，1970 年以前的日期（負的天數）也算得對。
         let remainder = (todayNumber + epochToMondayShift) % daysPerWeek
         let mondayNumber = todayNumber - (remainder + daysPerWeek) % daysPerWeek
-        var days: Set<String> = []
-        for lift in lifts {
-            let liftNumber = try dayNumber(of: lift.date)
-            if liftNumber >= mondayNumber { days.insert(lift.date) }
+        var counted: Set<String> = []
+        for day in days {
+            let number = try dayNumber(of: day)
+            if number >= mondayNumber { counted.insert(day) }
         }
-        return days.count
+        return counted.sorted()
     }
 
     public static func daysBetween(_ from: String, _ until: String) throws -> Int {

@@ -63,6 +63,8 @@ struct CelebrationView: View {
             withAnimation(.linear(duration: AppFlow.celebrationSeconds)) {
                 progress = 1
             }
+            // UI 測試帶 -rencanHoldCelebration 時不自己關，等測試點掉。
+            guard !UITestSupport.holdsCelebration else { return }
             guard await Task.pause(seconds: AppFlow.celebrationSeconds) else { return }
             close()
         }
