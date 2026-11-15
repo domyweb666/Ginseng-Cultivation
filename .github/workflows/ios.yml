@@ -147,22 +147,7 @@ jobs:
           ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
         run: |
           set -euo pipefail
-          printf '%s' "$ASC_KEY_P8_BASE64" | base64 --decode > "$AUTH_KEY_PATH" || true
-          chmod 600 "$AUTH_KEY_PATH"
-          # 2026-11-15 踩到：secret 放錯格式時這步照樣綠，到 archive 才回看不懂的 keyPathInvalid。
-          # 所以在這裡先驗，只印形狀（大小、是不是金鑰標頭），不印內容。
-          BYTES="$(wc -c < "$AUTH_KEY_PATH" | tr -d ' ')"
-          if ! openssl pkey -in "$AUTH_KEY_PATH" -noout 2> /dev/null; then
-            HEADER=no
-            if head -c 27 "$AUTH_KEY_PATH" | grep -q -- "-----BEGIN PRIVATE KEY-----"; then HEADER=yes; fi
-            UTF16=no
-            if [ "$(tr -d '\000' < "$AUTH_KEY_PATH" | wc -c | tr -d ' ')" != "$BYTES" ]; then UTF16=yes; fi
-            RAW=no
-            case "$ASC_KEY_P8_BASE64" in -----BEGIN*) RAW=yes ;; esac
-            echo "::error::ASC_KEY_P8_BASE64 解出來不是有效的 .p8 金鑰。大小 ${BYTES} bytes（正常約 257）；開頭是金鑰標頭：${HEADER}；是 UTF-16 編碼：${UTF16}；secret 是沒轉 base64 的原文：${RAW}。請照 ios/ci/README.md 第八段重放這個 secret。"
-            exit 1
-          fi
-          echo "API 金鑰格式正確（${BYTES} bytes）"
+          bash ios/ci/restore_asc_key.sh "$AUTH_KEY_PATH"
 
       - name: archive（自動簽章，描述檔由 Apple 當場發）
         env:
@@ -240,8 +225,7 @@ jobs:
           ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
         run: |
           set -euo pipefail
-          printf '%s' "$ASC_KEY_P8_BASE64" | base64 --decode > "$ASC_KEY_P8_PATH"
-          chmod 600 "$ASC_KEY_P8_PATH"
+          bash ios/ci/restore_asc_key.sh "$ASC_KEY_P8_PATH"
       - name: 等處理完並填說明
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
