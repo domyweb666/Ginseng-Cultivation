@@ -1,24 +1,24 @@
 {
-  "station": "implementing",
-  "note": "2026-11-07 晚上 UIUX 定案三頁左右滑（.uiux/02-流程.md），A2 骨架與帳本已同步改。A5 延後（Limrun 沒點數，使用者選跳過）。卡在 A1：使用者照 ios/ci/README.md 做 Apple 憑證＋6 個 secrets（LIM_API_KEY 可省）。做完重跑 CI 看 archive/上傳/TestFlight。",
-  "updated_at": "2026-11-07T17:52:45+08:00",
+  "station": "impl",
+  "note": "2026-11-15 組塊 A 驗收通過（A5 延後）。組塊 B 開工，B1 進行中；多米已放行 B5、採用標準清單、白話表點頭。",
+  "updated_at": "2026-11-15T12:00:00+08:00",
   "updated_by": "vibe-traffic-control",
   "pieces": {
-    "todo": 37,
+    "todo": 36,
     "machine_verified": 0,
-    "human_verified": 0
+    "human_verified": 5
   },
   "chunks": [
     {
       "name": "A：裝得到你手機上",
       "total": 5,
-      "machine_done": 0,
-      "human_verified": false,
+      "machine_done": 4,
+      "human_verified": true,
       "approved": true
     },
     {
       "name": "B：規則引擎",
-      "total": 4,
+      "total": 5,
       "machine_done": 0,
       "human_verified": false,
       "approved": true
@@ -71,6 +71,13 @@
       "machine_done": 0,
       "human_verified": false,
       "approved": true
+    },
+    {
+      "name": "K：小人蔘",
+      "total": 4,
+      "machine_done": 1,
+      "human_verified": false,
+      "approved": false
     },
     {
       "name": "J：上架",
