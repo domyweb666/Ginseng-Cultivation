@@ -40,6 +40,7 @@ final class WidgetSnapshotTests: XCTestCase {
         XCTAssertEqual(made.realmText, "金丹中期")
         XCTAssertFalse(made.isUnstable)
         XCTAssertEqual(made.detailText, "距金丹後期還差 0.6 公斤肌肉")
+        XCTAssertEqual(made.detailLines, ["距金丹後期", "還差 0.6 公斤肌肉"])
         XCTAssertEqual(made.updatedAtMs, 1_000)
     }
 
@@ -74,7 +75,8 @@ final class WidgetSnapshotTests: XCTestCase {
         let made = try snapshot(measurements: [weighing(80, bodyFat: 24, on: "2026-03-05")])
         XCTAssertEqual(made.realmText, "金丹中期")
         XCTAssertTrue(made.isUnstable)
-        XCTAssertEqual(made.detailText, "根基不穩，體脂降下來境界才生效")
+        XCTAssertEqual(made.detailText, "根基不穩，體脂降下來才生效")
+        XCTAssertEqual(made.detailLines, ["根基不穩", "體脂降下來才生效"])
     }
 
     func test渡劫後期沒有下一期() throws {

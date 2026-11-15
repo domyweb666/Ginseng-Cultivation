@@ -18,6 +18,10 @@ private enum Metrics {
     static let realmMinimumScale: CGFloat = 0.6
     static let lineSpacing: CGFloat = 4
     static let columnSpacing: CGFloat = 16
+    /// 右邊那幾行放不下時最多縮到幾成（一行一句，不折行）。
+    static let detailMinimumScale: CGFloat = 0.8
+    /// 讀不到快照時右邊寫的字。
+    static let openAppText = "打開 app 更新"
     /// 讀不到天數時畫的那一槓。
     static let unknownCount = "–"
 }
@@ -106,17 +110,27 @@ private struct RealmColumnView: View {
 private struct DetailColumnView: View {
     let entry: RencanEntry
 
+    private var lines: [String] {
+        entry.snapshot?.detailLines ?? [Metrics.openAppText]
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: Metrics.lineSpacing) {
             Text("下一步")
                 .font(.caption)
                 .foregroundStyle(Metrics.palette.textSecondary)
-            Text(entry.snapshot?.detailText ?? "打開 app 更新")
-                .font(.subheadline)
-                .foregroundStyle(Metrics.palette.textPrimary)
+            ForEach(lines, id: \.self) { line in
+                Text(line)
+                    .font(.subheadline)
+                    .foregroundStyle(Metrics.palette.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(Metrics.detailMinimumScale)
+            }
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(entry.snapshot?.detailText ?? Metrics.openAppText)
     }
 }
 

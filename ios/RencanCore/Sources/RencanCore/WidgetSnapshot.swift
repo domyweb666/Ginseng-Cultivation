@@ -77,12 +77,18 @@ public struct WidgetSnapshot: Codable, Equatable {
         return realmName + stageName
     }
 
-    /// 中型小工具多的那一句。
+    /// 中型小工具多的那幾行，一行一句。整句交給系統自己折的話會斷在「公／斤」中間
+    /// （2026-11-16 在模擬器上看到的），所以這裡先分好。
+    public var detailLines: [String] {
+        guard realmName != nil else { return ["先量一次體組成"] }
+        if isUnstable { return ["根基不穩", "體脂降下來才生效"] }
+        guard let nextLabel, let kgToNext else { return ["已是最高的一期"] }
+        return ["距\(nextLabel)", "還差 \(Formulas.fmt(kgToNext, digits: 1)) 公斤肌肉"]
+    }
+
+    /// 同樣的話接成一句，給讀螢幕的功能唸。
     public var detailText: String {
-        guard realmName != nil else { return "先量一次體組成" }
-        if isUnstable { return "根基不穩，體脂降下來境界才生效" }
-        guard let nextLabel, let kgToNext else { return "已是最高的一期" }
-        return "距\(nextLabel)還差 \(Formulas.fmt(kgToNext, digits: 1)) 公斤肌肉"
+        detailLines.joined(separator: isUnstable ? "，" : "")
     }
 
     /// 以 today 這一天來看，這一週修煉了幾天。快照是上週寫的話會是 0。
