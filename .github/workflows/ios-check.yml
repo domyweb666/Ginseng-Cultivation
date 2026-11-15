@@ -1,0 +1,147 @@
+# 工作分支的檢查線（2026-11-15 加）。
+# 推到 work/** 分支時跑：規則引擎測試（Linux）→ macOS 上排版與 lint → 模擬器編譯
+# → UI 測試走流程並截圖。不碰任何 secrets、不簽章、不上傳 TestFlight。
+# 目的：中途反覆修編譯錯誤時不會每推一次就多一個 TestFlight 版本；
+# 一整個組塊綠了才併進 main，由 ios.yml 出一版給多米裝。
+# 截圖在這次執行的 artifact「rencan-ui-screenshots」，AI 下載回來看，當畫面的機器自審證據
+# （取代沒訂閱的 Limrun，片 A5）。
+name: iOS check
+
+on:
+  push:
+    branches: ["work/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core-tests:
+    name: 規則引擎測試（Linux）
+    runs-on: ubuntu-latest
+    container: swift:6.0-noble
+    steps:
+      - uses: actions/checkout@v4
+      - name: swift test
+        run: swift test --package-path ios/RencanCore
+
+  ui-check:
+    name: 編譯、lint、模擬器截圖（macOS）
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 選 Xcode 26
+        run: |
+          XCODE_APP="$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)"
+          sudo xcode-select -s "$XCODE_APP"
+          xcodebuild -version
+
+      - name: swift-format（嚴格）
+        id: format
+        continue-on-error: true
+        run: |
+          xcrun swift-format lint --strict --recursive --configuration ios/.swift-format \
+            ios/Rencan ios/RencanCore/Sources ios/RencanCore/Tests
+
+      - name: SwiftLint（嚴格）
+        id: lint
+        continue-on-error: true
+        run: |
+          if ! command -v swiftlint >/dev/null 2>&1; then
+            brew install swiftlint
+          fi
+          cd ios && swiftlint lint --strict --config .swiftlint.yml
+
+      # 用 UDID 指定模擬器：挑最新 iOS runtime 裡的一台 iPhone 最穩。
+      - name: 挑一台 iPhone 模擬器
+        id: sim
+        run: |
+          xcrun simctl list -j devices available > "$RUNNER_TEMP/sims.json"
+          python3 - "$RUNNER_TEMP/sims.json" >> "$GITHUB_OUTPUT" <<'PY'
+          import json, re, sys
+          devices = json.load(open(sys.argv[1]))["devices"]
+          best = None
+          for runtime, devs in devices.items():
+              m = re.search(r"iOS-(\d+)-(\d+)", runtime)
+              if not m:
+                  continue
+              ver = (int(m.group(1)), int(m.group(2)))
+              for d in devs:
+                  name = d["name"]
+                  if not d.get("isAvailable") or not name.startswith("iPhone"):
+                      continue
+                  n = re.search(r"iPhone (\d+)", name)
+                  plain = re.fullmatch(r"iPhone \d+", name) is not None
+                  key = (ver, plain, int(n.group(1)) if n else 0, name)
+                  if best is None or key > best[0]:
+                      best = (key, d["udid"], name, runtime)
+          if best is None:
+              sys.exit("no available iPhone simulator")
+          print(f"udid={best[1]}")
+          print(f"name={best[2]}")
+          print(f"runtime={best[3]}")
+          PY
+          grep -E '^(udid|name|runtime)=' "$GITHUB_OUTPUT"
+
+      - name: 開模擬器
+        env:
+          UDID: ${{ steps.sim.outputs.udid }}
+        run: |
+          # 硬體鍵盤接著的話軟體鍵盤不會出來，XCTest 打字會失敗
+          defaults write com.apple.iphonesimulator ConnectHardwareKeyboard -bool false
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl status_bar "$UDID" override \
+            --time "9:41" --batteryState charged --batteryLevel 100 --wifiBars 3 --cellularBars 4
+
+      - name: 編譯並跑 UI 測試
+        working-directory: ios
+        env:
+          UDID: ${{ steps.sim.outputs.udid }}
+          # xcodebuild 會把 TEST_RUNNER_ 前綴拿掉再傳給測試程序
+          TEST_RUNNER_RENCAN_SCREENSHOT_DIR: ${{ github.workspace }}/ios/screenshots
+        run: |
+          set -o pipefail
+          mkdir -p screenshots
+          xcodebuild test \
+            -project Rencan.xcodeproj \
+            -scheme Rencan \
+            -destination "id=$UDID" \
+            -derivedDataPath "$PWD/DerivedData" \
+            -resultBundlePath "$PWD/UITests.xcresult" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            2>&1 | tee build-uitest.log \
+            | grep -E --line-buffered "error:|warning:|Test Case|Test Suite|Executed|TEST |BUILD |XCTAssert|failed" || true
+          grep -q "TEST SUCCEEDED" build-uitest.log
+
+      - name: 留下截圖
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rencan-ui-screenshots
+          path: ios/screenshots
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: 留下編譯與測試紀錄
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rencan-ui-log
+          path: ios/build-uitest.log
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: 排版或 lint 沒過就算失敗
+        if: always()
+        run: |
+          echo "swift-format=${{ steps.format.outcome }} swiftlint=${{ steps.lint.outcome }}"
+          test "${{ steps.format.outcome }}" = "success"
+          test "${{ steps.lint.outcome }}" = "success"
