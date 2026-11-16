@@ -5,12 +5,17 @@
 import io, json, re, sys
 root = sys.argv[1]
 N, COLS, ROWS_ = 96, 12, 8
-IDS = {'r0': 'd6765946eb8f7493dc10ff55de752fd1', 'r1': '88449e14a2b8eb1737ef7564e21d1393', 'r2': '7c03c1fe5cc90ad97fad6d85454c7539',
-       'r3': 'dd79772f78ebd42d33ee05f0dc5ee395', 'r4': 'e1e10d1078dd0e90cbc4a5abcc661921', 'r5': 'fddbd22a171a37703eac2b8861fbce40',
-       'r6': '885f61d5ad7eecbf4dd7040cc07d7077', 'gr0': 'dd0f3331ce839a4539a4111b06818c98', 'gr1': '95ac4e81a85d0f31e748015184a4ee2b',
-       'gr2': '189f490b4082b3dacff4779e31c64797', 'gr3': 'cd03f32ddb3bf179c8bfa28169b0fb7b', 'gr4': '2dda51042ab80aa69ea79fbdd3c18740',
-       'gr5': '3076ecd0669609d2486e33a8eeb0e4a0', 'gr6': '7df176ba008d79e8289e0f968fd2d96b'}
-json.dump({k: {'sheet': '/_blob/' + v, 'frames': N, 'cols': COLS, 'rows': ROWS_} for k, v in IDS.items()},
+FT = 0.15            # 一格播幾秒。多米嫌 0.1 太快；比較畫板上另外放了 0.1 和 0.2 給他挑
+LOOP = N * FT        # 一輪幾秒
+# 比較用：同一張角色，待機時身體多一個小動作的版本
+ALT = {'r0-breath': '8e1ac4d975ef402e7d4605218f416baf', 'r0-sway': '75cf568ed6232acbd335beb8a075e0ce',
+       'r3-breath': 'b93ecd308d365fad8c200b8757fb60d0', 'r3-sway': 'e7a27fa849988261d91cb9e371dbc557'}
+IDS = {'r0': 'b02288e14fdc0ea78a0cc880fbb6ff04', 'r1': '626074c674c0ded416ebf6adde879673', 'r2': '70f8f19d9a0a6750c54bcd52467ba275',
+       'r3': '25caa1fb8162c5eecad74f1fd5d5ed62', 'r4': 'ae2ba6fb0cfc27dd760464fd1f7a5372', 'r5': '9ccca5483cbee514bada6cbd01f35f08',
+       'r6': '77c6a9bb2135d29a0a0962f70da81d72', 'gr0': '6693b49f2b5a761c4ae204b98ee26053', 'gr1': '990074d191db35c4ac6222a57a474c05',
+       'gr2': '3908c4e065863385daab18488811448e', 'gr3': '52d80a1d8f9034a99f0c2559c2b78782', 'gr4': 'ecb49fbe60e7241370a937cd43c8457c',
+       'gr5': 'bd1dee2412dcaa656a1b7f7640944fb8', 'gr6': 'fa54948be61d71b2fd73fb3c34160f2c'}
+json.dump({k: {'sheet': '/_blob/' + v, 'frames': N, 'cols': COLS, 'rows': ROWS_, 'seconds_per_frame': FT} for k, v in IDS.items()},
           io.open('urls.json', 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 
 
@@ -25,10 +30,11 @@ def keyframes():
 
 CSS = ('.lp{position:relative;overflow:hidden;background:#FFFFFF}\n'
        '.lp-strip{width:100%%;height:100%%;background-repeat:no-repeat;background-size:%d%% %d%%;image-rendering:pixelated;'
-       'animation:lp-play %.1fs step-end infinite}\n' % (COLS * 100, ROWS_ * 100, N / 10.0)
+       'animation:lp-play %.1fs step-end infinite}\n' % (COLS * 100, ROWS_ * 100, LOOP)
        + keyframes() + '\n'
        '@media (prefers-reduced-motion:reduce){.lp-strip{animation:none !important}}\n'
-       + '\n'.join('.st-%s{background-image:url(/_blob/%s)}' % kv for kv in IDS.items()) + '\n')
+       + '.sp10{animation-duration:%.1fs}.sp20{animation-duration:%.1fs}\n' % (N * 0.1, N * 0.2)
+       + '\n'.join('.st-%s{background-image:url(/_blob/%s)}' % kv for kv in list(IDS.items()) + list(ALT.items())) + '\n')
 CSS_RE = r'\.lp\{.*?(?=</style>)'
 STRIP_DIV = '<div class="lp-strip {{%s.cls}}" style="animation-delay: {{%s.delay}}"></div>'
 # 七個境界定案的底色（2026-11-16 多米選定：元嬰候選三、化神候選一、大乘候選一）
@@ -36,25 +42,25 @@ REALM = [('煉氣', '壹', '#734D29', '#EFE2D3', '一般未訓練'), ('築基', 
          ('元嬰', '肆', '#7A4424', '#F1E1D5', '資深健身者'), ('化神', '伍', '#2E3966', '#D9DDF0', '菁英'), ('大乘', '陸', '#7A5E0C', '#F3EBC8', '天賦上限附近'),
          ('渡劫', '柒', '#4A4249', '#E3DCDA', '自然人極限')]
 ACT = {
- 'r0': ('掂水桶', '平常一拍彈一下。中間先蹲、手往下沉，一口氣把桶提起來，放下時桶盪幾下、水濺出來。'),
- 'gr0': ('邊搖邊踮', '提著桶一拍一拍左右搖，桶慢半拍往反方向盪。搖一陣子，原地踮兩下。'),
- 'r1': ('舉劍下劈', '先蹲一下，把劍慢慢舉過頭、人跟著站高，一格劈下來、人往下一沉往前帶，再彈回站好。'),
- 'gr1': ('連點兩劍', '第一下短，縮一下就刺。第二下蓄久一點、整個人往前送，再收回來。'),
- 'r2': ('拋接金丹', '人蹲一下、往上一送把金丹拋高。落回掌心時整個人一頓，迸出一圈火花。'),
- 'gr2': ('金丹繞圈', '金丹在掌心上方繞圈，身體跟著它左右移。繞到第二圈，縮一下、往上一挺，盪出一圈光環。'),
- 'r3': ('拄杖點地', '把手杖提起來、人跟著升高，往下一頓，人一沉、畫面震一下，腳邊盪開兩圈光紋。'),
- 'gr3': ('養元嬰', '兩手各升起一顆光點，繞個彎匯進頭頂的元嬰。匯進去那一格人往上一挺，元嬰亮起來。'),
- 'r4': ('吐納', '浮在夜空裡慢慢起伏。深吸一口氣、人慢慢升高，一口吐出來、人一沉，星光從身邊散開。'),
- 'gr4': ('聚星', '星光一顆顆被吸過來、繞個彎落進掌心。吸夠了，縮一下、往上一挺，兩掌的光一起炸開。'),
- 'r5': ('佛光', '浮在雲上起伏。縮一下、往上一挺，背後的光輪盪出一圈金環，皇冠上的寶石閃一下。'),
- 'gr5': ('落花', '浮在雲上，一拍一拍輕輕左右移。金色花瓣一片片飄下來、邊落邊翻面，中間開心地往上一挺。'),
- 'r6': ('扛天雷', '喘著氣撐著。天暗下來、人越蹲越低，大雷劈下來，整張閃白震一下；頂住之後一口氣挺回來。'),
- 'gr6': ('電弧纏身', '細電弧在身上亂竄。左邊先落一道小雷，人一沉又彈回來；隔一陣子右邊那道大的再劈一次。'),
+ 'r0': ('掂水桶', '平常站著，桶輕輕晃。慢慢蹲、手往下沉，把桶提起來，放下時桶盪幾下、水濺出來。'),
+ 'gr0': ('提桶輕搖', '提著桶慢慢左右搖，一次移一格、停一下，桶慢半拍往反方向盪。搖一陣子停下來歇一下。'),
+ 'r1': ('舉劍下劈', '平常劍上偶爾滑過一點光。把劍慢慢舉過頭、人跟著站高，劈下來、人往下一沉，再慢慢站好。'),
+ 'gr1': ('連點兩劍', '平常劍上偶爾滑過一點光。第一下短，第二下蓄久一點、整個人往前送，再收回來。'),
+ 'r2': ('拋接金丹', '平常金丹在掌心上方輕輕浮。人慢慢蹲一下、往上一送把金丹拋高，落回掌心時迸出一圈火花。'),
+ 'gr2': ('金丹繞圈', '金丹在掌心上方繞圈、拖著一串光點，身體跟著它左右移一格。繞到第二圈，金丹盪出一圈光環。'),
+ 'r3': ('拄杖點地', '平常站著不動，腳邊有光點往上飄。把手杖慢慢提起來，往下一頓，腳邊盪開兩圈光紋。'),
+ 'gr3': ('養元嬰', '身體不動。兩手各升起一顆光點，繞個彎匯進頭頂的元嬰，元嬰亮起來、盪出一圈光。'),
+ 'r4': ('吐納', '平常只有星星在閃。深吸一口氣、人慢慢升高，吐出來時慢慢落回去，星光從身邊散開。'),
+ 'gr4': ('聚星', '身體不動。星光一顆顆被吸過來、繞個彎落進掌心，吸夠了，兩掌的光一起炸開。'),
+ 'r5': ('佛光', '身體不動。背後的佛光一直慢慢轉，隔一陣子光輪盪出一圈金環，皇冠上的寶石閃一下。'),
+ 'gr5': ('落花', '慢慢左右移一格。金色花瓣一片片飄下來、邊落邊翻面，背後的光一明一暗。'),
+ 'r6': ('扛天雷', '平常站著，腳邊有火星往上飄。天暗下來、人慢慢蹲低，大雷劈下來整張閃白；頂住之後慢慢挺回來。'),
+ 'gr6': ('電弧纏身', '細電弧在身上亂竄。左邊先落一道小雷，人往下一沉再慢慢站回來；隔一陣子右邊那道大的再劈一次。'),
 }
 
 
 def delay(i, girl):
-    return '-%.1fs' % ((i * 1.7 + (4.3 if girl else 0)) % (N / 10.0))
+    return '-%.1fs' % ((i * 2.9 + (6.1 if girl else 0)) % LOOP)
 
 
 def write(name, html):
@@ -77,17 +83,46 @@ page = io.open('idle_page.html', encoding='utf-8').read()
 page = re.sub(CSS_RE, lambda m: CSS, page, flags=re.S)
 old = '每條 48 格、一格 0.1 秒，4.8 秒一輪。平常只有呼吸、葉子、鬚和衣角在動，隔一陣子做一次招牌動作。卡片套上這次挑的七個底色。'
 assert old in page
-page = page.replace(old, '分三層疊：背景一層完全不動，角色整個人切出來蓋在上面，特效在最上面。頭、手、衣服整塊移動不變形，蹲下和站高只動腿。'
-                         '根鬚、頭髮、衣服都不再扭動，會被帶著盪的只有葉子和道具。一輪 9.6 秒，招牌動作做一次，其餘時間只有呼吸和眨眼。')
-page = page.replace('G 款第二版', 'G 款第四版')
+page = page.replace(old, '待機時身體不再上下跳：平常只有眨眼、葉子被風帶一下、道具自己的小動作和特效。招牌動作裡身體要動的，改成慢慢帶過去。'
+                         '播放放慢到一格 0.15 秒，一輪 14.4 秒做一次招牌動作。背景、角色、特效還是分三層，背景不動。')
+idle_tpl = page
+page = page.replace('G 款第二版', 'G 款第五版')
 W, H = 2790, 1560
 page = (page.replace('__W__', str(W)).replace('__H__', str(H))
         .replace('__MEN__', row.replace('__SEX__', '男').replace('__LIST__', 'men'))
         .replace('__WOMEN__', row.replace('__SEX__', '女').replace('__LIST__', 'women'))
         .replace('__MJ__', json.dumps(cards('r', '男'), ensure_ascii=False))
         .replace('__WJ__', json.dumps(cards('gr', '女'), ensure_ascii=False)))
-assert '<img' not in page and '__' not in page and 'G 款第四版' in page
+assert '<img' not in page and '__' not in page and 'G 款第五版' in page
 write('IdleCards.dc.html', page)
+
+# ---- 待機方式與速度的比較 ----
+def pick(code, cls, title, sub, act, how, extra=''):
+    realm, seal, bg, subc, who = REALM[int(code[-1])]
+    return {'bg': bg, 'sub': subc, 'realm': title, 'seal': seal, 'who': sub, 'cls': ('st-' + cls + ' ' + extra).strip(), 'delay': '0s',
+            'act': act, 'how': how, 'alt': '%s，%s' % (realm, title)}
+
+
+STYLES = [('', '甲 身體不動', '現在 14 張都是這樣', '只有眨眼、葉子、道具和特效在動。做招牌動作時身體才會慢慢動一下。最安靜，也最不會出錯。'),
+          ('-breath', '乙 慢慢呼吸', '多一個呼吸', '除了甲的那些，身體每隔兩秒多往上升一格、停一下、再回來。像素圖沒辦法只動胸口，所以是整個人升一格。'),
+          ('-sway', '丙 慢慢左右晃', '多一個重心移動', '除了甲的那些，身體慢慢往右移一格、回中間、往左移一格。看起來像在換腳站。')]
+SPEEDS = [('sp10', '快：一格 0.1 秒', '一輪 9.6 秒', '上一版的速度。'),
+          ('', '中：一格 0.15 秒', '一輪 14.4 秒', '現在 14 張用的速度。'),
+          ('sp20', '慢：一格 0.2 秒', '一輪 19.2 秒', '再慢一點。動作會比較一格一格的。')]
+srow = row
+spage = (idle_tpl.replace('G 款第二版：14 張各自的待機動作', '待機時身體要不要動、播多快')
+         .replace(old, '上面兩列是同一個角色的三種待機方式，播放速度一樣。最下面一列是同一條動畫用三種速度播。你挑一種待機方式、一種速度，我再套到 14 張。'))
+SW_, SH_ = 56 * 2 + 56 + 24 + 3 * 350 + 3 * 24, 56 * 2 + 150 + 3 * (516 + 150 + 28)
+spage = (spage.replace('__W__', str(SW_)).replace('__H__', str(SH_))
+         .replace('__MEN__', srow.replace('__SEX__', '煉氣').replace('__LIST__', 'a'))
+         .replace('__WOMEN__', srow.replace('__SEX__', '元嬰').replace('__LIST__', 'b') + '\n' + srow.replace('__SEX__', '速度').replace('__LIST__', 'c'))
+         .replace('men: __MJ__,\nwomen: __WJ__',
+                  'a: %s,\nb: %s,\nc: %s' % tuple(json.dumps(x, ensure_ascii=False) for x in (
+                      [pick('r0', 'r0' + t, title, sub, '掂水桶', how) for t, title, sub, how in STYLES],
+                      [pick('r3', 'r3' + t, title, sub, '拄杖點地', how) for t, title, sub, how in STYLES],
+                      [pick('r1', 'r1', title, sub, '舉劍下劈（甲）', how, sp) for sp, title, sub, how in SPEEDS]))))
+assert '<img' not in spage and '__' not in spage and '第二版' not in spage
+write('IdleStyles.dc.html', spage)
 
 # ---- 三境底色候選（已選定）----
 SEVEN = [r[2] for r in REALM]
@@ -157,8 +192,11 @@ io.open(p, 'w', encoding='utf-8', newline='\n').write(t)
 # ---- 畫板索引 ----
 cj = root + '/project/canvas.json'
 c = json.load(io.open(cj, encoding='utf-8'))
-c['boards']['IdleCards.dc.html'].update({'w': W, 'h': H, 'title': 'G 款第四版：14 張各自的待機動作（背景、角色、特效分三層）'})
+c['boards']['IdleCards.dc.html'].update({'w': W, 'h': H, 'title': 'G 款第五版：14 張各自的待機動作（身體不跳、放慢）'})
 c['boards']['RealmDark.dc.html']['title'] = '七個境界的深色卡（底色定案）'
+c['boards']['IdleStyles.dc.html'] = {'x': 5670, 'y': 5460, 'w': SW_, 'h': SH_, 'title': '待機時身體要不要動、播多快（請挑）'}
+if 'IdleStyles.dc.html' not in c['order']:
+    c['order'].insert(c['order'].index('IdleCards.dc.html') + 1, 'IdleStyles.dc.html')
 c['boards']['ColorCands.dc.html'].update({'w': CW, 'h': CH, 'title': '化神、元嬰、大乘的底色候選（已選定）'})
 io.open(cj, 'w', encoding='utf-8', newline='\n').write(json.dumps(c, ensure_ascii=False, separators=(',', ':')))
 print('ok', W, H, CW, CH, len(CSS))

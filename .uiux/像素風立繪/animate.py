@@ -8,12 +8,16 @@
   3. 特效層：火花、光環、閃電、花瓣，畫在最上面。
 
 動作照 E:\\像素broll\\pixel-broll-kit 的 motion.js：角色有清楚的姿勢、一拍一拍地演；大動作前先往反方向小動，
-出手只用一兩格，落定時往下一沉再回彈；葉子和水桶被身體帶著、晚一拍盪幾下。招牌動作排在前 48 格，後 48 格只有呼吸和眨眼。
+葉子和水桶被身體帶著、晚一拍盪幾下。招牌動作排在前 48 格，一輪做一次。
+待機時身體不動（多米說「都是上下跳抖一下」，不要）：只有眨眼、葉子被風輕輕帶、道具自己的小動作和特效。
+招牌動作裡身體要動的（提桶、下劈、拄杖、扛雷），用關鍵格慢慢帶過去，不做一格彈起來的那種跳。
+播放速度是一格 0.15 秒（畫板和 app 決定，圖本身不管）。
 
 不做的事（都被多米退過）：
   - 不壓扁、不拉長衣服（花紋會被擠得很怪）。
   - 不做任何「推一塊區域」的柔性變形（根鬚、頭髮、布料、雲的起伏）：看起來像火旁邊的空氣在扭。
   - 不讓背景跟著角色動。
+  - 待機不做「縮一下、往上一挺」「一拍彈一下」「喘氣」這類上下跳。
 
 每張的招牌動作：
   煉氣男 掂水桶          煉氣女 左右搖、踮兩下
@@ -25,6 +29,8 @@
   渡劫男 扛一道大雷      渡劫女 電弧纏身、兩道小雷
 
 用法：python animate.py <統一色盤資料夾> [檢查圖的資料夾] [只做哪幾張，逗號分隔]
+比較用：環境變數 IDLE=breath（慢慢呼吸）或 IDLE=sway（慢慢左右晃）會讓身體在待機時多一個小動作，
+        這時成品檔名會多一段（{代號}_anim96_breath.png），並存到環境變數 OUTDIR 指定的資料夾。
 """
 import math
 import os
@@ -41,6 +47,15 @@ TAU = 2 * math.pi
 FLASH = np.array([255, 248, 220], dtype=np.float32)
 AMBER = np.array([232, 164, 54], dtype=np.float32)
 SW = [0, 1, 1, 0, 0, -1, -1, 0]          # 左右搖的節拍
+STYLE = os.environ.get('IDLE', 'still')  # 待機時身體怎麼動：still 不動（定案前的預設）、breath 慢慢呼吸、sway 慢慢左右晃
+
+
+def idle_pose(f):
+    if STYLE == 'breath':
+        return pose(sq=-1 / 3.0 if (f % 32) < 16 else 0)          # 升一格、停、回來
+    if STYLE == 'sway':
+        return pose(ln=[0, 0.6, 0, -0.6][(f // 12) % 4])          # 往右一格、回中、往左一格
+    return pose()
 
 
 def load(folder, name, suffix=''):
@@ -83,7 +98,7 @@ def figure(rg, base, M, posefn, legbox=None, band=None, minus=None):
         M = M & ~((YS >= band[1] - 3) & ~legs0)
     C = grow(M, 1)
     rg.hole = grow(M, 2)
-    P, D = stance(posefn)
+    P, D = stance(lambda f: padd(posefn(f), idle_pose(f)))
     body = C.copy()
     if minus is not None:
         body &= ~minus
@@ -95,11 +110,14 @@ def figure(rg, base, M, posefn, legbox=None, band=None, minus=None):
     return part, (lambda f: D(f)[1]), P
 
 
-def leaves(rg, base, body, lm, pivot, heady, k=0.9, lim=4.0):
-    """葉子分左右兩片掛在頭頂，各自繞葉柄轉：頭往下一沉，葉尖慢一拍、先翹起來再甩下去，盪幾下才停。"""
-    ang = lambda f: max(-lim, min(lim, k * follow(heady, f)))
-    rg.part('leaf_l', lm & (XS < pivot[0]), lambda f: [rot(pivot, ang(f))], body)
-    rg.part('leaf_r', lm & (XS >= pivot[0]), lambda f: [rot(pivot, -ang(f))], body)
+def leaves(rg, base, body, lm, pivot, heady, k=0.9, lim=4.0, ph=0.0):
+    """葉子分左右兩片掛在頭頂，各自繞葉柄轉。
+    平常被風輕輕帶：兩片一起往一邊偏 1.5 度、回正、再往另一邊（一次換一個姿勢，不是連續慢轉，連續轉邊緣會一直閃）。
+    身體有動的時候：頭往下一沉，葉尖慢一拍、先翹起來再甩下去，盪幾下才停。"""
+    flap = lambda f: max(-lim, min(lim, k * follow(heady, f)))
+    wind = lambda f: 1.5 * round(1.3 * math.sin(TAU * (f / 48.0 + ph)))
+    rg.part('leaf_l', lm & (XS < pivot[0]), lambda f: [rot(pivot, wind(f) + flap(f))], body)
+    rg.part('leaf_r', lm & (XS >= pivot[0]), lambda f: [rot(pivot, wind(f) - flap(f))], body)
 
 
 def motes(rg, pts, rise=1.6, col=GOLD):
@@ -169,20 +187,19 @@ def bucket_parts(rg, body, arm_m, bk_m, arm_mv, swing):
 
 
 def rig_r0(base, blink, M):
-    """煉氣男：開心地一拍彈一下。中間掂一次水桶：先蹲、手往下沉，一口氣把桶提起來，放下時桶盪幾下、水濺出來。"""
+    """煉氣男：平常站著，桶輕輕晃。掂一次水桶：慢慢蹲、手往下沉，把桶提起來，放下時桶盪幾下、水濺出來。"""
     rg = Rig(base)
     pivot = (84, 42)
     lm = leafgreen(base, (28, 0, 138, 64), pivot)
     arm_m, bk_m = bucket_masks(base, [(113, 114), (124, 112), (132, 128), (132, 140), (118, 140), (114, 126)])
 
     def P(f):
-        bounce = sum(seq(f, a, [1, -2, -1]) for a in (2, 10, 38, 50, 58, 86))
-        rest = -breathe(f) if 64 <= f < 80 else 0
-        return pose(sq=bounce + rest + seq(f, 20, [1, 2, 2, -2, -2, -1, 0, 1]), ln=keys(f, [(19, 0), (22, 0.5), (24, -0.3), (30, 0)]))
+        return pose(sq=keys(f, [(18, 0), (22, 1), (24, -0.67), (27, -0.67), (31, 0.33), (35, 0)]))
     body, heady, _ = figure(rg, base, M, P, (40, 146, 112, 199), (158, 196), minus=lm | bk_m)
-    lift = lambda f: seq(f % N, 20, [1, 2, 2, -5, -6, -4, -1, 1])
+    lift = lambda f: keys(f % N, [(19, 0), (22, 2), (24, -6), (27, -6), (30, 1), (33, 0)])
     load_y = lambda f: heady(f) + lift(f)
-    bucket_parts(rg, body, arm_m, bk_m, lambda f: [shift(0, lift(f))], lambda f: 1.3 * follow(load_y, f, 0.2, 1.0, 24))
+    idle_swing = lambda f: 2.0 * round(1.2 * math.sin(TAU * f / 48.0))       # 平常桶自己輕輕晃
+    bucket_parts(rg, body, arm_m, bk_m, lambda f: [shift(0, lift(f))], lambda f: idle_swing(f) + 1.3 * follow(load_y, f, 0.2, 1.0, 24))
     leaves(rg, base, body, lm, pivot, heady)
     lantern(rg)
 
@@ -199,20 +216,18 @@ def rig_r0(base, blink, M):
 
 
 def rig_gr0(base, blink, M):
-    """煉氣女：提著桶一拍一拍左右搖，桶慢半拍往反方向盪。搖一陣子，原地踮兩下。"""
+    """煉氣女：提著桶慢慢左右搖（一次移一格、停一下），桶慢半拍往反方向盪。搖一陣子停下來歇一下。"""
     rg = Rig(base)
     pivot = (84, 42)
     lm = leafgreen(base, (28, 0, 138, 62), pivot)
     arm_m, bk_m = bucket_masks(base, [(114, 114), (126, 114), (132, 128), (132, 140), (119, 140), (115, 126)])
 
     def P(f):
-        still = 22 <= f < 36 or 64 <= f < 80
-        rest = -breathe(f) if 64 <= f < 80 else 0
-        return pose(sq=rest + seq(f, 24, [1, -2, -1, 0.5]) + seq(f, 30, [1, -2, -1, 0.5]), ln=0 if still else 1.2 * SW[(f // 2) % 8])
+        return pose(ln=0 if 64 <= f < 80 else 0.6 * SW[(f // 4) % 8])
     body, heady, PP = figure(rg, base, M, P, (40, 148, 112, 199), (160, 196), minus=lm | bk_m)
     tilt = lambda f: 2.5 * PP(f)['ln']
     bucket_parts(rg, body, arm_m, bk_m, lambda f: [],
-                 lambda f: -2.0 * follow(tilt, f, 0.25, 0.9, 24) + 1.2 * follow(heady, f, 0.25, 1.0, 24))
+                 lambda f: -4.0 * follow(tilt, f, 0.25, 0.9, 24) + 1.2 * follow(heady, f, 0.25, 1.0, 24))
     leaves(rg, base, body, lm, pivot, lambda f: heady(f) + 0.6 * tilt(f))
     lantern(rg)
     if blink is not None:
@@ -232,6 +247,13 @@ def swordsman(rg, base, M, bx, pivot, legbox, band, arm_poly, shoulder, sw, P):
     arm = rg.part('arm', grow(cut(base, arm_poly, seeds=[(110, 106)]), 1), lambda f: [rot(shoulder, 0.45 * sw(f % N))], body)
     rg.part('sword', sword, lambda f: [rot((118, 97), 0.55 * sw(f % N))], arm)
     leaves(rg, base, body, lm, pivot, heady)
+
+    def glint(img, f):
+        """平常劍上偶爾有一點光從劍柄滑到劍尖。"""
+        g = (f % N) - 62
+        if 0 <= g < 8:
+            plus(img, 121 + (150 - 121) * g / 7.0, 84 + (42 - 84) * g / 7.0 + heady(f), WHITE, 1.0 if g < 6 else 0.5)
+    rg.front.append(glint)
     return heady
 
 
@@ -262,9 +284,7 @@ def rig_r1(base, blink, M):
     sw = lambda f: keys(f, [(16, 0), (24, -32), (26, -34), (27, -8), (28, 18), (29, 20), (32, 12), (40, 0)])
 
     def P(f):
-        if f < 14 or f >= 48:
-            return pose(sq=-breathe(f))
-        return pose(sq=seq(f, 16, [1, 2, 1, 0, -0.5, -1, -1.5, -2, -2, -2, -2, 1, 3, 3, 2, 1, -0.5]),
+        return pose(sq=keys(f, [(16, 0), (18, 0.5), (24, -1), (26, -1), (28, 1.5), (31, 1), (38, 0)]),
                     ln=keys(f, [(19, 0), (26, -0.8), (27, 0), (28, 1.2), (31, 1.0), (38, 0)]))
     heady = swordsman(rg, base, M, (25, 0, 138, 64), (82, 42), (30, 150, 126, 198), (164, 194),
                       [(98, 93), (110, 90), (118, 92), (124, 98), (122, 106), (117, 112), (114, 128), (106, 128), (102, 112)], (100, 100), sw, P)
@@ -280,9 +300,7 @@ def rig_gr1(base, blink, M):
     sw = lambda f: keys(f, [(10, 0), (13, -14), (14, 10), (15, 12), (18, 0), (20, 0), (23, -20), (24, 14), (25, 16), (28, 8), (36, 0)])
 
     def P(f):
-        if f < 10 or f >= 48:
-            return pose(sq=-breathe(f))
-        return pose(sq=seq(f, 11, [0.5, 1, 1, -1, -0.5]) + seq(f, 20, [0.5, 1, 2, 2, -2, 1, 1, -0.5]),
+        return pose(sq=keys(f, [(11, 0), (13, 0.5), (14, -0.33), (18, 0), (20, 0), (23, 0.67), (24, -0.5), (29, 0)]),
                     ln=keys(f, [(12, 0), (13, -0.4), (14, 0.6), (17, 0), (22, 0), (23, -0.6), (24, 1.0), (27, 0.6), (34, 0)]))
     heady = swordsman(rg, base, M, (25, 0, 138, 62), (84, 42), (30, 152, 126, 198), (166, 194),
                       [(98, 95), (112, 92), (120, 94), (127, 100), (126, 110), (122, 126), (108, 128), (102, 112)], (100, 102), sw, P)
@@ -294,8 +312,9 @@ def rig_gr1(base, blink, M):
 
 # ---------- 金丹 ----------
 def core_mask(base, c):
+    """只有金丹那一顆。下面托著它的手指顏色一樣、又連在一起，所以高度要切在金丹底下，不然手指會跟著金丹飛走。"""
     h, s, v = hsv(base)
-    return grow(flood(disc(c, 11) & (s > 0.42), c), 1)
+    return grow(flood(disc(c, 9) & (s > 0.42) & (YS <= c[1] + 6), c), 1) & (YS <= c[1] + 7)
 
 
 def core_fx(rg, c, pos, sparks=3, radius=12, catch=None, trail=None):
@@ -319,40 +338,40 @@ def core_fx(rg, c, pos, sparks=3, radius=12, catch=None, trail=None):
 
 
 def rig_r2(base, blink, M):
-    """金丹男：手往下一沉、人蹲一下，往上一送把金丹拋高；落回掌心時整個人一頓，迸出一圈火花。"""
+    """金丹男：平常金丹在掌心上方輕輕浮。人慢慢蹲一下，往上一送把金丹拋高；落回掌心時人微微一沉，迸出一圈火花。"""
     rg = Rig(base)
     pivot = (82, 38)
     c = (135, 57)
     toss = {23: -6, 24: -12, 25: -17, 26: -20, 27: -21, 28: -20, 29: -17, 30: -12, 31: -6}
     lm = leafgreen(base, (22, 0, 132, 52), pivot)
     core = core_mask(base, c)
-    M = M & ~(disc(c, 16) & (YS < c[1] + 8))     # 金丹周圍的光暈是背景，不要跟著身體走
+    M = M & ~(disc(c, 16) & (YS < c[1] + 6))     # 金丹周圍的光暈是背景，不要跟著身體走
 
     def P(f):
-        if f < 16 or f >= 48:
-            return pose(sq=-breathe(f))
-        return pose(sq=seq(f, 20, [1, 2, 2, -2, -1, -.5, -.5, -.5, -.5, -.5, -.5, -.5, 2, 1, -1]), ln=keys(f, [(23, 0), (25, 0.6), (30, 0.6), (33, 0)]))
+        return pose(sq=keys(f, [(20, 0), (22, 1), (24, -0.67), (30, -0.33), (32, 0.67), (36, 0)]))
     body, heady, _ = figure(rg, base, M, P, (44, 140, 112, 190), (158, 186), minus=lm | core)
-    rg.part('core', core, lambda f: [shift(0, toss.get(f % N, 0))], body)
+    # 平常金丹在掌心上方輕輕浮：上一格、回來、下一格
+    fly = lambda f: toss.get(f % N, 0) if 18 <= (f % N) < 36 else int(round(math.sin(TAU * f / 24.0)))
+    rg.part('core', core, lambda f: [shift(0, fly(f))], body)
     leaves(rg, base, body, lm, pivot, heady)
-    core_fx(rg, c, lambda f: (0, toss.get(f % N, 0) + heady(f)), catch=32, trail=3)
+    core_fx(rg, c, lambda f: (0, fly(f) + heady(f)), catch=32, trail=3)
     if blink is not None:
         rg.blink(blink, [12, 13, 68, 69])
     return rg
 
 
 def rig_gr2(base, blink, M):
-    """金丹女：金丹在掌心上方繞圈，後面拖一串光點，身體跟著它輕輕左右移。繞到第二圈，縮一下、往上一挺，盪出一圈光環。"""
+    """金丹女：金丹在掌心上方繞圈，後面拖一串光點，身體跟著它輕輕左右移。繞到第二圈，金丹盪出一圈光環。"""
     rg = Rig(base)
     pivot = (82, 38)
     c = (136, 60)
     orbit = lambda f: (int(round(5 * math.cos(TAU * f / 24.0))), int(round(3.5 * math.sin(TAU * f / 24.0) - 2)))
     lm = leafgreen(base, (22, 0, 132, 42), pivot)
     core = core_mask(base, c)
-    M = M & ~(disc(c, 17) & (YS < c[1] + 8))     # 金丹周圍的光暈是背景，不要跟著身體走
+    M = M & ~(box(113, 38, 154, c[1] + 5) & ~core)     # 金丹周圍那一圈光暈是背景，不要跟著身體走；手指留在身體上
 
     def P(f):
-        return pose(sq=(-breathe(f) if (f < 32 or f >= 48) else 0) + seq(f, 34, [1, 2, -1, -1, 0.5]), ln=0.6 * math.cos(TAU * f / 24.0))
+        return pose(ln=0.6 * math.cos(TAU * f / 24.0))
     body, heady, _ = figure(rg, base, M, P, (44, 146, 114, 190), (164, 186), minus=lm | core)
     rg.part('core', core, lambda f: [shift(*orbit(f))], body)
     leaves(rg, base, body, lm, pivot, heady)
@@ -388,14 +407,13 @@ def rig_r3(base, blink, M):
     staff = staff_mask(base, M)
 
     def P(f):
-        if f < 18 or f >= 48:
-            return pose(sq=-breathe(f, 12, 4))
-        return pose(sq=seq(f, 21, [-0.5, -1, -1.5, -2, -2, -2, 2, 3, 2, 1, -1]))
+        return pose(sq=keys(f, [(20, 0), (25, -1), (26, -1), (27, 1.5), (29, 1), (35, 0)]))
     body, heady, _ = figure(rg, base, M, P, minus=lm | staff)
     lift = lambda f: keys(f % N, [(20, 0), (25, -7), (26, -7), (27, 0)])
     rg.part('staff', staff, lambda f: [shift(0, lift(f))], body)
     leaves(rg, base, body, lm, pivot, heady, 0.7)
     rg.front.append(lambda img, f: glow(img, 86, 38 + heady(f), 15, .12 + .30 * (.5 + .5 * cyc(f, 24, -0.25)), PALE))
+    motes(rg, [(22, 186), (48, 196), (70, 204), (108, 202), (150, 190), (160, 150)], 1.2)
 
     def ripple(img, f):
         for delay in (0, 4):
@@ -424,8 +442,7 @@ def rig_gr3(base, blink, M):
     hit = 20
 
     def P(f):
-        idle_ = -breathe(f, 12, 4) if (f < 16 or f >= 24) else 0
-        return pose(sq=idle_ + seq(f, hit - 1, [1, -2, -1, 1]))
+        return pose()
     body, heady, _ = figure(rg, base, M, P, minus=lm)
     leaves(rg, base, body, lm, pivot, heady, 0.7)
 
@@ -446,6 +463,7 @@ def rig_gr3(base, blink, M):
                 t = math.radians(k + g * 8)
                 dot(img, 86 + (6 + g * 3) * math.cos(t), 34 + heady(f) + (6 + g * 3) * 0.8 * math.sin(t), PALE, 0.95 - g * 0.15)
     rg.front.append(gather)
+    motes(rg, [(20, 188), (46, 198), (72, 204), (110, 202), (150, 192), (10, 150)], 1.2)
     return rg
 
 
@@ -485,7 +503,7 @@ def rig_r4(base, blink, M):
     lm = leafgreen(base, (35, 0, 132, 50), pivot)
 
     def P(f):
-        return pose(dy=1.0 * math.sin(TAU * f / 48.0), sq=seq(f, 18, [-0.4, -0.8, -1.2, -1.6, -2, -2, -2, -2, -2, -2, -2, 1, 2, 1]))
+        return pose(sq=keys(f, [(18, 0), (25, -1.33), (28, -1.33), (30, 0.33), (35, 0)]))
     body, heady, _ = figure(rg, base, M, P, minus=lm)
     leaves(rg, base, body, lm, pivot, heady, 0.7)
     night(rg, base, [(26, 38), (48, 24), (120, 22), (142, 36), (152, 62), (20, 70), (114, 46), (60, 44), (136, 20), (30, 56)],
@@ -511,7 +529,7 @@ def rig_gr4(base, blink, M):
     hit = 34
 
     def P(f):
-        return pose(dy=1.0 * math.sin(TAU * (f / 48.0 + 0.5)), sq=seq(f, hit - 2, [1, 2, -2, -2, -1, 1]))
+        return pose()
     body, heady, _ = figure(rg, base, M, P, minus=lm)
     leaves(rg, base, body, lm, pivot, heady, 0.7)
     night(rg, base, [(26, 40), (50, 26), (122, 24), (150, 60), (20, 72), (60, 44), (30, 58)], [])
@@ -549,7 +567,7 @@ def rig_r5(base, blink, M):
     hit = 22
 
     def P(f):
-        return pose(dy=1.0 * math.sin(TAU * f / 48.0), sq=seq(f, hit - 2, [1, 2, -2, -2, -1, -1, -1, -1, 0.5]))
+        return pose()
     body, heady, _ = figure(rg, base, M, P, minus=lm)
     leaves(rg, base, body, lm, pivot, heady, 0.7)
 
@@ -594,7 +612,7 @@ def rig_gr5(base, blink, M):
     lm = leafgreen(base, (44, 0, 132, 54), pivot)
 
     def P(f):
-        return pose(dy=1.0 * math.sin(TAU * (f / 48.0 + 0.25)), sq=seq(f, 26, [1, -2, -1, 1]), ln=0 if 24 <= f < 32 else 0.8 * SW[(f // 3) % 8])
+        return pose(ln=0.6 * SW[(f // 6) % 8])
     body, heady, PP = figure(rg, base, M, P, minus=lm)
     tilt = lambda f: 2.0 * PP(f)['ln']
     leaves(rg, base, body, lm, pivot, lambda f: heady(f) + 0.6 * tilt(f), 0.7)
@@ -642,9 +660,7 @@ def rig_r6(base, blink, M):
     side = [(122, 72), (134, 84), (130, 98), (142, 112), (138, 126)]
 
     def P(f):
-        if f < 18 or f >= 36:
-            return pose(sq=breathe(f, 6, 2))
-        return pose(sq=seq(f, 18, [1, 1, 1, 2, 2, 3, 3, 2, 1, -1, -2, -2, -1, -1]))
+        return pose(sq=keys(f, [(18, 0), (23, 2.5), (25, 3), (27, 1), (29, -0.67), (34, 0)]))
     body, heady, _ = figure(rg, base, M, P, (44, 144, 118, 186), (152, 184), minus=lm)
     leaves(rg, base, body, lm, pivot, heady)
     storm(rg, EMBERS)
@@ -675,8 +691,7 @@ def rig_gr6(base, blink, M):
     left = [(36, 0), (30, 22), (40, 26), (28, 52), (38, 56), (26, 78)]
 
     def P(f):
-        idle_ = breathe(f, 6, 2) if (f < 10 or 18 <= f < 31 or f >= 42) else 0
-        return pose(sq=idle_ + seq(f, hits[0] - 1, [1, 2, 2, 1, -1]) + seq(f, hits[1] - 1, [1, 3, 3, 2, 1, -1, -1]))
+        return pose(sq=keys(f, [(10, 0), (12, 1.5), (14, 1.5), (18, 0), (32, 0), (34, 2.5), (36, 2.5), (41, 0)]))
     body, heady, _ = figure(rg, base, M, P, (46, 146, 118, 186), (155, 184), minus=lm)
     leaves(rg, base, body, lm, pivot, heady)
     storm(rg, EMBERS)
@@ -742,7 +757,8 @@ def main():
             sheet[r * GH:(r + 1) * GH, c * GW:(c + 1) * GW] = cells[-1]
         im = Image.fromarray(sheet, mode='P')
         im.putpalette(pal.reshape(-1).tolist())
-        out = os.path.join(folder, '%s_anim%d.png' % (name, N))
+        tag = '' if STYLE == 'still' else '_' + STYLE
+        out = os.path.join(os.environ.get('OUTDIR', folder) if tag else folder, '%s_anim%d%s.png' % (name, N, tag))
         im.save(out, optimize=True)
         print(name, 'frames', N, os.path.getsize(out), 'bytes')
         if dbg:
