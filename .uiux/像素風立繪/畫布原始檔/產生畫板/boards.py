@@ -5,11 +5,11 @@
 import io, json, re, sys
 root = sys.argv[1]
 N, COLS, ROWS_ = 96, 12, 8
-IDS = {'r0': '26a86ed223dcf5b8d21e1ece60089fa5', 'r1': '11fb9db98a227efab3719215c1299de6', 'r2': '17661a67205ade7253e338118db6da41',
-       'r3': 'aba79ec4cd217ad022f3f99e653b0cdc', 'r4': '8c2be04be0868a5ae39b7c344233ad5d', 'r5': 'd5a34911878466c3c6a8490df7bfed89',
-       'r6': 'cfdf5afb179db0e0c6a456c773bb77fe', 'gr0': '3a559489212d2317eb4a8db376028f0f', 'gr1': '2c19e0ddd222ca6b112d4d10f380fadd',
-       'gr2': '9e5349c1edecb0e6577743f6fb9e1405', 'gr3': 'd5a7dde67d8d703b9d934fb12b2e59af', 'gr4': '26966b76880c31cc56a37b43c506f742',
-       'gr5': '9d863946a2b31258fb6b18ab0f785b49', 'gr6': 'c817b48d1d97446e77d3a995984864fc'}
+IDS = {'r0': 'd6765946eb8f7493dc10ff55de752fd1', 'r1': '88449e14a2b8eb1737ef7564e21d1393', 'r2': '7c03c1fe5cc90ad97fad6d85454c7539',
+       'r3': 'dd79772f78ebd42d33ee05f0dc5ee395', 'r4': 'e1e10d1078dd0e90cbc4a5abcc661921', 'r5': 'fddbd22a171a37703eac2b8861fbce40',
+       'r6': '885f61d5ad7eecbf4dd7040cc07d7077', 'gr0': 'dd0f3331ce839a4539a4111b06818c98', 'gr1': '95ac4e81a85d0f31e748015184a4ee2b',
+       'gr2': '189f490b4082b3dacff4779e31c64797', 'gr3': 'cd03f32ddb3bf179c8bfa28169b0fb7b', 'gr4': '2dda51042ab80aa69ea79fbdd3c18740',
+       'gr5': '3076ecd0669609d2486e33a8eeb0e4a0', 'gr6': '7df176ba008d79e8289e0f968fd2d96b'}
 json.dump({k: {'sheet': '/_blob/' + v, 'frames': N, 'cols': COLS, 'rows': ROWS_} for k, v in IDS.items()},
           io.open('urls.json', 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 
@@ -37,9 +37,9 @@ REALM = [('煉氣', '壹', '#734D29', '#EFE2D3', '一般未訓練'), ('築基', 
          ('渡劫', '柒', '#4A4249', '#E3DCDA', '自然人極限')]
 ACT = {
  'r0': ('掂水桶', '平常一拍彈一下。中間先蹲、手往下沉，一口氣把桶提起來，放下時桶盪幾下、水濺出來。'),
- 'gr0': ('邊搖邊踮', '提著桶一拍一拍左右搖，髮帶和長髮跟著甩，桶慢半拍往反方向盪。搖一陣子，原地踮兩下。'),
+ 'gr0': ('邊搖邊踮', '提著桶一拍一拍左右搖，桶慢半拍往反方向盪。搖一陣子，原地踮兩下。'),
  'r1': ('舉劍下劈', '先蹲一下，把劍慢慢舉過頭、人跟著站高，一格劈下來、人往下一沉往前帶，再彈回站好。'),
- 'gr1': ('連點兩劍', '第一下短，縮一下就刺。第二下蓄久一點、整個人往前送，髮帶甩開再收回來。'),
+ 'gr1': ('連點兩劍', '第一下短，縮一下就刺。第二下蓄久一點、整個人往前送，再收回來。'),
  'r2': ('拋接金丹', '人蹲一下、往上一送把金丹拋高。落回掌心時整個人一頓，迸出一圈火花。'),
  'gr2': ('金丹繞圈', '金丹在掌心上方繞圈，身體跟著它左右移。繞到第二圈，縮一下、往上一挺，盪出一圈光環。'),
  'r3': ('拄杖點地', '把手杖提起來、人跟著升高，往下一頓，人一沉、畫面震一下，腳邊盪開兩圈光紋。'),
@@ -77,16 +77,16 @@ page = io.open('idle_page.html', encoding='utf-8').read()
 page = re.sub(CSS_RE, lambda m: CSS, page, flags=re.S)
 old = '每條 48 格、一格 0.1 秒，4.8 秒一輪。平常只有呼吸、葉子、鬚和衣角在動，隔一陣子做一次招牌動作。卡片套上這次挑的七個底色。'
 assert old in page
-page = page.replace(old, '衣服不再變形：頭、手、衣服整塊照姿勢移動，蹲下和站高只動腿。袖子、衣襬、飄帶不再起伏，只有頭髮、葉子和道具會被帶著盪。'
-                         '一輪 96 格、9.6 秒，招牌動作 9.6 秒做一次，其餘時間只有呼吸和眨眼。卡片是定案的七個底色。')
-page = page.replace('G 款第二版', 'G 款第三版')
+page = page.replace(old, '分三層疊：背景一層完全不動，角色整個人切出來蓋在上面，特效在最上面。頭、手、衣服整塊移動不變形，蹲下和站高只動腿。'
+                         '根鬚、頭髮、衣服都不再扭動，會被帶著盪的只有葉子和道具。一輪 9.6 秒，招牌動作做一次，其餘時間只有呼吸和眨眼。')
+page = page.replace('G 款第二版', 'G 款第四版')
 W, H = 2790, 1560
 page = (page.replace('__W__', str(W)).replace('__H__', str(H))
         .replace('__MEN__', row.replace('__SEX__', '男').replace('__LIST__', 'men'))
         .replace('__WOMEN__', row.replace('__SEX__', '女').replace('__LIST__', 'women'))
         .replace('__MJ__', json.dumps(cards('r', '男'), ensure_ascii=False))
         .replace('__WJ__', json.dumps(cards('gr', '女'), ensure_ascii=False)))
-assert '<img' not in page and '__' not in page and 'G 款第三版' in page
+assert '<img' not in page and '__' not in page and 'G 款第四版' in page
 write('IdleCards.dc.html', page)
 
 # ---- 三境底色候選（已選定）----
@@ -157,7 +157,7 @@ io.open(p, 'w', encoding='utf-8', newline='\n').write(t)
 # ---- 畫板索引 ----
 cj = root + '/project/canvas.json'
 c = json.load(io.open(cj, encoding='utf-8'))
-c['boards']['IdleCards.dc.html'].update({'w': W, 'h': H, 'title': 'G 款第三版：14 張各自的待機動作（衣服不變形、9.6 秒一輪）'})
+c['boards']['IdleCards.dc.html'].update({'w': W, 'h': H, 'title': 'G 款第四版：14 張各自的待機動作（背景、角色、特效分三層）'})
 c['boards']['RealmDark.dc.html']['title'] = '七個境界的深色卡（底色定案）'
 c['boards']['ColorCands.dc.html'].update({'w': CW, 'h': CH, 'title': '化神、元嬰、大乘的底色候選（已選定）'})
 io.open(cj, 'w', encoding='utf-8', newline='\n').write(json.dumps(c, ensure_ascii=False, separators=(',', ':')))

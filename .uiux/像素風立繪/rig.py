@@ -137,6 +137,13 @@ def inpaint(rgb, hole, known=None):
     return out
 
 
+def fill_bg(rgb, hole):
+    """背景層：把角色佔的那一塊照周圍的紋路補起來（比一圈一圈取平均的 inpaint 更接得上線條）。"""
+    import cv2
+    out = cv2.inpaint(np.clip(rgb, 0, 255).astype(np.uint8), hole.astype(np.uint8) * 255, 4, cv2.INPAINT_TELEA)
+    return out.astype(np.float32)
+
+
 # ---------- 變形（都是回頭找原圖座標）----------
 def shift(dx, dy):
     return lambda X, Y: (X - dx, Y - dy)
@@ -367,6 +374,7 @@ class Rig:
         self.post = []      # 整張的處理（閃白、震動）fn(畫面, 格) -> 畫面
         self.soft = []      # 柔性變形 fn(格) -> [(DX, DY), ...]
         self.regions = {}   # 名字 -> 權重圖，只給檢查圖用
+        self.hole = None    # 角色佔的範圍（比角色大一圈）：背景層要把這一塊補起來，角色移開才不會留下殘影
         self._blink = None  # (閉眼圖, 哪幾格閉眼)
         self._built = False
 
@@ -389,7 +397,9 @@ class Rig:
         union = np.zeros((GH, GW), dtype=bool)
         for p in self.parts:
             union |= p.mask
-        self.bg = inpaint(self.base, union)
+        if self.hole is not None:
+            union |= self.hole
+        self.bg = fill_bg(self.base, union)
         self.bg_alt = self.bg
         if self._blink:
             diff = (np.abs(self._blink[0] - self.base).sum(-1) > 0) & ~union
