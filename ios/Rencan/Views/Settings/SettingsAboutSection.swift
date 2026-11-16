@@ -77,6 +77,7 @@ struct SettingsAboutSection: View {
                 } label: {
                     linkRow(title: "到系統設定改", systemImage: "chevron.right")
                 }
+                .buttonStyle(.plain)
                 .accessibilityIdentifier("about-open-settings")
             }
             .padding(.horizontal, Metrics.cardInset)
@@ -100,6 +101,7 @@ struct SettingsAboutSection: View {
                     Link(destination: url) {
                         linkRow(title: "隱私政策", systemImage: "arrow.up.right")
                     }
+                    .buttonStyle(.plain)
                     .accessibilityIdentifier("about-privacy")
                     RowDivider()
                 }
@@ -141,6 +143,8 @@ struct SettingsAboutSection: View {
     }
 
     /// 點了會離開這一頁的列：左邊名稱、右邊一個小箭頭。箭頭只是裝飾，VoiceOver 不讀。
+    /// 用的地方一定要掛 `.buttonStyle(.plain)`：預設樣式在手機開了「按鈕形狀」時，
+    /// 會在整列後面墊一塊米色膠囊，超出卡片內距、壓到分隔線（多米 2026-11-16 真機截圖）。
     private func linkRow(title: String, systemImage: String) -> some View {
         HStack(spacing: RencanLayout.groupSpacing) {
             Text(title)

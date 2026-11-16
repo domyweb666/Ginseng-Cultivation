@@ -20,6 +20,7 @@ struct PageIconButton: View {
                 .frame(width: RencanLayout.tapTarget, height: RencanLayout.tapTarget)
                 .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
         .accessibilityLabel(label)
     }
 }

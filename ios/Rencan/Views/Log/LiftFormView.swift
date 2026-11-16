@@ -104,6 +104,7 @@ struct LiftFormView: View {
                 in: RoundedRectangle(cornerRadius: RencanLayout.fieldCornerRadius)
             )
         }
+        .buttonStyle(.plain)
         .accessibilityLabel(item.artName + "・" + item.name)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }

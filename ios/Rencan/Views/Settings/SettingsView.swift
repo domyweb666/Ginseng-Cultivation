@@ -143,6 +143,7 @@ struct SettingsView: View {
                 .frame(minHeight: RencanLayout.tapTarget)
                 .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 

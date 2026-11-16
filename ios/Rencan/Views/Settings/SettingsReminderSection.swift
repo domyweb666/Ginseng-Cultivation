@@ -139,6 +139,9 @@ struct SettingsReminderSection: View {
                     .frame(minHeight: RencanLayout.tapTarget)
                     .contentShape(Rectangle())
             }
+            // 膠囊是自己畫的；不改成 plain，系統會在外面再墊一層更大的膠囊。
+            .menuStyle(.button)
+            .buttonStyle(.plain)
             .accessibilityIdentifier("reminder-day")
         }
         .frame(minHeight: RencanLayout.rowHeight)

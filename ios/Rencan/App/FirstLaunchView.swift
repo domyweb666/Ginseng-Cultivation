@@ -129,6 +129,7 @@ struct FirstLaunchView: View {
                     in: RoundedRectangle(cornerRadius: RencanLayout.fieldCornerRadius)
                 )
         }
+        .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
