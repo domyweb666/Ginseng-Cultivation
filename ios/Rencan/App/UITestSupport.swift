@@ -10,6 +10,7 @@ import SwiftData
 ///   -rencanSeed female     身高 160、女，加一筆量測
 ///   -rencanSeed realm0     身高 174、男，一筆落在煉氣中段的量測；realm1 到 realm6 是築基到渡劫
 ///   -rencanSeed unstable   身高 174、男，金丹但體脂 24%（根基不穩）
+///   -rencanPlayPortrait    境界碑的立繪照播動畫（測試模式預設不播）
 ///   -rencanHoldCelebration 全螢幕慶祝不自己關，等測試點掉（XCUITest 用；Limrun 走流程不帶）
 @MainActor
 enum UITestSupport {
@@ -26,6 +27,16 @@ enum UITestSupport {
     static var holdsCelebration: Bool {
         #if DEBUG
             return isUITest && ProcessInfo.processInfo.arguments.contains("-rencanHoldCelebration")
+        #else
+            return false
+        #endif
+    }
+
+    /// 測試模式下境界碑的立繪不動：畫面一直在換格，XCUITest 每個動作前等 app 閒下來會等很久。
+    /// 帶 -rencanPlayPortrait 的那一支測試例外，它專門隔幾秒截兩張圖比有沒有換格。
+    static var holdsPortraitStill: Bool {
+        #if DEBUG
+            return isUITest && !ProcessInfo.processInfo.arguments.contains("-rencanPlayPortrait")
         #else
             return false
         #endif

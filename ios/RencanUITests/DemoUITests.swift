@@ -127,6 +127,24 @@ final class SteleCardsUITests: RencanUITestCase {
     }
 }
 
+/// 境界碑的立繪有沒有在動。測試模式預設不播，這一支另外帶 -rencanPlayPortrait 讓它照播，
+/// 隔三秒（20 格）各拍一次立繪，兩張要不一樣。順不順只有真機看得出來。
+final class PortraitMotionUITests: RencanUITestCase {
+    func test境界碑的立繪隔三秒換了格() {
+        launch(["-rencanSeed", "demo", "-rencanPlayPortrait"])
+        // 只確認它在，不問點不點得到：播動畫時立繪關掉了觸控。
+        let portrait = require(
+            anyElements(containing: "金丹期人蔘立繪").firstMatch, "境界碑的立繪", timeout: 30
+        )
+        let first = portrait.screenshot().pngRepresentation
+        shot("動畫-第一張")
+        Thread.sleep(forTimeInterval: 3)
+        let second = portrait.screenshot().pngRepresentation
+        shot("動畫-三秒後")
+        XCTAssertNotEqual(first, second, "隔了三秒，立繪還是同一格")
+    }
+}
+
 /// `-rencanSeed female`：身高 160、女，一筆量測（60 公斤、體脂 23%、去脂 46 公斤）。
 /// 看女性立繪、27% 的體脂門檻，天梯上換算過的範圍。
 final class FemaleUITests: RencanUITestCase {

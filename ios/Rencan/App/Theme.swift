@@ -190,4 +190,15 @@ enum RencanPortrait {
         let highest = Tables.realms.count - 1
         return prefix + String(max(0, min(highest, realmIndex)))
     }
+
+    /// 境界碑上會動的立繪：一張 12 欄 × 8 列的格子圖，由左到右、由上到下共 96 格。
+    /// 一格播 0.15 秒（一輪 14.4 秒），是多米定版的速度；圖本身不管速度，眨眼已經畫在格子裡。
+    static let animationColumns = 12
+    static let animationRows = 8
+    static let animationFrameSeconds: Double = 0.15
+
+    /// 某個大境界的動畫格子圖：靜態立繪的名字後面加 Anim。
+    static func animationName(realmIndex: Int, sex: Sex) -> String {
+        name(realmIndex: realmIndex, sex: sex) + "Anim"
+    }
 }

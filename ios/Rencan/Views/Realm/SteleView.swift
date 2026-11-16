@@ -28,8 +28,14 @@ private enum Metrics {
 /// 深色卡的底色跟著境界換，深淺色模式長一樣。
 /// 體脂超過門檻時照樣顯示境界，但標「根基不穩」、進度條灰掉（PRD S7）。
 struct SteleView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
     let stele: SteleDigest
     let sex: Sex
+    /// 手機有沒有開低耗電模式。app 回到前景時重看一次。
+    @State private var isLowPower = ProcessInfo.processInfo.isLowPowerModeEnabled
+    /// 動畫從哪一刻起算
+    @State private var animationStart = Date()
 
     var body: some View {
         VStack(spacing: RencanLayout.groupSpacing) {
@@ -63,7 +69,30 @@ struct SteleView: View {
         .accessibilityIdentifier("stele")
     }
 
+    /// 立繪要不要動。減少動態效果、低耗電、app 不在前景、跑自動測試時都放靜態圖。
+    private var isAnimating: Bool {
+        scenePhase == .active && !reduceMotion && !isLowPower
+            && !UITestSupport.holdsPortraitStill
+    }
+
     private var portrait: some View {
+        Group {
+            if isAnimating {
+                animatedPortrait
+            } else {
+                stillPortrait
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: Metrics.portraitCornerRadius))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(standing.realm.name)期人蔘立繪")
+        .accessibilityAddTraits(.isImage)
+        .onChange(of: scenePhase) { _, _ in
+            isLowPower = ProcessInfo.processInfo.isLowPowerModeEnabled
+        }
+    }
+
+    private var stillPortrait: some View {
         Image(RencanPortrait.name(realmIndex: standing.realmIndex, sex: sex))
             .interpolation(.none)
             .resizable()
@@ -72,8 +101,30 @@ struct SteleView: View {
                 width: RencanLayout.largePortraitSize.width,
                 height: RencanLayout.largePortraitSize.height
             )
-            .clipShape(RoundedRectangle(cornerRadius: Metrics.portraitCornerRadius))
-            .accessibilityLabel("\(standing.realm.name)期人蔘立繪")
+    }
+
+    /// 動畫是一張格子圖。把整張圖放大到「一格剛好是立繪框那麼大」，移到現在要看的那一格，
+    /// 框外面的切掉。圖比框大很多，所以關掉它的觸控，免得蓋住旁邊的按鈕。
+    private var animatedPortrait: some View {
+        let size = RencanLayout.largePortraitSize
+        let columns = RencanPortrait.animationColumns
+        let rows = RencanPortrait.animationRows
+        let seconds = RencanPortrait.animationFrameSeconds
+        return TimelineView(.periodic(from: animationStart, by: seconds)) { context in
+            let elapsed = context.date.timeIntervalSince(animationStart) / seconds
+            let frame = Int(max(0, elapsed.rounded())) % (columns * rows)
+            Image(RencanPortrait.animationName(realmIndex: standing.realmIndex, sex: sex))
+                .interpolation(.none)
+                .resizable()
+                .frame(width: size.width * CGFloat(columns), height: size.height * CGFloat(rows))
+                .offset(
+                    x: -size.width * CGFloat(frame % columns),
+                    y: -size.height * CGFloat(frame / columns)
+                )
+                .frame(width: size.width, height: size.height, alignment: .topLeading)
+                .clipped()
+                .allowsHitTesting(false)
+        }
     }
 
     private var caption: some View {
