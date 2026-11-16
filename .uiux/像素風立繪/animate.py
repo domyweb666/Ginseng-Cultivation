@@ -9,7 +9,8 @@
 
 動作照 E:\\像素broll\\pixel-broll-kit 的 motion.js：角色有清楚的姿勢、一拍一拍地演；大動作前先往反方向小動，
 葉子和水桶被身體帶著、晚一拍盪幾下。招牌動作排在前 48 格，一輪做一次。
-待機時身體不動（多米說「都是上下跳抖一下」，不要）：只有眨眼、葉子被風輕輕帶、道具自己的小動作和特效。
+待機時身體只有慢慢呼吸：整個人升一格、停 16 格、再回來停 16 格（多米在比較畫板上選的「乙」）。
+「縮一下再挺起來」「一拍彈一下」「喘氣」「浮上浮下」這些他說是「上下跳抖一下」，不要。其餘靠眨眼、葉子被風輕輕帶、道具自己的小動作和特效。
 招牌動作裡身體要動的（提桶、下劈、拄杖、扛雷），用關鍵格慢慢帶過去，不做一格彈起來的那種跳。
 播放速度是一格 0.15 秒（畫板和 app 決定，圖本身不管）。
 
@@ -29,8 +30,8 @@
   渡劫男 扛一道大雷      渡劫女 電弧纏身、兩道小雷
 
 用法：python animate.py <統一色盤資料夾> [檢查圖的資料夾] [只做哪幾張，逗號分隔]
-比較用：環境變數 IDLE=breath（慢慢呼吸）或 IDLE=sway（慢慢左右晃）會讓身體在待機時多一個小動作，
-        這時成品檔名會多一段（{代號}_anim96_breath.png），並存到環境變數 OUTDIR 指定的資料夾。
+比較用：環境變數 IDLE=still（身體不動）或 IDLE=sway（慢慢左右晃）可以出別種待機方式，
+        這時成品檔名會多一段（{代號}_anim96_still.png），並存到環境變數 OUTDIR 指定的資料夾。
 """
 import math
 import os
@@ -47,7 +48,8 @@ TAU = 2 * math.pi
 FLASH = np.array([255, 248, 220], dtype=np.float32)
 AMBER = np.array([232, 164, 54], dtype=np.float32)
 SW = [0, 1, 1, 0, 0, -1, -1, 0]          # 左右搖的節拍
-STYLE = os.environ.get('IDLE', 'still')  # 待機時身體怎麼動：still 不動（定案前的預設）、breath 慢慢呼吸、sway 慢慢左右晃
+DEFAULT_STYLE = 'breath'                 # 多米 2026-11-16 在比較畫板上選的：乙 慢慢呼吸
+STYLE = os.environ.get('IDLE', DEFAULT_STYLE)  # 待機時身體怎麼動：still 不動、breath 慢慢呼吸、sway 慢慢左右晃
 
 
 def idle_pose(f):
@@ -757,7 +759,7 @@ def main():
             sheet[r * GH:(r + 1) * GH, c * GW:(c + 1) * GW] = cells[-1]
         im = Image.fromarray(sheet, mode='P')
         im.putpalette(pal.reshape(-1).tolist())
-        tag = '' if STYLE == 'still' else '_' + STYLE
+        tag = '' if STYLE == DEFAULT_STYLE else '_' + STYLE
         out = os.path.join(os.environ.get('OUTDIR', folder) if tag else folder, '%s_anim%d%s.png' % (name, N, tag))
         im.save(out, optimize=True)
         print(name, 'frames', N, os.path.getsize(out), 'bytes')
