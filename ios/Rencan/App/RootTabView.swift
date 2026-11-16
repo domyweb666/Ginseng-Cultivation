@@ -197,15 +197,15 @@ struct PagesView: View {
                 digest: digest, lifts: lifts, latestSource: latestSource,
                 healthStatus: healthStatus
             )
-            .banners(on: .realm, current: flow.page)
+            .tabPage(.realm, current: flow.page)
             .tabItem { Label("境界", systemImage: "mountain.2") }
             .tag(RencanPage.realm)
             AnalysisView(digest: digest, lifts: lifts)
-                .banners(on: .analysis, current: flow.page)
+                .tabPage(.analysis, current: flow.page)
                 .tabItem { Label("分析", systemImage: "chart.xyaxis.line") }
                 .tag(RencanPage.analysis)
             SettingsView(digest: digest)
-                .banners(on: .settings, current: flow.page)
+                .tabPage(.settings, current: flow.page)
                 .tabItem { Label("設定", systemImage: "gearshape") }
                 .tag(RencanPage.settings)
         }
@@ -238,18 +238,21 @@ struct PagesView: View {
 }
 
 extension View {
+    /// 分頁列裡的一頁：自己鋪暖米白底（原生分頁列每頁會墊一層系統白底，蓋住外層的底色），
     /// 小提示與復原列只掛在目前那一頁，同一時間只有一份（兩份會各自倒數）。
     /// 境界頁底下有「記一筆修煉」，要再往上讓出那顆按鈕。
-    func banners(on page: RencanPage, current: RencanPage) -> some View {
-        overlay(alignment: .bottom) {
-            if page == current {
-                FlowBanners()
-                    .padding(
-                        .bottom,
-                        page == .realm ? RencanLayout.bannerBottomInset : RencanLayout.itemSpacing
-                    )
+    func tabPage(_ page: RencanPage, current: RencanPage) -> some View {
+        background(Color.rencan.canvas.ignoresSafeArea())
+            .overlay(alignment: .bottom) {
+                if page == current {
+                    FlowBanners()
+                        .padding(
+                            .bottom,
+                            page == .realm
+                                ? RencanLayout.bannerBottomInset : RencanLayout.itemSpacing
+                        )
+                }
             }
-        }
     }
 }
 

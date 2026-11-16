@@ -248,8 +248,12 @@ final class SettingsDeleteUITests: RencanUITestCase {
     }
 
     /// 身高與性別不算紀錄，全部刪除之後要留著。
+    /// 分頁列會記住設定頁捲到哪（剛才捲到底按刪除），要先捲回最上面才看得到身高。
     private func checkProfileKept() {
         openTab("設定")
+        for _ in 0..<8 where visibleElement(in: anyElements(containing: "174")) == nil {
+            scrollUp()
+        }
         requireVisible(anyElements(containing: "174"), "全部刪除之後還留著的身高 174")
         let male = requireVisible(app.buttons.matching(named("男")), "性別的「男」那一格")
         XCTAssertTrue(male.isSelected, "全部刪除之後，性別選中的不是「男」")
