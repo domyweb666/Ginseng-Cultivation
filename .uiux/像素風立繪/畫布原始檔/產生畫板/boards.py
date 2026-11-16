@@ -7,6 +7,16 @@ root = sys.argv[1]
 N, COLS, ROWS_ = 96, 12, 8
 FT = 0.15            # 一格播幾秒。多米嫌 0.1 太快，2026-11-16 在比較畫板上選了 0.15（「中」）
 LOOP = N * FT        # 一輪幾秒
+# 煉氣男拆成零件的試做版，和它的八個圖層（由下往上）
+PARTS_SHEET = '227b5df70b01a8e90c29e56d98817212'
+LAYERS = [('背景', '03dd923e1a3cedee6d08895e34870dc2', '角色那一塊補起來了，完全不動。'),
+          ('腿', 'e778ec9e693eef4328d24f2118d3a1b8', '衣襬底下那一段往上補了幾格，身體升高時不會露出空隙。'),
+          ('手臂', '41adc93fa4cb16375183836381047365', '繞肩膀轉。上緣藏在袖口底下。'),
+          ('頭', 'b38ea98e612d5b84e43673f90cfc7193', '臉、根鬚、紅果。下巴底下補了幾格脖子。'),
+          ('身體', '7b1d4f6d3282be52efd2ee5173c5de27', '衣服和插腰的那隻手。只做整格平移。'),
+          ('水桶', 'f87b91124e0698e8ad262ae6acb76ba4', '掛在手上，手臂怎麼轉它都垂著，會餘盪。'),
+          ('左葉', 'bd633c3a71f48eb1d60f530f4997292c', '掛在頭上，繞葉柄轉。'),
+          ('右葉', '1f2d67760884682596306b220e4b5d17', '掛在頭上，繞葉柄轉。')]
 # 比較用：同一張角色的另外兩種待機方式（still 身體不動、sway 慢慢左右晃）。14 張定案用的是「慢慢呼吸」
 ALT = {'r0-still': 'b02288e14fdc0ea78a0cc880fbb6ff04', 'r0-sway': '75cf568ed6232acbd335beb8a075e0ce',
        'r3-still': '25caa1fb8162c5eecad74f1fd5d5ed62', 'r3-sway': 'e7a27fa849988261d91cb9e371dbc557'}
@@ -34,7 +44,7 @@ CSS = ('.lp{position:relative;overflow:hidden;background:#FFFFFF}\n'
        + keyframes() + '\n'
        '@media (prefers-reduced-motion:reduce){.lp-strip{animation:none !important}}\n'
        + '.sp10{animation-duration:%.1fs}.sp20{animation-duration:%.1fs}\n' % (N * 0.1, N * 0.2)
-       + '\n'.join('.st-%s{background-image:url(/_blob/%s)}' % kv for kv in list(IDS.items()) + list(ALT.items())) + '\n')
+       + '\n'.join('.st-%s{background-image:url(/_blob/%s)}' % kv for kv in list(IDS.items()) + list(ALT.items()) + [('r0-parts', PARTS_SHEET)]) + '\n')
 CSS_RE = r'\.lp\{.*?(?=</style>)'
 STRIP_DIV = '<div class="lp-strip {{%s.cls}}" style="animation-delay: {{%s.delay}}"></div>'
 # 七個境界定案的底色（2026-11-16 多米選定：元嬰候選三、化神候選一、大乘候選一）
@@ -124,6 +134,30 @@ spage = (spage.replace('__W__', str(SW_)).replace('__H__', str(SH_))
 assert '<img' not in spage and '__' not in spage and '第二版' not in spage
 write('IdleStyles.dc.html', spage)
 
+# ---- 煉氣男拆成零件（試做）----
+TILE = ('<sc-for list="{{layers}}" as="t" hint-placeholder-count="8">\n'
+        '<div style="width: 252px; display: flex; flex-direction: column; gap: 8px">\n'
+        '<div style="width: 252px; height: 315px; border-radius: 12px; overflow: hidden; background: #3A3A44">'
+        '<img src="{{t.src}}" alt="{{t.name}}" style="display: block; width: 252px; height: 315px; image-rendering: pixelated"></div>\n'
+        '<div style="font-family: \'LXGW WenKai TC\', \'Kaiti TC\', serif; font-weight: 700; font-size: 20px; line-height: 1.3; color: #5E4410">{{t.name}}</div>\n'
+        '<div style="font-size: 14px; line-height: 1.5; color: #5F5F66">{{t.note}}</div>\n'
+        '</div>\n</sc-for>')
+PW, PH = 56 * 2 + 8 * 252 + 7 * 16, 1250
+prow = row.replace('__SEX__', '比較').replace('__LIST__', 'cards')
+ppage = (idle_tpl.replace('G 款第二版：14 張各自的待機動作', '煉氣男拆成零件（試做）')
+         .replace(old, '照著同一張像素圖，把煉氣男拆成八層：背景、腿、手臂、頭、身體、水桶、兩片葉子。被擋住的地方（脖子、衣襬底下的腿、袖口裡的手臂）是從旁邊的格子接著補的。'
+                       '左邊是現在整塊移動的版本，右邊是零件版，多了三個動作：頭會歪一下、頭比身體晚一點跟上、手臂繞肩膀擺。你覺得可以，我再照這樣拆另外 13 張。')
+         .replace('__W__', str(PW)).replace('__H__', str(PH))
+         .replace('__MEN__', prow)
+         .replace('__WOMEN__', '<div style="font-family: \'LXGW WenKai TC\', \'Kaiti TC\', serif; font-size: 28px; line-height: 1.3; color: #7A5916">拆出來的八層（由下往上疊）</div>\n'
+                               '<div style="display: flex; gap: 16px; align-items: flex-start">\n' + TILE + '\n</div>')
+         .replace('men: __MJ__,\nwomen: __WJ__', 'cards: %s,\nlayers: %s' % (
+             json.dumps([pick('r0', 'r0', '整塊移動', '現在 14 張的做法', '掂水桶', '頭、手、衣服是同一塊，只能一起平移。提桶時是整隻手臂往上平移。'),
+                         pick('r0', 'r0-parts', '拆成零件', '試做', '掂水桶', '頭會歪向桶那邊看，呼吸時頭晚一點才跟上。提桶時手臂繞肩膀往外擺，桶垂在手上晃。')], ensure_ascii=False),
+             json.dumps([{'name': n, 'src': '/_blob/' + i, 'note': t} for n, i, t in LAYERS], ensure_ascii=False))))
+assert '__' not in ppage and '第二版' not in ppage
+write('PartsDemo.dc.html', ppage)
+
 # ---- 三境底色候選（已選定）----
 SEVEN = [r[2] for r in REALM]
 ROWS = [
@@ -196,6 +230,9 @@ c['boards']['IdleCards.dc.html'].update({'w': W, 'h': H, 'title': 'G 款第六�
 c['boards']['RealmDark.dc.html']['title'] = '七個境界的深色卡（底色定案）'
 c['boards']['IdleStyles.dc.html'] = {'x': 5670, 'y': 5460, 'w': SW_, 'h': SH_, 'title': '待機時身體要不要動、播多快（已選：乙、中速）'}
 c['boards']['IdleStyles.dc.html']['title'] = '待機時身體要不要動、播多快（已選：乙、中速）'
+c['boards']['PartsDemo.dc.html'] = {'x': 2800, 'y': 7140, 'w': PW, 'h': PH, 'title': '煉氣男拆成零件（試做，請看）'}
+if 'PartsDemo.dc.html' not in c['order']:
+    c['order'].insert(c['order'].index('IdleCards.dc.html') + 1, 'PartsDemo.dc.html')
 if 'IdleStyles.dc.html' not in c['order']:
     c['order'].insert(c['order'].index('IdleCards.dc.html') + 1, 'IdleStyles.dc.html')
 c['boards']['ColorCands.dc.html'].update({'w': CW, 'h': CH, 'title': '化神、元嬰、大乘的底色候選（已選定）'})

@@ -137,6 +137,53 @@ def inpaint(rgb, hole, known=None):
     return out
 
 
+def clone_fill(rgb, hole, known, step):
+    """把 hole 補起來：從 known 的格子往 step=(dy, dx) 的方向一格一格複製過去（像仿製印章往一個方向拉）。
+    補出來的每一格都是原本就有的顏色，是清楚的格子，不是糊的。回傳 (補好的圖, 還沒補到的格子)。"""
+    out = rgb.copy()
+    known = known & ~hole
+    unknown = hole.copy()
+    dy, dx = step
+    for _ in range(GW + GH):
+        k = np.roll(known, (dy, dx), axis=(0, 1))
+        v = np.roll(out, (dy, dx), axis=(0, 1))
+        if dy > 0: k[:dy, :] = False
+        if dy < 0: k[dy:, :] = False
+        if dx > 0: k[:, :dx] = False
+        if dx < 0: k[:, dx:] = False
+        fill = unknown & k
+        if not fill.any():
+            break
+        out[fill] = v[fill]
+        unknown &= ~fill
+        known = known | fill
+    return out, unknown
+
+
+def fill_rows(rgb, hole):
+    """背景層的另一種補法：每一列從洞的左右兩邊往中間複製，各補一半。台階、地面這種橫線會接得起來，而且是清楚的格子。"""
+    left, rest = clone_fill(rgb, hole, ~hole, (0, 1))
+    right, rest2 = clone_fill(rgb, hole, ~hole, (0, -1))
+    out = rgb.copy()
+    for y in range(GH):
+        xs = np.where(hole[y])[0]
+        if not len(xs):
+            continue
+        # 一列裡可能有好幾段洞，各自從中間分
+        runs = np.split(xs, np.where(np.diff(xs) > 1)[0] + 1)
+        for r in runs:
+            a, b = r[0], r[-1]
+            if a == 0:
+                out[y, a:b + 1] = right[y, a:b + 1]
+            elif b == GW - 1:
+                out[y, a:b + 1] = left[y, a:b + 1]
+            else:
+                mid = (a + b + 1) // 2
+                out[y, a:mid] = left[y, a:mid]
+                out[y, mid:b + 1] = right[y, mid:b + 1]
+    return out
+
+
 def fill_bg(rgb, hole):
     """背景層：把角色佔的那一塊照周圍的紋路補起來（比一圈一圈取平均的 inpaint 更接得上線條）。"""
     import cv2
@@ -356,8 +403,9 @@ def f_flap(W, pivot, amount, length, power=1.5):
 
 # ---------- 骨架 ----------
 class Part:
-    def __init__(self, name, mask, move=None, parent=None):
+    def __init__(self, name, mask, move=None, parent=None, fill=None):
         self.name, self.mask, self.move, self.parent = name, mask, move, parent
+        self.fill = fill    # 被上面的零件擋住的地方怎麼補：(dy, dx) 表示從自己看得到的格子往那個方向複製過去；沒給就取周圍平均
         self.tex = None
 
     def chain(self, f):
@@ -374,6 +422,7 @@ class Rig:
         self.post = []      # 整張的處理（閃白、震動）fn(畫面, 格) -> 畫面
         self.soft = []      # 柔性變形 fn(格) -> [(DX, DY), ...]
         self.regions = {}   # 名字 -> 權重圖，只給檢查圖用
+        self.bg_rows = False  # True：背景層的洞用「每一列從左右往中間複製」來補（清楚的格子），False：照周圍紋路補（會糊）
         self.hole = None    # 角色佔的範圍（比角色大一圈）：背景層要把這一塊補起來，角色移開才不會留下殘影
         self._blink = None  # (閉眼圖, 哪幾格閉眼)
         self._built = False
@@ -388,8 +437,8 @@ class Rig:
         """眨眼直接畫進動畫：frames 這幾格換成閉眼圖（跟底圖只差眼睛那一塊）。頭會大幅移動，眨眼圖沒辦法另外疊。"""
         self._blink = (img, set(frames))
 
-    def part(self, name, mask, move=None, parent=None):
-        p = Part(name, mask.copy(), move, parent)
+    def part(self, name, mask, move=None, parent=None, fill=None):
+        p = Part(name, mask.copy(), move, parent, fill)
         self.parts.append(p)
         return p
 
@@ -399,7 +448,7 @@ class Rig:
             union |= p.mask
         if self.hole is not None:
             union |= self.hole
-        self.bg = fill_bg(self.base, union)
+        self.bg = fill_rows(self.base, union) if self.bg_rows else fill_bg(self.base, union)
         self.bg_alt = self.bg
         if self._blink:
             diff = (np.abs(self._blink[0] - self.base).sum(-1) > 0) & ~union
@@ -410,7 +459,13 @@ class Rig:
             for q in self.parts[i + 1:]:
                 above |= q.mask
             hole = p.mask & above
-            p.tex = inpaint(self.base, hole, p.mask) if hole.any() else self.base
+            p.tex = self.base
+            if hole.any():
+                rest = hole
+                if p.fill:
+                    p.tex, rest = clone_fill(self.base, hole, p.mask, p.fill)
+                if rest.any():
+                    p.tex = inpaint(p.tex, rest, p.mask)
             p.alt = p.tex
             if self._blink:
                 diff = np.abs(self._blink[0] - self.base).sum(-1) > 0

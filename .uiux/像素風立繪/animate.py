@@ -97,6 +97,8 @@ def figure(rg, base, M, posefn, legbox=None, band=None, minus=None):
     if legbox:
         # 腳底那一帶只留腿：去背時黏上來的地面、石頭留在背景層
         legs0 = close(box(*legbox) & rooty(base) & M, 1)
+        if minus is not None:
+            legs0 &= ~minus          # 顏色像腿、其實是道具的格子（木桶的邊）不算腿
         M = M & ~((YS >= band[1] - 3) & ~legs0)
     C = grow(M, 1)
     rg.hole = grow(M, 2)
@@ -211,6 +213,76 @@ def rig_r0(base, blink, M):
             for k in (-1, 0, 1):
                 dot(img, 125 + k * (4 + 3 * t), 142 + int(heady(f)) - 5 * t + 1.3 * t * t, WHITE, 1 - t * 0.18)
                 dot(img, 125 + k * (4 + 3 * t), 143 + int(heady(f)) - 5 * t + 1.3 * t * t, PALE, 0.7 - t * 0.12)
+    rg.front.append(splash)
+    if blink is not None:
+        rg.blink(blink, [14, 15, 70, 71])
+    return rg
+
+
+def rig_r0_parts(base, blink, M):
+    """煉氣男，拆成零件的試做版。比整塊移動的版本多三個零件：頭（含根鬚、臉、紅果）、提桶的手臂、兩片葉子掛在頭上。
+    被擋住的地方（頭底下的衣領、衣襬底下的腿、袖口底下的手臂）用「往一個方向複製格子」補，不是糊的。
+    多出來的動作：呼吸時頭晚兩格才跟上；頭會歪向一邊看；手臂繞肩膀擺，桶掛在手上垂著晃。"""
+    rg = Rig(base)
+    rg.bg_rows = True
+    C = grow(M, 1)
+    pivot = (84, 42)
+    lm = leafgreen(base, (28, 0, 138, 64), pivot)
+    h_, s_, v_ = hsv(base)
+    skin = rooty(base) & (v_ > 0.75)
+    # 頭：臉、根鬚、紅果，往下到衣領中間露出來的那一小塊。88 以下只收人蔘皮的顏色，衣服不算
+    headp = poly([(64, 0), (116, 0), (116, 40), (110, 56), (124, 70), (126, 92), (112, 94), (106, 90), (98, 96), (89, 103), (80, 98),
+                  (66, 92), (60, 90), (56, 95), (46, 97), (42, 114), (31, 114), (31, 58), (56, 54)])
+    head = flood(close(C & headp & ~lm & ((YS < 88) | skin | (XS < 58) | (XS > 110)), 1), (86, 70), (86, 60), (92, 12))
+    # 提桶的手臂：只有人蔘皮的部分，往上多留幾格藏在袖口底下，轉的時候才不會露出缺口
+    arm_poly = [(113, 114), (124, 112), (132, 128), (132, 140), (118, 140), (114, 126)]
+    arm_skin = close(cut(base, arm_poly, seeds=[(123, 128)]) & skin, 1)
+    up = np.zeros_like(arm_skin)
+    for k in range(1, 6):
+        up[:-k, :] |= arm_skin[k:, :]
+    arm_m = grow(arm_skin, 1) | (up & C & ~head & (YS < 120))
+    _, bk_m = bucket_masks(base, arm_poly)
+    bk_m = bk_m & ~arm_skin & ~(pale(base, 228) & (YS < 142))      # 提把中間透出來的白底不是桶
+    # 手邊剩下的零碎（握在手裡的那一小段提把、手的邊緣）跟著手臂走，不要留在身體上
+    loose = C & box(113, 119, 134, 142) & ~bk_m & ~pale(base, 228)
+    arm_m = arm_m | loose
+
+    def P(f):
+        return pose(sq=keys(f, [(18, 0), (22, 1), (24, -0.67), (27, -0.67), (31, 0.33), (35, 0)]))
+    body, heady, _ = figure(rg, base, M, P, (40, 146, 112, 199), (158, 196), minus=lm | bk_m | head | grow(arm_skin, 1) | box(113, 119, 150, 190))
+    rg.hole = grow(M, 3)              # 背景層多補一圈，免得角色邊緣的雜色被複製進去
+    rg.parts[0].fill = (-1, 0)        # 腿：衣襬底下那一段，從看得到的腿往上複製
+    body.name = 'torso'
+
+    # 手臂繞肩膀轉。平常輕輕擺（一次換一個姿勢），掂桶時先往下沉、再往外提起來
+    swing = lambda f: 2.0 * round(1.2 * math.sin(TAU * f / 48.0)) + keys(f % N, [(19, 0), (22, 5), (24, -24), (27, -24), (30, 4), (33, 0)])
+    shoulder, grip = (115, 115), (121, 132)
+    arm = Part('arm', arm_m, lambda f: [rot(shoulder, swing(f))], body, fill=(-1, 0))
+    # 桶掛在手上：手臂轉多少它就反過來轉多少（所以一直垂著），再加上被手帶動的餘盪
+    hang = lambda f: -swing(f) + 0.3 * follow(swing, f, 0.2, 1.0, 24)
+    rg.parts.insert(1, arm)           # 手臂墊在身體下面，袖口蓋著它
+    rg.parts.append(Part('bucket', bk_m, lambda f: [rot(grip, hang(f))], arm))
+
+    # 頭：晚兩格才跟上身體（呼吸時脖子那邊會有一點錯開），偶爾歪一下。掂桶時歪向桶那邊看
+    lag = lambda f: heady(f - 2) - heady(f)
+    tilt = lambda f: 1.5 * round(keys(f % N, [(20, 0), (23, 3), (29, 3), (33, 0), (54, 0), (57, -3), (69, -3), (72, 0)]) / 1.5)
+    neck = (87, 97)
+    # 頭墊在衣服下面、往下多畫五格脖子（從下巴的顏色往下複製），頭抬起來或歪的時候，衣領裡露出來的是脖子不是空隙
+    chin = head & skin & (YS >= 84)
+    down = np.zeros_like(chin)
+    for k in range(1, 6):
+        down[k:, :] |= chin[:-k, :]
+    hd = Part('head', head | (down & C & ~lm), lambda f: [shift(0, lag(f)), rot(neck, tilt(f))], body, fill=(1, 0))
+    rg.parts.insert(rg.parts.index(body), hd)
+    leaves(rg, base, hd, lm, pivot, lambda f: heady(f - 2) + 0.8 * tilt(f))
+    lantern(rg)
+
+    def splash(img, f):
+        t = f - 24
+        if 0 <= t < 5:
+            for k in (-1, 0, 1):
+                dot(img, 136 + k * (4 + 3 * t), 134 + int(heady(f)) - 5 * t + 1.3 * t * t, WHITE, 1 - t * 0.18)
+                dot(img, 136 + k * (4 + 3 * t), 135 + int(heady(f)) - 5 * t + 1.3 * t * t, PALE, 0.7 - t * 0.12)
     rg.front.append(splash)
     if blink is not None:
         rg.blink(blink, [14, 15, 70, 71])
@@ -733,6 +805,8 @@ def rig_gr6(base, blink, M):
     return rg
 
 
+# 拆成零件的試做版。環境變數 PARTS=1 時用這裡的，成品檔名多一段 _parts，零件圖層另外存到 OUTDIR/<代號>_layers/
+PARTS = {'r0': rig_r0_parts}
 RIGS = {'r0': rig_r0, 'gr0': rig_gr0, 'r1': rig_r1, 'gr1': rig_gr1, 'r2': rig_r2, 'gr2': rig_gr2, 'r3': rig_r3, 'gr3': rig_gr3,
         'r4': rig_r4, 'gr4': rig_gr4, 'r5': rig_r5, 'gr5': rig_gr5, 'r6': rig_r6, 'gr6': rig_gr6}
 # 動作條從第幾格開始看（連續 14 格）：招牌動作的預備到落定
@@ -749,7 +823,8 @@ def main():
         blink, _ = load(folder, name, '_blink')
         M = np.asarray(Image.open(os.path.join(folder, '%s_%dx%d_mask.png' % (name, GW, GH)))) > 127
         pal_lab = px.rgb2lab(pal.astype(np.float32))
-        rg = RIGS[name](base, blink, M)
+        use_parts = bool(os.environ.get('PARTS')) and name in PARTS
+        rg = (PARTS if use_parts else RIGS)[name](base, blink, M)
         frames = rg.frames()
         sheet = np.zeros((GH * (N // COLS), GW * COLS), dtype=np.uint8)
         cells = []
@@ -759,8 +834,18 @@ def main():
             sheet[r * GH:(r + 1) * GH, c * GW:(c + 1) * GW] = cells[-1]
         im = Image.fromarray(sheet, mode='P')
         im.putpalette(pal.reshape(-1).tolist())
-        tag = '' if STYLE == DEFAULT_STYLE else '_' + STYLE
-        out = os.path.join(os.environ.get('OUTDIR', folder) if tag else folder, '%s_anim%d%s.png' % (name, N, tag))
+        tag = ('_parts' if use_parts else '') + ('' if STYLE == DEFAULT_STYLE else '_' + STYLE)
+        outdir = os.environ.get('OUTDIR', folder) if tag else folder
+        out = os.path.join(outdir, '%s_anim%d%s.png' % (name, N, tag))
+        if use_parts:
+            # 把每個零件存成一張透明底的圖（顏色都收回色盤），由下往上編號。檔名開頭的數字就是疊的順序
+            ldir = os.path.join(outdir, name + '_layers')
+            os.makedirs(ldir, exist_ok=True)
+            quant = lambda a: pal[px.nearest(px.rgb2lab(np.clip(a, 0, 255).reshape(-1, 3)), pal_lab).reshape(GH, GW)]
+            Image.fromarray(quant(rg.bg)).save(os.path.join(ldir, '0_bg.png'))
+            for i, part in enumerate(rg.parts):
+                rgba = np.dstack([quant(part.tex), (part.mask * 255).astype(np.uint8)])
+                Image.fromarray(rgba, 'RGBA').save(os.path.join(ldir, '%d_%s.png' % (i + 1, part.name)))
         im.save(out, optimize=True)
         print(name, 'frames', N, os.path.getsize(out), 'bytes')
         if dbg:
