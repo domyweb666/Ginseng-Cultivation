@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>F 款：水彩原圖直接像素化</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap">
+<style>
+body{margin:0}
+.px{display:block;image-rendering:pixelated;image-rendering:crisp-edges;image-rendering:pixelated}
+@keyframes fx-lan{0%{opacity:.3}18%{opacity:.8}30%{opacity:.5}52%{opacity:.85}70%{opacity:.4}86%{opacity:.75}100%{opacity:.3}}
+.fx-lantern{position:absolute;left:84.4%;top:40.3%;width:22%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(rgba(255,236,160,.9),rgba(255,214,110,.4) 45%,rgba(255,214,110,0) 70%);mix-blend-mode:screen;animation:fx-lan 2.4s steps(1) infinite}
+@media (prefers-reduced-motion:reduce){.fx-lantern{animation:none}}
+</style>
+</helmet>
+<div style="width: 1848px; height: 1350px; box-sizing: border-box; padding: 56px; display: flex; flex-direction: column; gap: 20px; background: #F7F4EC; color: #1D1D1F; font-family: -apple-system, 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif">
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h1 style="margin: 0; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 400; font-size: 44px; line-height: 1.25; color: #7A5916">F 款：水彩原圖直接像素化</h1>
+<p style="margin: 0; font-size: 17px; line-height: 1.6; color: #66666D">用程式把你原本那 14 張水彩轉成格子，每一格對齊、大小一樣。不用重新生圖。</p>
+</div>
+
+<div style="display: flex; gap: 24px; align-items: flex-start">
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="font-size: 15px; font-weight: 600; color: #5F5F66">原本的水彩</div>
+<img src="/_blob/494995b54f0e39ccf0e970d81da1c5ed" alt="煉氣女生水彩原圖" style="display: block; width: 336px; height: 420px; object-fit: cover; border-radius: 16px; background: #FFFFFF">
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="font-size: 15px; font-weight: 600; color: #5F5F66">112×140 格，64 色以上</div>
+<div style="position: relative; width: 336px; height: 420px; overflow: hidden; border-radius: 16px; background: #FFFFFF">
+<img class="px" src="/_blob/34642caf975c8da6d31d81e07b15c656" alt="煉氣女生，像素化 112 乘 140 格" style="width: 336px; height: 420px">
+<div class="fx-lantern"></div>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="font-size: 15px; font-weight: 600; color: #5F5F66">168×210 格</div>
+<div style="position: relative; width: 336px; height: 420px; overflow: hidden; border-radius: 16px; background: #FFFFFF">
+<img class="px" src="/_blob/53808ba9a37eb3378aeced044bc83bf5" alt="煉氣女生，像素化 168 乘 210 格" style="width: 336px; height: 420px">
+<div class="fx-lantern"></div>
+</div>
+</div>
+
+<div style="width: 352px; display: flex; flex-direction: column; gap: 12px; margin-left: 8px">
+<div style="font-size: 15px; font-weight: 600; color: #5F5F66">放進 app 的實際大小</div>
+<div style="background: #FFFFFF; border-radius: 24px; padding: 20px; display: flex; gap: 16px; align-items: center; box-shadow: 0 4px 18px rgba(25, 22, 20, 0.06)">
+<img class="px" src="/_blob/34642caf975c8da6d31d81e07b15c656" alt="煉氣女生，像素化，立繪框大小" style="width: 112px; height: 140px; border-radius: 16px; flex-shrink: 0">
+<div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+<div style="font-size: 13px; line-height: 18px; color: #66666D">目前境界</div>
+<div style="display: flex; align-items: baseline; gap: 4px; font-family: 'LXGW WenKai TC', serif; color: #7A5916">
+<span style="font-size: 44px; line-height: 50px; font-weight: 700">煉氣</span>
+<span style="font-size: 24px; line-height: 30px; font-weight: 700">初期</span>
+</div>
+<div style="font-size: 15px; line-height: 20px; color: #66666D">一般未訓練</div>
+</div>
+</div>
+<p style="margin: 0; font-size: 15px; line-height: 1.6; color: #5F5F66">112×140 格放進立繪框是一格對一點。iPhone 螢幕是三倍密度，所以手機上一格會是 3×3 個實體點，格子邊緣是清楚的。</p>
+</div>
+
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; font-size: 15px; line-height: 1.6; color: #5F5F66">
+<div style="font-weight: 600">程式做了什麼</div>
+<p style="margin: 0">把圖切成固定大小的方格，每格取平均色。</p>
+<p style="margin: 0">格子裡有深色線條的，往線條的顏色拉，外框才不會糊掉。</p>
+<p style="margin: 0">整張圖的顏色收斂到 96 色以內。</p>
+<p style="margin: 0">左右各裁掉一點，配合立繪框 4:5 的比例。</p>
+</div>
+
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px">
+<div style="display: flex; gap: 16px; align-items: flex-end">
+<div style="width: 56px"></div>
+<div style="width: 224px; text-align: center; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-size: 26px; color: #7A5916">煉氣</div>
+<div style="width: 224px; text-align: center; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-size: 26px; color: #7A5916">築基</div>
+<div style="width: 224px; text-align: center; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-size: 26px; color: #7A5916">金丹</div>
+<div style="width: 224px; text-align: center; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-size: 26px; color: #7A5916">元嬰</div>
+<div style="width: 224px; text-align: center; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-size: 26px; color: #7A5916">化神</div>
+<div style="width: 224px; text-align: center; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-size: 26px; color: #7A5916">大乘</div>
+<div style="width: 224px; text-align: center; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-size: 26px; color: #7A5916">渡劫</div>
+</div>
+
+<div style="display: flex; gap: 16px; align-items: center">
+<div style="width: 56px; text-align: center; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-size: 28px; color: #7A5916">男</div>
+<img class="px" src="/_blob/4503959af6330f488436f00caaaa0969" alt="煉氣，男，像素化" style="width: 224px; height: 280px; border-radius: 14px; background: #FFFFFF">
+<img class="px" src="/_blob/a582f6973138c893fdb87e4863049f23" alt="築基，男，像素化" style="width: 224px; height: 280px; border-radius: 14px; background: #FFFFFF">
+<img class="px" src="/_blob/6e48819140da5f4dc43da56e8fefc70b" alt="金丹，男，像素化" style="width: 224px; height: 280px; border-radius: 14px; background: #FFFFFF">
+<img class="px" src="/_blob/a8e47061db7232be6dd73e298394a0c3" alt="元嬰，男，像素化" style="width: 224px; height: 280px; border-radius: 14px; background: #FFFFFF">
+<img class="px" src="/_blob/2eb2a51a70351d5282cc1e2e09ab141c" alt="化神，男，像素化" style="width: 224px; height: 280px; border-radius: 14px; background: #FFFFFF">
+<img class="px" src="/_blob/13fb99d11c77da9dbbfbb608954d169d" alt="大乘，男，像素化" style="width: 224px; height: 280px; border-radius: 14px; background: #FFFFFF">
+<img class="px" src="/_blob/05de7d3c8b2a73c1fdc090ae0c1f7916" alt="渡劫，男，像素化" style="width: 224px; height: 280px; border-radius: 14px; background: #FFFFFF">
+</div>
+
+<div style="display: flex; gap: 16px; align-items: center">
+<div style="width: 56px; text-align: center; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-size: 28px; color: #7A5916">女</div>
+<img class="px" src="/_blob/34642caf975c8da6d31d81e07b15c656" alt="煉氣，女，像素化" style="width: 224px; height: 280px; border-radius: 14px; background: #FFFFFF">
+<img class="px" src="/_blob/2b89040cdd24384b7898c87d63d250d3" alt="築基，女，像素化" style="width: 224px; height: 280px; border-radius: 14px; background: #FFFFFF">
+<img class="px" src="/_blob/62f9b14a2cce0c172b365b8eddc0ec79" alt="金丹，女，像素化" style="width: 224px; height: 280px; border-radius: 14px; background: #FFFFFF">
+<img class="px" src="/_blob/8bfa829785a98188ac4e4f0a3dc1b88e" alt="元嬰，女，像素化" style="width: 224px; height: 280px; border-radius: 14px; background: #FFFFFF">
+<img class="px" src="/_blob/813e16b632ce8c715c5a9821606800c2" alt="化神，女，像素化" style="width: 224px; height: 280px; border-radius: 14px; background: #FFFFFF">
+<img class="px" src="/_blob/19ad2060c9d47d034dd66f7a941aa8e9" alt="大乘，女，像素化" style="width: 224px; height: 280px; border-radius: 14px; background: #FFFFFF">
+<img class="px" src="/_blob/8df6c6132cc4d9da45898b7544a3630c" alt="渡劫，女，像素化" style="width: 224px; height: 280px; border-radius: 14px; background: #FFFFFF">
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1848,"height":1350}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

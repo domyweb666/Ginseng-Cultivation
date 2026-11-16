@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>分享用的修煉卡</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap">
+<style>
+body{margin:0}
+.sc-move{height:25px;box-sizing:border-box;padding:0 6px 0 8px;display:flex;align-items:center;justify-content:space-between;border-radius:6px;background:#F7F1E1;font-size:12px;color:#1D1D1F}
+.sc-move b{font-family:'LXGW WenKai TC','Kaiti TC',serif;font-weight:700;font-size:13px;color:#5E4410}
+.sc-move span{font-size:11px;color:#7A5916}
+.sc-stat{height:34px;box-sizing:border-box;padding:0 8px;display:flex;flex-direction:column;justify-content:center;border-radius:6px;background:#F1E6CC}
+.sc-stat b{font-size:14px;line-height:17px;font-weight:700;color:#1D1D1F}
+.sc-stat span{font-size:10px;line-height:13px;color:#5E4410}
+</style>
+</helmet>
+<div style="width: 1690px; height: 1090px; box-sizing: border-box; padding: 56px; display: flex; flex-direction: column; gap: 20px; background: #EFEBE3; color: #1D1D1F; font-family: -apple-system, 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif">
+
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 style="margin: 0; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 400; font-size: 44px; line-height: 1.25; color: #7A5916">分享用的修煉卡</h1>
+<p style="margin: 0; font-size: 17px; line-height: 1.6; color: #5F5F66">一張可以存下來傳給別人的角色卡。外框顏色跟著境界換，左邊是金丹，中間是化神。</p>
+</div>
+
+<div style="display: flex; gap: 40px; align-items: flex-start">
+
+<sc-for list="{{cards}}" as="c" hint-placeholder-count="2">
+<div style="width: 360px; height: 640px; box-sizing: border-box; padding: 6px; border-radius: 22px; background: {{c.frame}}; box-shadow: 0 10px 28px rgba(29,29,31,0.2); flex-shrink: 0">
+<div style="height: 100%; box-sizing: border-box; padding: 6px; border-radius: 16px; background: #FFFCF0; display: flex; flex-direction: column; gap: 6px">
+<div style="height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 4px 0 6px">
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+<span style="font-size: 10px; line-height: 12px; color: #5F5F66">道號</span>
+<span style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 22px; line-height: 26px; color: #1D1D1F">{{c.name}}</span>
+</div>
+<span style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 22px; line-height: 1; color: #7A5916">{{c.realm}}</span>
+<span style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 15px; line-height: 1; color: #7A5916">{{c.stage}}</span>
+<span style="width: 28px; height: 28px; border-radius: 5px; background: #B8402F; color: #FFFFFF; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 18px; line-height: 1; display: flex; align-items: center; justify-content: center">{{c.seal}}</span>
+</div>
+<img src="{{c.art}}" alt="{{c.alt}}" style="display: block; width: 336px; height: 420px; border-radius: 10px; image-rendering: pixelated; background: #FFFFFF">
+<div style="height: 24px; box-sizing: border-box; padding: 0 8px; display: flex; align-items: center; justify-content: space-between; border-radius: 6px; background: #5E4410; color: #FFFCF0; font-size: 12px">
+<span style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 14px">{{c.rank}}</span>
+<span>{{c.days}}</span>
+</div>
+<div style="height: 92px; display: flex; gap: 6px">
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px">
+<div class="sc-stat"><b>{{c.ffmi}}</b><span>FFMI</span></div>
+<div class="sc-stat"><b>{{c.fat}}</b><span>體脂</span></div>
+<div class="sc-stat"><b>{{c.root}}</b><span>根基</span></div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px">
+<div class="sc-move"><b>坐馬樁</b><span>{{c.m1}}</span></div>
+<div class="sc-move"><b>拔山式</b><span>{{c.m2}}</span></div>
+<div class="sc-move"><b>推山掌</b><span>{{c.m3}}</span></div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px">
+<div class="sc-move"><b>托天式</b><span>{{c.m4}}</span></div>
+<div class="sc-move"><b>挽弓式</b><span>{{c.m5}}</span></div>
+<div class="sc-move"><b>攀雲梯</b><span>{{c.m6}}</span></div>
+</div>
+</div>
+<div style="width: 58px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 3px">
+<svg viewBox="-1.5 -1.5 24 24" width="58" height="58" role="img" aria-label="下載 app 用的 QR 碼，示意" style="display: block; background: #FFFFFF; border-radius: 4px"><path fill="#1D1D1F" d="M0 0h7v1h-7zM8 0h2v1h-2zM11 0h1v1h-1zM14 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM8 1h2v1h-2zM11 1h2v1h-2zM14 1h1v1h-1zM20 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM8 2h3v1h-3zM12 2h1v1h-1zM14 2h1v1h-1zM16 2h3v1h-3zM20 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM8 3h1v1h-1zM12 3h1v1h-1zM14 3h1v1h-1zM16 3h3v1h-3zM20 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM9 4h1v1h-1zM11 4h2v1h-2zM14 4h1v1h-1zM16 4h3v1h-3zM20 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h2v1h-2zM11 5h1v1h-1zM14 5h1v1h-1zM20 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h7v1h-7zM9 7h1v1h-1zM11 7h2v1h-2zM0 8h1v1h-1zM2 8h2v1h-2zM5 8h3v1h-3zM10 8h1v1h-1zM15 8h1v1h-1zM17 8h2v1h-2zM20 8h1v1h-1zM1 9h1v1h-1zM7 9h1v1h-1zM11 9h1v1h-1zM14 9h1v1h-1zM16 9h1v1h-1zM0 10h2v1h-2zM3 10h6v1h-6zM10 10h3v1h-3zM14 10h2v1h-2zM20 10h1v1h-1zM0 11h2v1h-2zM4 11h2v1h-2zM7 11h2v1h-2zM11 11h4v1h-4zM0 12h1v1h-1zM5 12h4v1h-4zM10 12h11v1h-11zM10 13h5v1h-5zM17 13h1v1h-1zM19 13h2v1h-2zM0 14h7v1h-7zM8 14h2v1h-2zM11 14h2v1h-2zM15 14h1v1h-1zM17 14h1v1h-1zM0 15h1v1h-1zM6 15h1v1h-1zM9 15h3v1h-3zM15 15h2v1h-2zM0 16h1v1h-1zM2 16h3v1h-3zM6 16h1v1h-1zM10 16h1v1h-1zM12 16h5v1h-5zM19 16h1v1h-1zM0 17h1v1h-1zM2 17h3v1h-3zM6 17h1v1h-1zM10 17h5v1h-5zM18 17h1v1h-1zM0 18h1v1h-1zM2 18h3v1h-3zM6 18h1v1h-1zM8 18h1v1h-1zM13 18h2v1h-2zM16 18h1v1h-1zM19 18h2v1h-2zM0 19h1v1h-1zM6 19h1v1h-1zM10 19h3v1h-3zM15 19h1v1h-1zM19 19h1v1h-1zM0 20h7v1h-7zM8 20h2v1h-2zM14 20h1v1h-1zM17 20h4v1h-4z"></path></svg>
+<span style="font-size: 10px; line-height: 12px; color: #5F5F66">掃碼下載</span>
+<span style="font-size: 10px; line-height: 12px; color: #5F5F66">一起修煉</span>
+</div>
+</div>
+<div style="height: 16px; display: flex; align-items: center; justify-content: space-between; padding: 0 4px; font-size: 11px; color: #5F5F66">
+<span style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; color: #7A5916">人蔘修煉</span>
+<span>2026.11.16</span>
+</div>
+</div>
+</div>
+</sc-for>
+
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #F7F4EC; border-radius: 44px; box-shadow: 0 0 0 1px #D9D4C8, 0 8px 22px rgba(29,29,31,0.10); flex-shrink: 0">
+<div style="padding: 58px 20px 0; display: flex; flex-direction: column; align-items: center; gap: 14px">
+<div style="align-self: stretch; display: flex; align-items: center; justify-content: space-between; height: 44px">
+<button type="button" style="min-width: 44px; height: 44px; padding: 0; border: none; background: transparent; font-family: inherit; font-size: 17px; color: #7A5916; text-align: left">關閉</button>
+<div style="font-family: 'LXGW WenKai TC', serif; font-size: 22px; line-height: 28px; font-weight: 700; color: #7A5916">修煉卡</div>
+<div style="width: 44px"></div>
+</div>
+
+<div style="width: 252px; height: 448px; position: relative">
+<div style="width: 360px; height: 640px; position: absolute; left: 0; top: 0; transform: scale(0.7); transform-origin: 0 0; box-sizing: border-box; padding: 6px; border-radius: 22px; background: linear-gradient(150deg,#F2D680,#4E7A3A 45%,#E9C85C); box-shadow: 0 10px 28px rgba(29,29,31,0.2)">
+<div style="height: 100%; box-sizing: border-box; padding: 6px; border-radius: 16px; background: #FFFCF0; display: flex; flex-direction: column; gap: 6px">
+<div style="height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 4px 0 6px">
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+<span style="font-size: 10px; line-height: 12px; color: #5F5F66">道號</span>
+<span style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 22px; line-height: 26px; color: #1D1D1F">多米</span>
+</div>
+<span style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 22px; line-height: 1; color: #7A5916">金丹</span>
+<span style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 15px; line-height: 1; color: #7A5916">後期</span>
+<span style="width: 28px; height: 28px; border-radius: 5px; background: #B8402F; color: #FFFFFF; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 18px; line-height: 1; display: flex; align-items: center; justify-content: center">參</span>
+</div>
+<img src="/_blob/f3dfacadc99862e6a2d1b9f95ee52bb4" alt="金丹期像素立繪" style="display: block; width: 336px; height: 420px; border-radius: 10px; background: #FFFFFF">
+<div style="height: 24px; box-sizing: border-box; padding: 0 8px; display: flex; align-items: center; justify-content: space-between; border-radius: 6px; background: #5E4410; color: #FFFCF0; font-size: 12px">
+<span style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 14px">真傳弟子</span>
+<span>累計修煉 62 天</span>
+</div>
+<div style="height: 92px; display: flex; gap: 6px">
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px">
+<div class="sc-stat"><b>20.6</b><span>FFMI</span></div>
+<div class="sc-stat"><b>15.0%</b><span>體脂</span></div>
+<div class="sc-stat"><b>穩固</b><span>根基</span></div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px">
+<div class="sc-move"><b>坐馬樁</b><span>大成</span></div>
+<div class="sc-move"><b>拔山式</b><span>大成</span></div>
+<div class="sc-move"><b>推山掌</b><span>大成</span></div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px">
+<div class="sc-move"><b>托天式</b><span>小成</span></div>
+<div class="sc-move"><b>挽弓式</b><span>小成</span></div>
+<div class="sc-move"><b>攀雲梯</b><span>入門</span></div>
+</div>
+</div>
+<div style="width: 58px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 3px">
+<svg viewBox="-1.5 -1.5 24 24" width="58" height="58" role="img" aria-label="下載 app 用的 QR 碼，示意" style="display: block; background: #FFFFFF; border-radius: 4px"><path fill="#1D1D1F" d="M0 0h7v1h-7zM8 0h2v1h-2zM11 0h1v1h-1zM14 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM8 1h2v1h-2zM11 1h2v1h-2zM14 1h1v1h-1zM20 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM8 2h3v1h-3zM12 2h1v1h-1zM14 2h1v1h-1zM16 2h3v1h-3zM20 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM8 3h1v1h-1zM12 3h1v1h-1zM14 3h1v1h-1zM16 3h3v1h-3zM20 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM9 4h1v1h-1zM11 4h2v1h-2zM14 4h1v1h-1zM16 4h3v1h-3zM20 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h2v1h-2zM11 5h1v1h-1zM14 5h1v1h-1zM20 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h7v1h-7zM9 7h1v1h-1zM11 7h2v1h-2zM0 8h1v1h-1zM2 8h2v1h-2zM5 8h3v1h-3zM10 8h1v1h-1zM15 8h1v1h-1zM17 8h2v1h-2zM20 8h1v1h-1zM1 9h1v1h-1zM7 9h1v1h-1zM11 9h1v1h-1zM14 9h1v1h-1zM16 9h1v1h-1zM0 10h2v1h-2zM3 10h6v1h-6zM10 10h3v1h-3zM14 10h2v1h-2zM20 10h1v1h-1zM0 11h2v1h-2zM4 11h2v1h-2zM7 11h2v1h-2zM11 11h4v1h-4zM0 12h1v1h-1zM5 12h4v1h-4zM10 12h11v1h-11zM10 13h5v1h-5zM17 13h1v1h-1zM19 13h2v1h-2zM0 14h7v1h-7zM8 14h2v1h-2zM11 14h2v1h-2zM15 14h1v1h-1zM17 14h1v1h-1zM0 15h1v1h-1zM6 15h1v1h-1zM9 15h3v1h-3zM15 15h2v1h-2zM0 16h1v1h-1zM2 16h3v1h-3zM6 16h1v1h-1zM10 16h1v1h-1zM12 16h5v1h-5zM19 16h1v1h-1zM0 17h1v1h-1zM2 17h3v1h-3zM6 17h1v1h-1zM10 17h5v1h-5zM18 17h1v1h-1zM0 18h1v1h-1zM2 18h3v1h-3zM6 18h1v1h-1zM8 18h1v1h-1zM13 18h2v1h-2zM16 18h1v1h-1zM19 18h2v1h-2zM0 19h1v1h-1zM6 19h1v1h-1zM10 19h3v1h-3zM15 19h1v1h-1zM19 19h1v1h-1zM0 20h7v1h-7zM8 20h2v1h-2zM14 20h1v1h-1zM17 20h4v1h-4z"></path></svg>
+<span style="font-size: 10px; line-height: 12px; color: #5F5F66">掃碼下載</span>
+<span style="font-size: 10px; line-height: 12px; color: #5F5F66">一起修煉</span>
+</div>
+</div>
+<div style="height: 16px; display: flex; align-items: center; justify-content: space-between; padding: 0 4px; font-size: 11px; color: #5F5F66">
+<span style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; color: #7A5916">人蔘修煉</span>
+<span>2026.11.16</span>
+</div>
+</div>
+</div>
+</div>
+
+<div style="align-self: stretch; background: #FFFFFF; border-radius: 20px; padding: 0 16px">
+<div style="min-height: 48px; display: flex; align-items: center; justify-content: space-between">
+<label for="sc-name" style="font-size: 17px; flex-shrink: 0">道號</label>
+<input id="sc-name" type="text" value="多米" maxlength="8" placeholder="取一個道號" style="width: 180px; height: 36px; box-sizing: border-box; padding: 0 12px; border: 1px solid #C9C2B2; border-radius: 12px; background: #FBF7ED; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 18px; color: #1D1D1F; text-align: right">
+</div>
+<div style="height: 1px; background: #E5E1D8"></div>
+<div style="min-height: 48px; display: flex; align-items: center; justify-content: space-between">
+<label for="sc-show-fat" style="font-size: 17px">顯示體脂</label>
+<input id="sc-show-fat" type="checkbox" checked style="width: 22px; height: 22px; accent-color: #916B1B">
+</div>
+</div>
+</div>
+
+<div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 20px 30px; display: flex; gap: 12px; background: #F7F4EC; border-top: 1px solid #E5E1D8">
+<button type="button" style="flex: 1; height: 52px; border: none; border-radius: 16px; background: #F1E6CC; color: #7A5916; font-family: inherit; font-size: 17px; font-weight: 600">存到相簿</button>
+<button type="button" style="flex: 1; height: 52px; border: none; border-radius: 16px; background: #916B1B; color: #FFFFFF; font-family: inherit; font-size: 17px; font-weight: 600">分享</button>
+</div>
+</div>
+
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; font-size: 16px; line-height: 1.65; color: #5F5F66">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="font-weight: 600; color: #1D1D1F">卡上有什麼</div>
+<p style="margin: 0">最上面是道號、境界與期別、境界的印章。中間是立繪。</p>
+<p style="margin: 0">深色那一條是宗門身分和累計修煉天數。</p>
+<p style="margin: 0">下面三格是 FFMI、體脂、根基，再下面是六門功法各練到哪一級。</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="font-weight: 600; color: #1D1D1F">道號在哪裡填</div>
+<p style="margin: 0">就在分享前這個畫面，卡片下面那一欄，最多八個字。打完卡上的名字馬上跟著換。</p>
+<p style="margin: 0">填過一次會記住，下次不用再打。設定頁也會有同一欄可以改。</p>
+<p style="margin: 0">沒填的話，卡上那一格留白，不會擋住分享。</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="font-weight: 600; color: #1D1D1F">QR 碼</div>
+<p style="margin: 0">放在卡的右下角，功法那六格旁邊。</p>
+<p style="margin: 0">現在這個是示意的圖樣，掃不出東西。app 上架拿到下載連結後換成真的。</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="font-weight: 600; color: #1D1D1F">其他</div>
+<p style="margin: 0">體重不放上卡，體脂分享前可以關掉。</p>
+<p style="margin: 0">存下來是一張靜止的圖，1080×1920，剛好是限時動態的大小。</p>
+</div>
+</div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1690,"height":1090}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+cards: [
+{ frame: 'linear-gradient(150deg,#F2D680,#4E7A3A 45%,#E9C85C)', art: '/_blob/f3dfacadc99862e6a2d1b9f95ee52bb4', alt: '金丹期像素立繪',
+  name: '多米', realm: '金丹', stage: '後期', seal: '參', rank: '真傳弟子', days: '累計修煉 62 天',
+  ffmi: '20.6', fat: '15.0%', root: '穩固', m1: '大成', m2: '大成', m3: '大成', m4: '小成', m5: '小成', m6: '入門' },
+{ frame: 'linear-gradient(150deg,#E6E0FF,#5B5693 45%,#C9C2F0)', art: '/_blob/ab04aa862c5dbc72c96d0b5f941e6b4a', alt: '化神期像素立繪',
+  name: '多米', realm: '化神', stage: '初期', seal: '伍', rank: '太上長老', days: '累計修煉 318 天',
+  ffmi: '22.8', fat: '12.0%', root: '穩固', m1: '圓滿', m2: '圓滿', m3: '大成', m4: '大成', m5: '大成', m6: '小成' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>D 款：像素風樣本</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap">
+<style>
+body{margin:0}
+.px-l{position:absolute;left:0;top:0;width:56px;height:70px}
+@keyframes pxbob{0%,49.99%{transform:translateY(0)}50%,100%{transform:translateY(1px)}}
+@keyframes pxsprout{0%,24.99%{transform:translate(0,0)}25%,49.99%{transform:translate(1px,1px)}50%,74.99%{transform:translate(0,0)}75%,100%{transform:translate(-1px,1px)}}
+@keyframes pxblink{0%,92%{opacity:0}93%,97%{opacity:1}98%,100%{opacity:0}}
+@keyframes pxfloat{0%,24.99%{transform:translateY(0)}25%,49.99%{transform:translateY(-1px)}50%,74.99%{transform:translateY(-2px)}75%,100%{transform:translateY(-1px)}}
+@keyframes pxglow{0%,49.99%{opacity:.4}50%,100%{opacity:.85}}
+@keyframes pxtw{0%,49.99%{opacity:1}50%,100%{opacity:0}}
+@keyframes pxdrift{from{transform:translateX(-4px)}to{transform:translateX(6px)}}
+@keyframes pxrise{from{transform:translateY(0);opacity:1}to{transform:translateY(-8px);opacity:0}}
+.px-up{animation:pxbob 1.4s linear infinite}
+.px-sprout{animation:pxsprout 2.8s linear infinite}
+.px-blink{animation:pxbob 1.4s linear infinite,pxblink 3.4s linear infinite}
+.px-pill{animation:pxfloat 1.6s linear infinite}
+.px-glow{animation:pxfloat 1.6s linear infinite,pxglow .8s linear infinite}
+.px-spa{animation:pxtw 1.2s linear infinite}
+.px-spb{animation:pxtw 1.2s linear infinite;animation-delay:-.6s}
+.px-clouds{animation:pxdrift 10s steps(10) infinite alternate}
+.px-motes{animation:pxrise 2.4s steps(8) infinite}
+@media (prefers-reduced-motion:reduce){.px-l{animation:none !important}}
+</style>
+</helmet>
+<div style="width: 1200px; height: 690px; box-sizing: border-box; padding: 48px; display: flex; flex-direction: column; gap: 16px; background: #F7F4EC; color: #1D1D1F; font-family: -apple-system, 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif">
+
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 style="margin: 0; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 400; font-size: 40px; line-height: 1.25; color: #7A5916">D 款：像素風樣本（金丹）</h1>
+<p style="margin: 0; font-size: 16px; line-height: 1.6; color: #66666D">回到原本圓滾滾的小人蔘，不是火柴人。先畫金丹這一境的男女，看方向對不對。</p>
+</div>
+
+<div style="display: flex; gap: 24px; align-items: flex-start">
+
+<div style="width: 348px; box-sizing: border-box; padding: 6px; border-radius: 18px; background: linear-gradient(150deg,#F2D680,#4E7A3A 45%,#E9C85C); box-shadow: 0 8px 20px rgba(29,29,31,0.16); display: flex; flex-direction: column; gap: 6px">
+<div style="position: relative; width: 336px; height: 420px; overflow: hidden; border-radius: 12px; background: #E8F0E1" role="img" aria-label="金丹期小人蔘，男，像素風">
+<div style="position: absolute; left: 0; top: 0; width: 56px; height: 70px; transform: scale(6); transform-origin: 0 0">
+<div class="px-l"><sc-for list="{{bg}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-clouds"><sc-for list="{{clouds}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-spa"><sc-for list="{{spa}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-spb"><sc-for list="{{spb}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-motes"><sc-for list="{{motes}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l"><sc-for list="{{mLegs}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-up"><sc-for list="{{mUp}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-sprout"><sc-for list="{{mSprout}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-blink"><sc-for list="{{blink}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-glow"><sc-for list="{{glow}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-pill"><sc-for list="{{pill}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+</div>
+</div>
+<div style="height: 44px; box-sizing: border-box; padding: 0 8px 0 14px; display: flex; align-items: center; gap: 8px; border-radius: 10px; background: #FFFCF0">
+<span style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 26px; line-height: 1; color: #5E4410">金丹</span>
+<span style="flex: 1; font-size: 13px; color: #5F5F66">男・看得出有在練</span>
+<span style="width: 28px; height: 28px; border-radius: 5px; background: #B8402F; color: #FFFFFF; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 18px; line-height: 1; display: flex; align-items: center; justify-content: center">參</span>
+</div>
+</div>
+
+<div style="width: 348px; box-sizing: border-box; padding: 6px; border-radius: 18px; background: linear-gradient(150deg,#F2D680,#4E7A3A 45%,#E9C85C); box-shadow: 0 8px 20px rgba(29,29,31,0.16); display: flex; flex-direction: column; gap: 6px">
+<div style="position: relative; width: 336px; height: 420px; overflow: hidden; border-radius: 12px; background: #E8F0E1" role="img" aria-label="金丹期小人蔘，女，像素風">
+<div style="position: absolute; left: 0; top: 0; width: 56px; height: 70px; transform: scale(6); transform-origin: 0 0">
+<div class="px-l"><sc-for list="{{bg}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-clouds"><sc-for list="{{clouds}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-spa"><sc-for list="{{spa}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-spb"><sc-for list="{{spb}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-motes"><sc-for list="{{motes}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l"><sc-for list="{{fLegs}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-up"><sc-for list="{{fUp}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-sprout"><sc-for list="{{mSprout}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-blink"><sc-for list="{{blink}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-glow"><sc-for list="{{glow}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-pill"><sc-for list="{{pill}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+</div>
+</div>
+<div style="height: 44px; box-sizing: border-box; padding: 0 8px 0 14px; display: flex; align-items: center; gap: 8px; border-radius: 10px; background: #FFFCF0">
+<span style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 26px; line-height: 1; color: #5E4410">金丹</span>
+<span style="flex: 1; font-size: 13px; color: #5F5F66">女・看得出有在練</span>
+<span style="width: 28px; height: 28px; border-radius: 5px; background: #B8402F; color: #FFFFFF; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 18px; line-height: 1; display: flex; align-items: center; justify-content: center">參</span>
+</div>
+</div>
+
+<div style="width: 352px; display: flex; flex-direction: column; gap: 14px">
+<div style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 22px; line-height: 1.3; color: #7A5916">放進 app 的實際大小</div>
+<div style="background: #FFFFFF; border-radius: 24px; padding: 20px; display: flex; gap: 16px; align-items: center; box-shadow: 0 4px 18px rgba(25, 22, 20, 0.06)">
+<div style="position: relative; width: 112px; height: 140px; overflow: hidden; border-radius: 16px; background: #E8F0E1; flex-shrink: 0" role="img" aria-label="金丹期小人蔘，像素風，立繪框大小">
+<div style="position: absolute; left: 0; top: 0; width: 56px; height: 70px; transform: scale(2); transform-origin: 0 0">
+<div class="px-l"><sc-for list="{{bg}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-clouds"><sc-for list="{{clouds}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-spa"><sc-for list="{{spa}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l"><sc-for list="{{mLegs}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-up"><sc-for list="{{mUp}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-sprout"><sc-for list="{{mSprout}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-blink"><sc-for list="{{blink}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-glow"><sc-for list="{{glow}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+<div class="px-l px-pill"><sc-for list="{{pill}}" as="r" hint-placeholder-count="0"><div style="position: absolute; left: {{r.x}}px; top: {{r.y}}px; width: {{r.w}}px; height: 1.06px; background: {{r.c}}"></div></sc-for></div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+<div style="font-size: 13px; line-height: 18px; color: #66666D">目前境界</div>
+<div style="display: flex; align-items: baseline; gap: 4px; font-family: 'LXGW WenKai TC', serif; color: #7A5916">
+<span style="font-size: 44px; line-height: 50px; font-weight: 700">金丹</span>
+<span style="font-size: 24px; line-height: 30px; font-weight: 700">後期</span>
+</div>
+<div style="font-size: 15px; line-height: 20px; color: #66666D">FFMI 20.6・看得出有在練</div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px; font-size: 15px; line-height: 1.6; color: #5F5F66">
+<p style="margin: 0">角色是 32×44 格，整個場景 56×70 格，一格一格排出來的。</p>
+<p style="margin: 0">會動的地方：身體上下呼吸、葉子左右擺、眨眼、金丹浮動、光暈閃、星點閃、雲在飄、光點往上升。</p>
+<p style="margin: 0">放進立繪框剛好是兩倍放大，每一格對齊螢幕的點，不會糊。</p>
+</div>
+</div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":690}}'>
+class Component extends DCLogic {
+build() {
+if (this._d) return this._d;
+var PAL = { o:'#5A3B12', y:'#FBE7A6', Y:'#F2CE78', d:'#D9A64E', p:'#F2A08A', e:'#2B1D0A', w:'#FFFFFF', m:'#B8402F',
+g:'#A6D465', G:'#6FA23A', k:'#3F6B24', r:'#E0492F', R:'#A82A1C', h:'#FFB9A6',
+a:'#B5D98F', A:'#86B865', b:'#5E9146', t:'#F6CF5A', T:'#B9820E', c:'#FFF8E2', C:'#E3D6B4', s:'#2F5A2A', j:'#6FC3A0',
+v:'#F7B9C6', n:'#7A5220', W:'#E3ECEF', l:'#FFF1B0' };
+var M = [
+'..............oooo..............',
+'.............orhrro.............',
+'..........oooorrrroooo..........',
+'.........orhrooRRoorhro.........',
+'.........orrrrokkorrrro.........',
+'....oooo..oRRookkooRRo..oooo....',
+'..oogggGoo.oookGGkooo.ooGgggoo..',
+'.ogggggGGGookkGGGGkkooGGGggggo..',
+'.oGggGGGGGGGkkGkkGkkGGGGGGGggGo.',
+'..oGGGGGGGGkkooGGookkGGGGGGGGo..',
+'...ooGGGGkkoo.oyyo.ookkGGGGoo...',
+'.....ooooo...oyyyyo...ooooo.....',
+'............oyyyyyyo............',
+'............odYYYYdo............',
+'...........oyyyyyyyyo...........',
+'.........ooyyyyyyyyyyoo.........',
+'........oyyyyyyyyyyyyyYo........',
+'.......oyywyyyyyyyyyyyYYo.......',
+'....d.oyywyyyyyyyyyyyyyYYo.d....',
+'....ddoyyyyyyyyyyyyyyyyYYodd....',
+'...d..oyyyeeyyyyyyyyeeyYYo..d...',
+'...d..oyyyewyyyyyyyyewyYYo..d...',
+'......oyppeeyyyyyyyyeeppYo......',
+'......oyppyyyymmmmyyyyppYo.oo...',
+'......oyyyyyyyymmyyyyyyYYooyyo..',
+'.......oyyyyyyyyyyyyyyYYo.oyYo..',
+'........oYyyyyyyyyyyyYYo.ottto..',
+'.........ooYYYYYYYYYYoo.oaaAAo..',
+'..........oaTccccccTaooaaaAAbo..',
+'......ooaoaaaTccccTAAAAaAAAbbo..',
+'....ooaaaoaaaaTccTAAAbbAAAbbo...',
+'..ooaaaaAoaaaaaTTAAAAboAbbo.....',
+'.oyytaaAAossssstTsssssooo.......',
+'.oyytaAAbaaaaaAjjAAAAbbo........',
+'..ootAAboaaaaaAttAAAAbbo........',
+'....otAboaaaaaAAAAAAAbbbo.......',
+'.....oooTtttttttttttttTTo.......',
+'.......oooCccccccccccCooo.......',
+'..........oyyYooooyyYo..........',
+'..........oyyYo..oyyYo..........',
+'..........oyYo....oyYo..........',
+'..........oyYo....oyYo..........',
+'.........oyYo......oyYo.........',
+'.........oooo......oooo.........'
+];
+var DOTS = '................................';
+var fix = function (rows) { return rows.map(function (s) { return (s + DOTS).slice(0, 32); }); };
+var put = function (rows, y, x, str) {
+var a = rows[y].split('');
+for (var i = 0; i < str.length; i++) { if (str[i] !== ' ' && x + i < a.length) a[x + i] = str[i]; }
+rows[y] = a.join('');
+};
+M = fix(M);
+var F = M.slice();
+put(F, 19, 9, 'e'); put(F, 19, 22, 'e');
+put(F, 13, 6, '  v  '); put(F, 14, 6, ' vwv '); put(F, 15, 6, 'vwtwv'); put(F, 16, 6, ' vwv '); put(F, 17, 6, '  v  ');
+put(F, 18, 4, 'k'); put(F, 19, 4, 'GG'); put(F, 20, 3, '.G'); put(F, 21, 3, '.G'); put(F, 22, 5, 'G'); put(F, 23, 5, 'k');
+F[37] = '......oCccccccccccccccccCo......';
+F[38] = '......oTttttttttttttttttTo......';
+F[39] = '......oooooyyYooooyyYooooo......';
+var OX = 12, OY = 21;
+var runs = function (rows, ox, oy, y0, y1) {
+var out = [];
+for (var y = y0; y < y1 && y < rows.length; y++) {
+var s = rows[y], x = 0;
+while (x < s.length) {
+var ch = s[x];
+if (ch === '.' || ch === ' ' || !PAL[ch]) { x++; continue; }
+var x0 = x;
+while (x < s.length && s[x] === ch) x++;
+out.push({ x: ox + x0, y: oy + y, w: (x - x0) + 0.06, c: PAL[ch] });
+}
+}
+return out;
+};
+var W = 56, H = 70, g = [], x, y;
+var bands = ['#CBE2EC', '#D9EAEA', '#E8F0E1', '#F3F2DB', '#F9F0D4'];
+for (y = 0; y < H; y++) {
+var row = [];
+for (x = 0; x < W; x++) {
+var i = Math.min(4, Math.floor(y / 11));
+if (y % 11 >= 9 && i < 4 && (x + y) % 2 === 0) i++;
+row.push(bands[i]);
+}
+g.push(row);
+}
+var tri = function (x, c, h, k) { return Math.max(0, Math.round(h - Math.abs(x - c) * k)); };
+for (x = 0; x < W; x++) {
+var top = 40 - tri(x, 9, 13, 0.9) - tri(x, 45, 17, 0.8) - tri(x, 27, 7, 0.7);
+for (y = top; y < H; y++) g[y][x] = (y - top < 2) ? '#CADBE1' : '#B5C9D1';
+}
+for (x = 0; x < W; x++) {
+var top2 = 52 - tri(x, 3, 8, 0.6) - tri(x, 52, 10, 0.55) - tri(x, 30, 4, 0.3);
+for (y = top2; y < H; y++) g[y][x] = (y - top2 < 1) ? '#B9D1B8' : '#A3BFA6';
+}
+for (y = 0; y < H; y++) {
+for (x = 0; x < W; x++) {
+var d2 = (x - 28) * (x - 28) + (y - 44) * (y - 44);
+if (d2 <= 256) g[y][x] = '#FFF8DE';
+else if (d2 <= 484) g[y][x] = '#FAF1C6';
+else if (d2 <= 576 && (x + y) % 2 === 0) g[y][x] = '#FAF1C6';
+}
+}
+for (x = 0; x < W; x++) {
+var ct = 60 + Math.round(1.6 * Math.sin(x * 0.55) + 1.2 * Math.sin(x * 0.21 + 1));
+for (y = ct; y < H; y++) g[y][x] = (y - ct < 1) ? '#FFFFFF' : ((y - ct < 4) ? '#F4F8F8' : '#E3ECEF');
+}
+var PINE = ['....GGG...', '..GGGgGG..', '.GGgGGGGk.', '..kkGGkk..', '....nn....', 'GGG.nn.GG.', 'GgGGnnGGgG', 'kGGknnkGGk', '.kk.nn.kk.', '....nn....', '...nn.....', '...nn.....', '..nnn.....', '..nn......'];
+for (y = 0; y < PINE.length; y++) {
+for (x = 0; x < PINE[y].length; x++) {
+var pc = PINE[y][x];
+if (pc !== '.' && 47 + y < H) g[47 + y][x] = PAL[pc];
+}
+}
+for (y = 65; y < H; y++) {
+var xl = 9 + (y - 65) * 2, xr = 46 - (y - 65) * 2;
+for (x = xl; x <= xr; x++) {
+if (y === 65) g[y][x] = (x % 3 === 0) ? '#5E9146' : '#7FB04A';
+else if (x === xl || x === xr) g[y][x] = '#6E6557';
+else g[y][x] = ((x * 7 + y * 3) % 5 === 0) ? '#8C8372' : '#A89F8E';
+}
+}
+[10, 13, 17, 28, 38, 42, 45].forEach(function (tx) { g[64][tx] = '#7FB04A'; });
+var bg = [];
+for (y = 0; y < H; y++) {
+x = 0;
+while (x < W) {
+var col = g[y][x], sx = x;
+while (x < W && g[y][x] === col) x++;
+bg.push({ x: sx, y: y, w: (x - sx) + 0.06, c: col });
+}
+}
+var CLOUD = ['...wwww.....', '.wwwwwwww...', 'wwwwwwwwwww.', '.WWWWWWWWW..'];
+var clouds = runs(CLOUD, 4, 5, 0, 4).concat(runs(CLOUD, 38, 12, 0, 4));
+var PLUS = ['.t.', 'twt', '.t.'];
+var spa = runs(PLUS, 5, 20, 0, 3).concat(runs(PLUS, 48, 30, 0, 3), runs(PLUS, 45, 55, 0, 3));
+var spb = runs(PLUS, 50, 9, 0, 3).concat(runs(PLUS, 7, 36, 0, 3), runs(PLUS, 34, 6, 0, 3));
+var motes = [[10, 58], [47, 50], [20, 62], [40, 60], [50, 42], [6, 44]].map(function (p) { return { x: p[0], y: p[1], w: 1.06, c: '#FFF1B0' }; });
+var GLOW = ['..llll..', '.llllll.', 'llllllll', 'llllllll', 'llllllll', 'llllllll', '.llllll.', '..llll..'];
+var PILL = ['.tt.', 'twtT', 'tttT', '.TT.'];
+var glow = runs(GLOW, OX + 24, OY + 14, 0, 8);
+var pill = runs(PILL, OX + 26, OY + 16, 0, 4);
+var BLINK = ['..........yy........yy..........', '..........ee........ee..........', '..........yy........yy..........'];
+var blink = runs(BLINK, OX, OY + 20, 0, 3);
+this._d = {
+bg: bg, clouds: clouds, spa: spa, spb: spb, motes: motes, glow: glow, pill: pill, blink: blink,
+mSprout: runs(M, OX, OY, 0, 10),
+mUp: runs(M, OX, OY, 10, 38),
+mLegs: runs(M, OX, OY, 38, 44),
+fUp: runs(F, OX, OY, 10, 39),
+fLegs: runs(F, OX, OY, 39, 44)
+};
+return this._d;
+}
+renderVals() {
+return this.build();
+}
+}
+</script>
+</body>
+</html>

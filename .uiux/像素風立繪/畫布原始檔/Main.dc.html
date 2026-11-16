@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>火柴小人蔘：七個境界</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC&display=swap">
+<style>
+body{margin:0}
+.fig{display:block;overflow:visible}
+.ln{fill:none;stroke:#8A6420;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.hd{fill:#F8DC92;stroke:#8A6420;stroke-width:3}
+.ring{fill:none;stroke:#C99A3C;stroke-width:2;stroke-linecap:round}
+.blush{fill:#F29C7E;opacity:.55}
+.eye{fill:#3A2A10}
+.mouth{fill:#C2452F;stroke:#3A2A10;stroke-width:1.5;stroke-linejoin:round}
+.thin{fill:none;stroke:#3A2A10;stroke-width:2.2;stroke-linecap:round}
+.stem{fill:none;stroke:#3F6B24;stroke-width:3;stroke-linecap:round}
+.leaf{fill:#8DBB52;stroke:#3F6B24;stroke-width:2;stroke-linejoin:round}
+.berry{fill:#D8402F;stroke:#9E2A1E;stroke-width:1.5}
+.hair{fill:none;stroke:#E0B24A;stroke-width:4;stroke-linecap:round}
+.bun{fill:#EDC25E;stroke:#8A6420;stroke-width:2}
+.petal{fill:#FFFFFF;stroke:#C9B98A;stroke-width:1}
+.pistil{fill:#F2B824}
+.hair-rib{fill:none;stroke:#5F8A3C;stroke-width:3;stroke-linecap:round}
+.robe{fill:var(--robe);stroke:var(--trim);stroke-width:2.5;stroke-linejoin:round}
+.trim{fill:none;stroke:var(--trim);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.belt{fill:none;stroke:var(--belt);stroke-width:4;stroke-linecap:round}
+.shadow{fill:#1D1D1F;opacity:.1}
+.wood{fill:#C99A5B;stroke:#7A5220;stroke-width:2.5;stroke-linejoin:round}
+.wood-ln{fill:none;stroke:#7A5220;stroke-width:3;stroke-linecap:round}
+.sword{fill:none;stroke:#A9773A;stroke-width:6;stroke-linecap:round}
+.stone{fill:#E9E4D8;stroke:#BDB5A3;stroke-width:2}
+.stone-in{fill:none;stroke:#BDB5A3;stroke-width:2}
+.rock{fill:#C7C2B4;stroke:#8E8877;stroke-width:2.5;stroke-linejoin:round}
+.rock-dark{fill:#9A968F;stroke:#5F5B55;stroke-width:2.5;stroke-linejoin:round}
+.glow{fill:#FFE27A;opacity:.6}
+.pill{fill:#F2B824;stroke:#B9820E;stroke-width:2}
+.swirl{fill:none;stroke:#F2C14E;stroke-width:2.5;stroke-linecap:round}
+.staff{fill:none;stroke:#7A5220;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.jade{fill:none;stroke:#5FA883;stroke-width:3}
+.beard{fill:#FFF8E6;stroke:#BFAE84;stroke-width:1.5;stroke-linejoin:round}
+.baby{fill:#FFE08A;stroke:#C98F12;stroke-width:2;stroke-linejoin:round}
+.cloud{fill:var(--cloud);stroke:var(--cloud-ln);stroke-width:2.5;stroke-linejoin:round}
+.sky{fill:#E6E3F4}
+.star{fill:#8D86C9}
+.rib-o{fill:none;stroke:var(--rib-o);stroke-width:8;stroke-linecap:round}
+.rib-i{fill:none;stroke:var(--rib-i);stroke-width:4.5;stroke-linecap:round}
+.halo{fill:#FFF3C4}
+.halo-ring{fill:none;stroke:#F2C14E;stroke-width:3}
+.rays{fill:none;stroke:#F2C14E;stroke-width:4;stroke-linecap:round}
+.crown{fill:#F2B824;stroke:#B9820E;stroke-width:2;stroke-linejoin:round}
+.gem{fill:#5FA883}
+.storm{fill:#8B8894;stroke:#5F5C68;stroke-width:2;stroke-linejoin:round}
+.bolt-glow{fill:none;stroke:#FFE27A;stroke-width:11;stroke-linejoin:round;stroke-linecap:round;opacity:.55}
+.bolt{fill:none;stroke:#F2B824;stroke-width:4.5;stroke-linecap:round}
+.fist{fill:#8A6420}
+.chip{fill:#9A968F;stroke:#5F5B55;stroke-width:1.5;stroke-linejoin:round}
+.crack{fill:none;stroke:#F2B824;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.r0{--robe:#B8B0A1;--trim:#7A7264;--belt:#B8924A}
+.r1{--robe:#BFD79F;--trim:#5F8A3C;--belt:#FFF8E4}
+.r2{--robe:#93BC76;--trim:#B9820E;--belt:#3F6B24}
+.r3{--robe:#FFF8E4;--trim:#C99A1E;--belt:#C99A1E;--cloud:#FFFFFF;--cloud-ln:#D2C8AC}
+.r4{--robe:#FFFFFF;--trim:#9C94C8;--belt:#9C94C8;--rib-o:#9C94C8;--rib-i:#FFFFFF}
+.r5{--robe:#FBDD7E;--trim:#B9820E;--belt:#FFFFFF;--rib-o:#C99A1E;--rib-i:#FFE9A8;--cloud:#FFE9A8;--cloud-ln:#C99A1E}
+.r6{--robe:#FFF3D0;--trim:#B9820E;--belt:#B9820E}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes hover{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes sway{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+@keyframes swing{0%,100%{transform:rotate(-9deg)}50%{transform:rotate(9deg)}}
+@keyframes chop{0%,100%{transform:rotate(10deg)}45%,60%{transform:rotate(-18deg)}}
+@keyframes pulse{0%,100%{transform:scale(.85);opacity:.4}50%{transform:scale(1.15);opacity:.85}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes twinkle{0%,100%{opacity:.25}50%{opacity:1}}
+@keyframes wave{0%,100%{transform:rotate(-3deg) translateY(0)}50%{transform:rotate(3deg) translateY(-4px)}}
+@keyframes flash{0%,62%,100%{opacity:0}64%{opacity:1}68%{opacity:.2}72%{opacity:1}84%{opacity:0}}
+@keyframes quake{0%,62%,100%{transform:translate(0,0)}66%{transform:translate(-1.5px,1px)}70%{transform:translate(1.5px,-1px)}74%{transform:translate(-1px,0)}}
+@keyframes shade{0%,100%{transform:scaleX(1);opacity:.1}50%{transform:scaleX(.78);opacity:.05}}
+.a-bob{animation:bob 2.8s ease-in-out infinite}
+.a-hover{animation:hover 3.6s ease-in-out infinite}
+.a-float{animation:float 2.4s ease-in-out infinite}
+.a-sway{animation:sway 3.2s ease-in-out infinite}
+.a-swing{animation:swing 1.4s ease-in-out infinite}
+.a-chop{animation:chop 1.6s cubic-bezier(.5,0,.2,1) infinite}
+.a-pulse{animation:pulse 1.8s ease-in-out infinite}
+.a-spin{animation:spin 3s linear infinite}
+.a-spin-slow{animation:spin 28s linear infinite}
+.a-twinkle{animation:twinkle 2.2s ease-in-out infinite}
+.a-wave{animation:wave 3.6s ease-in-out infinite}
+.a-flash{animation:flash 2.6s linear infinite}
+.a-quake{animation:quake 2.6s linear infinite}
+.a-shade{animation:shade 3.6s ease-in-out infinite}
+.d2{animation-delay:-1.1s}
+.still .fig *{animation:none !important}
+.nosprout .sprout{display:none}
+@media (prefers-reduced-motion:reduce){.fig *{animation:none !important}}
+</style>
+</helmet>
+<div class="{{rootClass}}" style="width: 1820px; height: 920px; box-sizing: border-box; padding: 56px; display: flex; flex-direction: column; gap: 14px; background: #F7F4EC; color: #1D1D1F; font-family: -apple-system, 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif">
+
+<svg width="0" height="0" style="position: absolute" aria-hidden="true">
+<defs>
+<g id="p-shadow"><ellipse class="shadow" cx="100" cy="222" rx="36" ry="5"></ellipse></g>
+<g id="p-spine"><path class="ln" d="M100 104 L100 164"></path></g>
+<g id="p-legs"><path class="ln" d="M95 160 L88 212 Q87 218 79 218"></path><path class="ln" d="M105 160 L112 212 Q113 218 121 218"></path></g>
+<g id="p-legs-wide"><path class="ln" d="M95 160 L78 212 Q76 218 68 218"></path><path class="ln" d="M105 160 L122 212 Q124 218 132 218"></path></g>
+<g id="p-legs-float"><path class="ln" d="M96 160 L92 204 Q91 212 86 216"></path><path class="ln" d="M104 160 L108 204 Q109 212 114 216"></path></g>
+<g id="p-robe-m"><path class="robe" d="M88 110 L112 110 L121 168 L79 168 Z"></path><path class="trim" d="M92 110 L100 126 L108 110"></path><path class="belt" d="M84 142 L116 142"></path></g>
+<g id="p-robe-f"><path class="robe" d="M90 110 L110 110 L130 180 Q115 187 100 180 Q85 187 70 180 Z"></path><path class="trim" d="M93 110 L100 124 L107 110"></path><path class="belt" d="M86 138 L114 138"></path></g>
+<g id="p-robe-m-torn"><path class="robe" d="M88 110 L112 110 L121 168 L114 160 L108 170 L101 161 L94 171 L87 162 L79 168 Z"></path><path class="trim" d="M92 110 L100 126 L108 110"></path><path class="belt" d="M84 142 L116 142"></path></g>
+<g id="p-robe-f-torn"><path class="robe" d="M90 110 L110 110 L130 180 L121 172 L113 184 L104 173 L96 185 L88 174 L79 184 L70 180 Z"></path><path class="trim" d="M93 110 L100 124 L107 110"></path><path class="belt" d="M86 138 L114 138"></path></g>
+<g id="p-head"><path class="hd" d="M100 50 C116 50 126 64 126 80 C126 96 115 106 100 106 C85 106 74 96 74 80 C74 64 84 50 100 50 Z"></path><path class="ring" d="M88 58 Q100 54 112 58"></path><path class="ring" d="M84 65 Q100 60 116 65"></path><circle class="blush" cx="86" cy="91" r="5"></circle><circle class="blush" cx="114" cy="91" r="5"></circle></g>
+<g id="p-face-happy"><circle class="eye" cx="91" cy="82" r="2.8"></circle><circle class="eye" cx="109" cy="82" r="2.8"></circle><path class="mouth" d="M95 89 Q100 97 105 89 Z"></path></g>
+<g id="p-face-smile"><path class="thin" d="M87 83 Q91 79 95 83"></path><path class="thin" d="M105 83 Q109 79 113 83"></path><path class="thin" d="M96 90 Q100 94 104 90"></path></g>
+<g id="p-face-calm"><path class="thin" d="M87 82 Q91 85 95 82"></path><path class="thin" d="M105 82 Q109 85 113 82"></path><path class="thin" d="M96 91 Q100 94 104 91"></path></g>
+<g id="p-face-fierce"><circle class="eye" cx="91" cy="84" r="2.8"></circle><circle class="eye" cx="109" cy="84" r="2.8"></circle><path class="thin" d="M85 76 L95 80"></path><path class="thin" d="M115 76 L105 80"></path><path class="thin" d="M96 93 L104 93"></path></g>
+<g id="p-sprout"><path class="stem" d="M100 51 L100 36"></path><path class="leaf" d="M100 44 C88 44 78 38 72 28 C84 26 96 32 100 44 Z"></path><path class="leaf" d="M100 44 C112 44 122 38 128 28 C116 26 104 32 100 44 Z"></path><circle class="berry" cx="95" cy="30" r="5"></circle><circle class="berry" cx="105" cy="30" r="5"></circle><circle class="berry" cx="100" cy="23" r="5"></circle></g>
+<g id="p-hair-back"><path class="hair" d="M77 74 C70 86 71 100 64 112"></path><path class="hair" d="M123 74 C130 86 129 98 136 108"></path></g>
+<g id="p-hair-top"><path class="hair-rib" d="M72 60 C64 64 62 72 66 80"></path><path class="hair-rib" d="M75 62 C71 70 71 76 74 82"></path><circle class="bun" cx="80" cy="55" r="9"></circle><circle class="petal" cx="80" cy="52.5" r="3.2"></circle><circle class="petal" cx="84.3" cy="55.6" r="3.2"></circle><circle class="petal" cx="82.6" cy="60.6" r="3.2"></circle><circle class="petal" cx="77.4" cy="60.6" r="3.2"></circle><circle class="petal" cx="75.7" cy="55.6" r="3.2"></circle><circle class="pistil" cx="80" cy="57" r="2.2"></circle></g>
+
+<g id="r0-arms"><path class="ln" d="M90 116 L74 132 L86 146"></path><path class="ln" d="M110 116 L126 134 L134 154"></path></g>
+<g id="r0-bucket"><path class="wood-ln" d="M124 166 Q134 146 144 166"></path><path class="wood" d="M122 166 L146 166 L143 188 L125 188 Z"></path><path class="wood-ln" d="M123 175 L145 175"></path></g>
+
+<g id="r1-base"><ellipse class="stone" cx="100" cy="221" rx="62" ry="9"></ellipse><ellipse class="stone-in" cx="100" cy="221" rx="44" ry="6"></ellipse></g>
+<g id="r1-arm-left"><path class="ln" d="M90 116 L76 130 L88 140"></path></g>
+<g id="r1-sword"><path class="sword" d="M138 95 L160 50"></path><path class="wood-ln" d="M133 86 L147 94"></path><path class="ln" d="M110 116 L128 108 L140 92"></path></g>
+
+<g id="r2-rock"><path class="rock" d="M56 228 L66 214 L134 214 L146 228 Z"></path></g>
+<g id="r2-arms"><path class="ln" d="M90 116 L72 130 L60 126"></path><path class="ln" d="M110 116 L130 120 L144 106"></path></g>
+
+<g id="r3-arms"><path class="ln" d="M90 116 L72 128 L60 120"></path><path class="ln" d="M110 116 L124 132 L134 140"></path></g>
+<g id="r3-staff"><path class="staff" d="M134 220 L134 106 Q134 92 145 94 Q153 98 147 106 Q143 110 140 104"></path></g>
+<g id="r3-pendant"><path class="thin" d="M147 106 L147 113"></path><circle class="jade" cx="147" cy="118" r="4.5"></circle></g>
+<g id="r3-baby"><circle class="baby" cx="54" cy="95" r="5"></circle><path class="baby" d="M47 110 Q54 98 61 110 Z"></path></g>
+<g id="r3-beard"><path class="beard" d="M94 100 Q100 122 106 100 Z"></path></g>
+<g id="p-cloud"><path class="cloud" d="M62 222 Q62 212 74 213 Q80 204 92 209 Q102 202 112 209 Q124 205 128 214 Q140 213 138 222 Q138 228 128 228 L72 228 Q62 228 62 222 Z"></path></g>
+
+<g id="r4-sky"><circle class="sky" cx="100" cy="112" r="92"></circle></g>
+<g id="r4-stars-a"><path class="star" d="M38 63 L40 68 L45 70 L40 72 L38 77 L36 72 L31 70 L36 68 Z"></path><circle class="star" cx="160" cy="60" r="2.2"></circle><path class="star" d="M164 144 L165.6 148.4 L170 150 L165.6 151.6 L164 156 L162.4 151.6 L158 150 L162.4 148.4 Z"></path><circle class="star" cx="30" cy="130" r="2"></circle></g>
+<g id="r4-stars-b"><circle class="star" cx="60" cy="40" r="2.2"></circle><path class="star" d="M158 90 L159.6 94.4 L164 96 L159.6 97.6 L158 102 L156.4 97.6 L152 96 L156.4 94.4 Z"></path><circle class="star" cx="44" cy="170" r="2"></circle><circle class="star" cx="140" cy="36" r="2.4"></circle></g>
+<g id="p-ribbons"><path class="rib-o" d="M34 176 C8 140 30 96 58 108 C74 116 66 136 52 132"></path><path class="rib-i" d="M34 176 C8 140 30 96 58 108 C74 116 66 136 52 132"></path><path class="rib-o" d="M166 176 C192 140 170 96 142 108 C126 116 134 136 148 132"></path><path class="rib-i" d="M166 176 C192 140 170 96 142 108 C126 116 134 136 148 132"></path></g>
+<g id="p-arms-open"><path class="ln" d="M90 116 L72 124 L58 112"></path><path class="ln" d="M110 116 L128 124 L142 112"></path></g>
+
+<g id="r5-halo"><circle class="halo" cx="100" cy="100" r="72"></circle><circle class="halo-ring" cx="100" cy="100" r="72"></circle></g>
+<g id="r5-rays"><path class="rays" d="M180 100 L192 100 M169.3 140 L179.7 146 M140 169.3 L146 179.7 M100 180 L100 192 M60 169.3 L54 179.7 M30.7 140 L20.3 146 M20 100 L8 100 M30.7 60 L20.3 54 M60 30.7 L54 20.3 M100 20 L100 8 M140 30.7 L146 20.3 M169.3 60 L179.7 54"></path></g>
+<g id="r5-crown"><path class="crown" d="M87 58 L89 45 L95 53 L100 42 L105 53 L111 45 L113 58 Z"></path><circle class="gem" cx="100" cy="53" r="2.5"></circle></g>
+
+<g id="r6-clouds"><path class="storm" d="M8 30 Q6 16 22 18 Q30 6 46 14 Q60 10 62 24 Q72 28 66 38 L14 38 Q6 36 8 30 Z"></path><path class="storm" d="M192 30 Q194 16 178 18 Q170 6 154 14 Q140 10 138 24 Q128 28 134 38 L186 38 Q194 36 192 30 Z"></path></g>
+<g id="r6-bolt-a"><path class="bolt-glow" d="M164 38 L150 78 L162 78 L142 124 L154 124 L136 176"></path><path class="bolt" d="M164 38 L150 78 L162 78 L142 124 L154 124 L136 176"></path></g>
+<g id="r6-bolt-b"><path class="bolt-glow" d="M40 38 L50 66 L42 66 L54 100"></path><path class="bolt" d="M40 38 L50 66 L42 66 L54 100"></path></g>
+<g id="r6-rock"><path class="rock-dark" d="M52 230 L66 212 L134 212 L150 230 Z"></path><path class="crack" d="M92 212 L98 220 L94 230"></path></g>
+<g id="r6-arms"><path class="ln" d="M90 116 L72 126 L68 106"></path><path class="ln" d="M110 116 L128 126 L132 106"></path><circle class="fist" cx="68" cy="104" r="4"></circle><circle class="fist" cx="132" cy="104" r="4"></circle></g>
+<g id="r6-chip-a"><path class="chip" d="M40 194 L46 191 L49 196 L43 199 Z"></path></g>
+<g id="r6-chip-b"><path class="chip" d="M156 198 L163 196 L165 202 L158 204 Z"></path></g>
+</defs>
+</svg>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h1 style="margin: 0; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 400; font-size: 44px; line-height: 1.25; color: #7A5916">A 款：臉直接畫在人蔘上</h1>
+<p style="margin: 0; font-size: 17px; line-height: 1.6; color: #66666D">身體換成線條，頭、葉子、紅果照原本的小人蔘。每一格都會自己動。</p>
+</div>
+
+<div style="display: flex; gap: 16px; align-items: flex-end; margin-top: 18px">
+<div style="width: 56px"></div>
+<div style="width: 220px; display: flex; flex-direction: column; align-items: center; gap: 2px"><div style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-size: 30px; line-height: 1.2; color: #7A5916">煉氣</div><div style="font-size: 13px; color: #66666D">一般未訓練</div></div>
+<div style="width: 220px; display: flex; flex-direction: column; align-items: center; gap: 2px"><div style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-size: 30px; line-height: 1.2; color: #7A5916">築基</div><div style="font-size: 13px; color: #66666D">有基礎</div></div>
+<div style="width: 220px; display: flex; flex-direction: column; align-items: center; gap: 2px"><div style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-size: 30px; line-height: 1.2; color: #7A5916">金丹</div><div style="font-size: 13px; color: #66666D">看得出有在練</div></div>
+<div style="width: 220px; display: flex; flex-direction: column; align-items: center; gap: 2px"><div style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-size: 30px; line-height: 1.2; color: #7A5916">元嬰</div><div style="font-size: 13px; color: #66666D">資深健身者</div></div>
+<div style="width: 220px; display: flex; flex-direction: column; align-items: center; gap: 2px"><div style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-size: 30px; line-height: 1.2; color: #7A5916">化神</div><div style="font-size: 13px; color: #66666D">菁英</div></div>
+<div style="width: 220px; display: flex; flex-direction: column; align-items: center; gap: 2px"><div style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-size: 30px; line-height: 1.2; color: #7A5916">大乘</div><div style="font-size: 13px; color: #66666D">天賦上限附近</div></div>
+<div style="width: 220px; display: flex; flex-direction: column; align-items: center; gap: 2px"><div style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-size: 30px; line-height: 1.2; color: #7A5916">渡劫</div><div style="font-size: 13px; color: #66666D">自然人極限</div></div>
+</div>
+
+<div style="display: flex; gap: 16px; align-items: center">
+<div style="width: 56px; text-align: center; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-size: 28px; color: #7A5916">男</div>
+
+<div style="width: 220px; height: 260px; box-sizing: border-box; padding: 10px; background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 9px rgba(29,29,31,0.06)">
+<svg class="fig r0" viewBox="0 0 200 240" width="200" height="240" role="img" aria-label="煉氣，男">
+<use href="#p-shadow"></use>
+<use href="#p-legs"></use>
+<g class="a-bob">
+<use href="#p-spine"></use>
+<use href="#p-robe-m"></use>
+<path class="trim" d="M89 150 L97 150 L97 158 L89 158 Z"></path>
+<use href="#r0-arms"></use>
+<use href="#r0-bucket" class="a-swing" style="transform-origin: 134px 154px"></use>
+<use href="#p-head"></use>
+<use href="#p-face-happy"></use>
+<use href="#p-sprout" class="sprout a-sway" style="transform-origin: 100px 51px"></use>
+</g>
+</svg>
+</div>
+
+<div style="width: 220px; height: 260px; box-sizing: border-box; padding: 10px; background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 9px rgba(29,29,31,0.06)">
+<svg class="fig r1" viewBox="0 0 200 240" width="200" height="240" role="img" aria-label="築基，男">
+<use href="#r1-base"></use>
+<use href="#p-legs-wide"></use>
+<g class="a-bob">
+<use href="#p-spine"></use>
+<use href="#p-robe-m"></use>
+<use href="#r1-arm-left"></use>
+<use href="#r1-sword" class="a-chop" style="transform-origin: 110px 116px"></use>
+<use href="#p-head"></use>
+<use href="#p-face-happy"></use>
+<use href="#p-sprout" class="sprout a-sway" style="transform-origin: 100px 51px"></use>
+</g>
+</svg>
+</div>
+
+<div style="width: 220px; height: 260px; box-sizing: border-box; padding: 10px; background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 9px rgba(29,29,31,0.06)">
+<svg class="fig r2" viewBox="0 0 200 240" width="200" height="240" role="img" aria-label="金丹，男">
+<use href="#r2-rock"></use>
+<use href="#p-legs"></use>
+<g class="a-bob">
+<use href="#p-spine"></use>
+<use href="#p-robe-m"></use>
+<use href="#r2-arms"></use>
+<g class="a-float">
+<circle class="glow a-pulse" cx="150" cy="86" r="15" style="transform-origin: 150px 86px"></circle>
+<path class="swirl a-spin" d="M132 86 A18 18 0 0 1 150 68 M168 86 A18 18 0 0 1 150 104" style="transform-origin: 150px 86px"></path>
+<ellipse class="pill" cx="150" cy="86" rx="7.5" ry="6"></ellipse>
+</g>
+<use href="#p-head"></use>
+<use href="#p-face-happy"></use>
+<use href="#p-sprout" class="sprout a-sway" style="transform-origin: 100px 51px"></use>
+</g>
+</svg>
+</div>
+
+<div style="width: 220px; height: 260px; box-sizing: border-box; padding: 10px; background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 9px rgba(29,29,31,0.06)">
+<svg class="fig r3" viewBox="0 0 200 240" width="200" height="240" role="img" aria-label="元嬰，男">
+<ellipse class="shadow a-shade" cx="100" cy="234" rx="34" ry="4" style="transform-origin: 100px 234px"></ellipse>
+<g class="a-hover">
+<use href="#p-legs"></use>
+<use href="#p-cloud"></use>
+<use href="#r3-staff"></use>
+<use href="#r3-pendant" class="a-swing" style="transform-origin: 147px 106px"></use>
+<use href="#p-spine"></use>
+<use href="#p-robe-m"></use>
+<use href="#r3-arms"></use>
+<g class="a-float">
+<circle class="glow a-pulse" cx="54" cy="102" r="15" style="transform-origin: 54px 102px"></circle>
+<use href="#r3-baby"></use>
+</g>
+<use href="#p-head"></use>
+<use href="#p-face-smile"></use>
+<use href="#r3-beard"></use>
+<use href="#p-sprout" class="sprout a-sway" style="transform-origin: 100px 51px"></use>
+</g>
+</svg>
+</div>
+
+<div style="width: 220px; height: 260px; box-sizing: border-box; padding: 10px; background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 9px rgba(29,29,31,0.06)">
+<svg class="fig r4" viewBox="0 0 200 240" width="200" height="240" role="img" aria-label="化神，男">
+<use href="#r4-sky"></use>
+<use href="#r4-stars-a" class="a-twinkle"></use>
+<use href="#r4-stars-b" class="a-twinkle d2"></use>
+<ellipse class="shadow a-shade" cx="100" cy="232" rx="30" ry="4" style="transform-origin: 100px 232px"></ellipse>
+<g class="a-hover">
+<use href="#p-ribbons" class="a-wave" style="transform-origin: 100px 130px"></use>
+<use href="#p-legs-float"></use>
+<use href="#p-spine"></use>
+<use href="#p-robe-m"></use>
+<use href="#p-arms-open"></use>
+<use href="#p-head"></use>
+<use href="#p-face-calm"></use>
+<use href="#p-sprout" class="sprout a-sway" style="transform-origin: 100px 51px"></use>
+</g>
+</svg>
+</div>
+
+<div style="width: 220px; height: 260px; box-sizing: border-box; padding: 10px; background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 9px rgba(29,29,31,0.06)">
+<svg class="fig r5" viewBox="0 0 200 240" width="200" height="240" role="img" aria-label="大乘，男">
+<use href="#r5-halo"></use>
+<use href="#r5-rays" class="a-spin-slow" style="transform-origin: 100px 100px"></use>
+<ellipse class="shadow a-shade" cx="100" cy="234" rx="30" ry="4" style="transform-origin: 100px 234px"></ellipse>
+<g class="a-hover">
+<use href="#p-ribbons" class="a-wave" style="transform-origin: 100px 130px"></use>
+<use href="#p-legs-float"></use>
+<use href="#p-cloud"></use>
+<use href="#p-spine"></use>
+<use href="#p-robe-m"></use>
+<use href="#p-arms-open"></use>
+<use href="#p-head"></use>
+<use href="#p-face-happy"></use>
+<use href="#p-sprout" class="sprout a-sway" style="transform-origin: 100px 51px"></use>
+<use href="#r5-crown"></use>
+</g>
+</svg>
+</div>
+
+<div style="width: 220px; height: 260px; box-sizing: border-box; padding: 10px; background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 9px rgba(29,29,31,0.06)">
+<svg class="fig r6" viewBox="0 0 200 240" width="200" height="240" role="img" aria-label="渡劫，男">
+<use href="#r6-clouds"></use>
+<use href="#r6-bolt-a" class="a-flash"></use>
+<use href="#r6-bolt-b" class="a-flash d2"></use>
+<use href="#r6-rock"></use>
+<use href="#r6-chip-a" class="a-float"></use>
+<use href="#r6-chip-b" class="a-float d2"></use>
+<use href="#p-legs-wide"></use>
+<g class="a-quake">
+<use href="#p-spine"></use>
+<use href="#p-robe-m-torn"></use>
+<use href="#r6-arms"></use>
+<use href="#p-head"></use>
+<use href="#p-face-fierce"></use>
+<use href="#p-sprout" class="sprout a-sway" style="transform-origin: 100px 51px"></use>
+</g>
+</svg>
+</div>
+</div>
+
+<div style="display: flex; gap: 16px; align-items: center">
+<div style="width: 56px; text-align: center; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-size: 28px; color: #7A5916">女</div>
+
+<div style="width: 220px; height: 260px; box-sizing: border-box; padding: 10px; background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 9px rgba(29,29,31,0.06)">
+<svg class="fig r0" viewBox="0 0 200 240" width="200" height="240" role="img" aria-label="煉氣，女">
+<use href="#p-shadow"></use>
+<use href="#p-legs"></use>
+<g class="a-bob">
+<use href="#p-spine"></use>
+<use href="#p-hair-back"></use>
+<use href="#p-robe-f"></use>
+<path class="trim" d="M86 156 L94 156 L94 164 L86 164 Z"></path>
+<use href="#r0-arms"></use>
+<use href="#r0-bucket" class="a-swing" style="transform-origin: 134px 154px"></use>
+<use href="#p-head"></use>
+<use href="#p-face-happy"></use>
+<use href="#p-hair-top"></use>
+<use href="#p-sprout" class="sprout a-sway" style="transform-origin: 100px 51px"></use>
+</g>
+</svg>
+</div>
+
+<div style="width: 220px; height: 260px; box-sizing: border-box; padding: 10px; background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 9px rgba(29,29,31,0.06)">
+<svg class="fig r1" viewBox="0 0 200 240" width="200" height="240" role="img" aria-label="築基，女">
+<use href="#r1-base"></use>
+<use href="#p-legs-wide"></use>
+<g class="a-bob">
+<use href="#p-spine"></use>
+<use href="#p-hair-back"></use>
+<use href="#p-robe-f"></use>
+<use href="#r1-arm-left"></use>
+<use href="#r1-sword" class="a-chop" style="transform-origin: 110px 116px"></use>
+<use href="#p-head"></use>
+<use href="#p-face-happy"></use>
+<use href="#p-hair-top"></use>
+<use href="#p-sprout" class="sprout a-sway" style="transform-origin: 100px 51px"></use>
+</g>
+</svg>
+</div>
+
+<div style="width: 220px; height: 260px; box-sizing: border-box; padding: 10px; background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 9px rgba(29,29,31,0.06)">
+<svg class="fig r2" viewBox="0 0 200 240" width="200" height="240" role="img" aria-label="金丹，女">
+<use href="#r2-rock"></use>
+<use href="#p-legs"></use>
+<g class="a-bob">
+<use href="#p-spine"></use>
+<use href="#p-hair-back"></use>
+<use href="#p-robe-f"></use>
+<use href="#r2-arms"></use>
+<g class="a-float">
+<circle class="glow a-pulse" cx="150" cy="86" r="15" style="transform-origin: 150px 86px"></circle>
+<path class="swirl a-spin" d="M132 86 A18 18 0 0 1 150 68 M168 86 A18 18 0 0 1 150 104" style="transform-origin: 150px 86px"></path>
+<ellipse class="pill" cx="150" cy="86" rx="7.5" ry="6"></ellipse>
+</g>
+<use href="#p-head"></use>
+<use href="#p-face-happy"></use>
+<use href="#p-hair-top"></use>
+<use href="#p-sprout" class="sprout a-sway" style="transform-origin: 100px 51px"></use>
+</g>
+</svg>
+</div>
+
+<div style="width: 220px; height: 260px; box-sizing: border-box; padding: 10px; background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 9px rgba(29,29,31,0.06)">
+<svg class="fig r3" viewBox="0 0 200 240" width="200" height="240" role="img" aria-label="元嬰，女">
+<ellipse class="shadow a-shade" cx="100" cy="234" rx="34" ry="4" style="transform-origin: 100px 234px"></ellipse>
+<g class="a-hover">
+<use href="#p-legs"></use>
+<use href="#p-cloud"></use>
+<use href="#r3-staff"></use>
+<use href="#r3-pendant" class="a-swing" style="transform-origin: 147px 106px"></use>
+<use href="#p-spine"></use>
+<use href="#p-hair-back"></use>
+<use href="#p-robe-f"></use>
+<use href="#r3-arms"></use>
+<g class="a-float">
+<circle class="glow a-pulse" cx="54" cy="102" r="15" style="transform-origin: 54px 102px"></circle>
+<use href="#r3-baby"></use>
+</g>
+<use href="#p-head"></use>
+<use href="#p-face-smile"></use>
+<use href="#p-hair-top"></use>
+<use href="#p-sprout" class="sprout a-sway" style="transform-origin: 100px 51px"></use>
+</g>
+</svg>
+</div>
+
+<div style="width: 220px; height: 260px; box-sizing: border-box; padding: 10px; background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 9px rgba(29,29,31,0.06)">
+<svg class="fig r4" viewBox="0 0 200 240" width="200" height="240" role="img" aria-label="化神，女">
+<use href="#r4-sky"></use>
+<use href="#r4-stars-a" class="a-twinkle"></use>
+<use href="#r4-stars-b" class="a-twinkle d2"></use>
+<ellipse class="shadow a-shade" cx="100" cy="232" rx="30" ry="4" style="transform-origin: 100px 232px"></ellipse>
+<g class="a-hover">
+<use href="#p-ribbons" class="a-wave" style="transform-origin: 100px 130px"></use>
+<use href="#p-legs-float"></use>
+<use href="#p-spine"></use>
+<use href="#p-hair-back"></use>
+<use href="#p-robe-f"></use>
+<use href="#p-arms-open"></use>
+<use href="#p-head"></use>
+<use href="#p-face-calm"></use>
+<use href="#p-hair-top"></use>
+<use href="#p-sprout" class="sprout a-sway" style="transform-origin: 100px 51px"></use>
+</g>
+</svg>
+</div>
+
+<div style="width: 220px; height: 260px; box-sizing: border-box; padding: 10px; background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 9px rgba(29,29,31,0.06)">
+<svg class="fig r5" viewBox="0 0 200 240" width="200" height="240" role="img" aria-label="大乘，女">
+<use href="#r5-halo"></use>
+<use href="#r5-rays" class="a-spin-slow" style="transform-origin: 100px 100px"></use>
+<ellipse class="shadow a-shade" cx="100" cy="234" rx="30" ry="4" style="transform-origin: 100px 234px"></ellipse>
+<g class="a-hover">
+<use href="#p-ribbons" class="a-wave" style="transform-origin: 100px 130px"></use>
+<use href="#p-legs-float"></use>
+<use href="#p-cloud"></use>
+<use href="#p-spine"></use>
+<use href="#p-hair-back"></use>
+<use href="#p-robe-f"></use>
+<use href="#p-arms-open"></use>
+<use href="#p-head"></use>
+<use href="#p-face-happy"></use>
+<use href="#p-hair-top"></use>
+<use href="#p-sprout" class="sprout a-sway" style="transform-origin: 100px 51px"></use>
+<use href="#r5-crown"></use>
+</g>
+</svg>
+</div>
+
+<div style="width: 220px; height: 260px; box-sizing: border-box; padding: 10px; background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 9px rgba(29,29,31,0.06)">
+<svg class="fig r6" viewBox="0 0 200 240" width="200" height="240" role="img" aria-label="渡劫，女">
+<use href="#r6-clouds"></use>
+<use href="#r6-bolt-a" class="a-flash"></use>
+<use href="#r6-bolt-b" class="a-flash d2"></use>
+<use href="#r6-rock"></use>
+<use href="#r6-chip-a" class="a-float"></use>
+<use href="#r6-chip-b" class="a-float d2"></use>
+<use href="#p-legs-wide"></use>
+<g class="a-quake">
+<use href="#p-spine"></use>
+<use href="#p-hair-back"></use>
+<use href="#p-robe-f-torn"></use>
+<use href="#r6-arms"></use>
+<use href="#p-head"></use>
+<use href="#p-face-fierce"></use>
+<use href="#p-hair-top"></use>
+<use href="#p-sprout" class="sprout a-sway" style="transform-origin: 100px 51px"></use>
+</g>
+</svg>
+</div>
+</div>
+
+<div style="display: flex; gap: 16px; align-items: flex-start">
+<div style="width: 56px; text-align: center; font-size: 13px; line-height: 1.5; color: #66666D">會動的</div>
+<div style="width: 220px; text-align: center; font-size: 13px; line-height: 1.5; color: #66666D">水桶晃、葉子擺</div>
+<div style="width: 220px; text-align: center; font-size: 13px; line-height: 1.5; color: #66666D">揮木劍</div>
+<div style="width: 220px; text-align: center; font-size: 13px; line-height: 1.5; color: #66666D">金丹浮在掌上，光一明一暗</div>
+<div style="width: 220px; text-align: center; font-size: 13px; line-height: 1.5; color: #66666D">元嬰浮在手邊，踩著雲</div>
+<div style="width: 220px; text-align: center; font-size: 13px; line-height: 1.5; color: #66666D">整個人浮起來，飄帶擺、星星閃</div>
+<div style="width: 220px; text-align: center; font-size: 13px; line-height: 1.5; color: #66666D">背後光輪慢慢轉，飄帶擺</div>
+<div style="width: 220px; text-align: center; font-size: 13px; line-height: 1.5; color: #66666D">閃電劈下來，身體震一下</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"motion":{"editor":"boolean","default":true},"sprout":{"editor":"boolean","default":true},"$preview":{"width":1820,"height":920}}'>
+class Component extends DCLogic {
+renderVals() {
+const motion = this.props.motion ?? true;
+const sprout = this.props.sprout ?? true;
+return { rootClass: 'stage' + (motion ? '' : ' still') + (sprout ? '' : ' nosprout') };
+}
+}
+</script>
+</body>
+</html>

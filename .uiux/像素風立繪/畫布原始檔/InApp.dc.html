@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>放進 app 的樣子</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap">
+<style>
+body{margin:0}
+.fig{display:block;overflow:visible}
+.ln{fill:none;stroke:#8A6420;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.hd{fill:#F8DC92;stroke:#8A6420;stroke-width:3}
+.ring{fill:none;stroke:#C99A3C;stroke-width:2;stroke-linecap:round}
+.blush{fill:#F29C7E;opacity:.55}
+.eye{fill:#3A2A10}
+.mouth{fill:#C2452F;stroke:#3A2A10;stroke-width:1.5;stroke-linejoin:round}
+.stem{fill:none;stroke:#3F6B24;stroke-width:3;stroke-linecap:round}
+.leaf{fill:#8DBB52;stroke:#3F6B24;stroke-width:2;stroke-linejoin:round}
+.berry{fill:#D8402F;stroke:#9E2A1E;stroke-width:1.5}
+.bl{fill:none;stroke:#7A5916;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.b-whisk{fill:none;stroke:#8A6420;stroke-width:3.2;stroke-linecap:round}
+.b-whisk2{fill:none;stroke:#8A6420;stroke-width:2.6;stroke-linecap:round}
+.b-root{fill:#F5D892;stroke:#8A6420;stroke-width:3;stroke-linejoin:round}
+.b-shine{fill:none;stroke:#FFFFFF;stroke-width:5;stroke-linecap:round;opacity:.55}
+.b-ring{fill:none;stroke:#C4923A;stroke-width:2.4;stroke-linecap:round;opacity:.85}
+.b-rim{fill:#8A6420}
+.b-face{fill:#FFFFFF;stroke:#3A2A0C;stroke-width:3}
+.b-stem{fill:none;stroke:#6E8F3A;stroke-width:5;stroke-linecap:round}
+.b-leaf{fill:#7FAE46}
+.b-vein{fill:none;stroke:#3F6B24;stroke-width:1.6;stroke-linecap:round;opacity:.55}
+.b-berry{fill:#D8402F}
+.b-eye{fill:#3A2A0C}
+.b-ink{fill:none;stroke:#3A2A0C;stroke-width:3.2;stroke-linecap:round}
+.robe{fill:#93BC76;stroke:#B9820E;stroke-width:2.5;stroke-linejoin:round}
+.trim{fill:none;stroke:#B9820E;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.belt{fill:none;stroke:#3F6B24;stroke-width:4;stroke-linecap:round}
+.rock{fill:#C7C2B4;stroke:#8E8877;stroke-width:2.5;stroke-linejoin:round}
+.glow{fill:#FFE27A;opacity:.6}
+.pill{fill:#F2B824;stroke:#B9820E;stroke-width:2}
+.swirl{fill:none;stroke:#F2C14E;stroke-width:2.5;stroke-linecap:round}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes sway{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+@keyframes pulse{0%,100%{transform:scale(.85);opacity:.4}50%{transform:scale(1.15);opacity:.85}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.a-bob{animation:bob 2.8s ease-in-out infinite}
+.a-float{animation:float 2.4s ease-in-out infinite}
+.a-sway{animation:sway 3.2s ease-in-out infinite}
+.a-pulse{animation:pulse 1.8s ease-in-out infinite}
+.a-spin{animation:spin 3s linear infinite}
+@media (prefers-reduced-motion:reduce){.fig *{animation:none !important}}
+</style>
+</helmet>
+<div style="width: 1378px; height: 1030px; box-sizing: border-box; padding: 56px; display: flex; gap: 48px; background: #EFEBE3; color: #1D1D1F; font-family: -apple-system, 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif">
+<sc-for list="{{phones}}" as="ph" hint-placeholder-count="3">
+<div style="width: 390px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<div style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 26px; line-height: 1.3; color: #7A5916">{{ph.label}}</div>
+<div style="font-size: 14px; line-height: 1.5; color: #5F5F66">{{ph.note}}</div>
+</div>
+
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #F7F4EC; border-radius: 44px; box-shadow: 0 0 0 1px #D9D4C8, 0 12px 32px rgba(29,29,31,0.10)">
+<div style="padding: 54px 20px 0; display: flex; flex-direction: column; gap: 12px">
+
+<div style="display: flex; align-items: center; justify-content: space-between; height: 44px">
+<button type="button" aria-label="設定" style="width: 44px; height: 44px; padding: 0; border: none; background: transparent; display: flex; align-items: center; justify-content: center; border-radius: 999px; color: #7A5916">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><circle cx="12" cy="12" r="8.5"></circle></svg>
+</button>
+<div style="font-family: 'LXGW WenKai TC', serif; font-size: 22px; line-height: 28px; font-weight: 700; color: #7A5916">境界</div>
+<button type="button" aria-label="分析" style="width: 44px; height: 44px; padding: 0; border: none; background: transparent; display: flex; align-items: center; justify-content: center; border-radius: 999px; color: #7A5916">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"></path><path d="M7 15l4-4 3 2 6-6"></path></svg>
+</button>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 4px 18px rgba(25, 22, 20, 0.06)">
+<div style="display: flex; gap: 16px; align-items: center">
+
+<sc-if value="{{ph.isNow}}" hint-placeholder-val="{{false}}">
+<img src="/_blob/bc235d0bb2a9640dacae2f7774d6ec96" alt="現在的金丹期水彩立繪" style="width: 112px; height: 140px; object-fit: cover; border-radius: 16px; background: #FBF7ED; flex-shrink: 0">
+</sc-if>
+
+<sc-if value="{{ph.isA}}" hint-placeholder-val="{{false}}">
+<div style="width: 112px; height: 140px; border-radius: 16px; background: #FBF7ED; flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden">
+<svg class="fig" viewBox="0 0 200 240" width="112" height="134" role="img" aria-label="金丹期火柴人，臉畫在人蔘上">
+<path class="rock" d="M56 228 L66 214 L134 214 L146 228 Z"></path>
+<path class="ln" d="M95 160 L88 212 Q87 218 79 218"></path>
+<path class="ln" d="M105 160 L112 212 Q113 218 121 218"></path>
+<g class="a-bob">
+<path class="ln" d="M100 104 L100 164"></path>
+<path class="robe" d="M88 110 L112 110 L121 168 L79 168 Z"></path>
+<path class="trim" d="M92 110 L100 126 L108 110"></path>
+<path class="belt" d="M84 142 L116 142"></path>
+<path class="ln" d="M90 116 L72 130 L60 126"></path>
+<path class="ln" d="M110 116 L130 120 L144 106"></path>
+<g class="a-float">
+<circle class="glow a-pulse" cx="150" cy="86" r="15" style="transform-origin: 150px 86px"></circle>
+<path class="swirl a-spin" d="M132 86 A18 18 0 0 1 150 68 M168 86 A18 18 0 0 1 150 104" style="transform-origin: 150px 86px"></path>
+<ellipse class="pill" cx="150" cy="86" rx="7.5" ry="6"></ellipse>
+</g>
+<path class="hd" d="M100 50 C116 50 126 64 126 80 C126 96 115 106 100 106 C85 106 74 96 74 80 C74 64 84 50 100 50 Z"></path>
+<path class="ring" d="M88 58 Q100 54 112 58"></path>
+<path class="ring" d="M84 65 Q100 60 116 65"></path>
+<circle class="blush" cx="86" cy="91" r="5"></circle>
+<circle class="blush" cx="114" cy="91" r="5"></circle>
+<circle class="eye" cx="91" cy="82" r="2.8"></circle>
+<circle class="eye" cx="109" cy="82" r="2.8"></circle>
+<path class="mouth" d="M95 89 Q100 97 105 89 Z"></path>
+<g class="a-sway" style="transform-origin: 100px 51px">
+<path class="stem" d="M100 51 L100 36"></path>
+<path class="leaf" d="M100 44 C88 44 78 38 72 28 C84 26 96 32 100 44 Z"></path>
+<path class="leaf" d="M100 44 C112 44 122 38 128 28 C116 26 104 32 100 44 Z"></path>
+<circle class="berry" cx="95" cy="30" r="5"></circle>
+<circle class="berry" cx="105" cy="30" r="5"></circle>
+<circle class="berry" cx="100" cy="23" r="5"></circle>
+</g>
+</g>
+</svg>
+</div>
+</sc-if>
+
+<sc-if value="{{ph.isB}}" hint-placeholder-val="{{false}}">
+<div style="width: 112px; height: 140px; border-radius: 16px; background: #FBF7ED; flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden">
+<svg class="fig" viewBox="0 0 200 240" width="112" height="134" role="img" aria-label="金丹期火柴人，戴人蔘頭套">
+<path class="rock" d="M56 230 L66 216 L134 216 L146 230 Z"></path>
+<path class="bl" d="M100 154 L91.8 187 L83.5 220 L77 220.5"></path>
+<path class="bl" d="M100 154 L108.2 187 L116.5 220 L123 220.5"></path>
+<g class="a-bob">
+<path class="bl" d="M100 112 L100 154"></path>
+<path class="robe" d="M89 114 L111 114 L119 166 L81 166 Z"></path>
+<path class="trim" d="M93 114 L100 128 L107 114"></path>
+<path class="belt" d="M85 142 L115 142"></path>
+<path class="bl" d="M96 118 L76 130 L54 124"></path>
+<path class="bl" d="M104 118 L126 124 L142 108"></path>
+<g class="a-float">
+<circle class="glow a-pulse" cx="150" cy="88" r="15" style="transform-origin: 150px 88px"></circle>
+<path class="swirl a-spin" d="M132 88 A18 18 0 0 1 150 70 M168 88 A18 18 0 0 1 150 106" style="transform-origin: 150px 88px"></path>
+<ellipse class="pill" cx="150" cy="88" rx="7.5" ry="6"></ellipse>
+</g>
+<g class="a-sway" style="transform-origin: 100px 47px">
+<g transform="translate(100 111) scale(0.55)">
+<path class="b-stem" d="M0,-116 L0,-137"></path>
+<path class="b-leaf" d="M-2,-126 C-14,-149 -42,-153 -60,-139 C-44,-124 -20,-118 -2,-126 Z"></path>
+<path class="b-leaf" d="M2,-126 C14,-149 42,-153 60,-139 C44,-124 20,-118 2,-126 Z"></path>
+<path class="b-vein" d="M-8,-129 C-24,-137 -40,-140 -53,-139"></path>
+<path class="b-vein" d="M8,-129 C24,-137 40,-140 53,-139"></path>
+<circle class="b-berry" cx="-9" cy="-142" r="5.4"></circle>
+<circle class="b-berry" cx="9" cy="-142" r="5.4"></circle>
+<circle class="b-berry" cx="0" cy="-137" r="5.4"></circle>
+<circle class="b-berry" cx="-5" cy="-151" r="5.4"></circle>
+<circle class="b-berry" cx="5" cy="-151" r="5.4"></circle>
+</g>
+</g>
+<g transform="translate(100 111) scale(0.55)">
+<path class="b-whisk" d="M-43,-20 C-55,-18 -61,-8 -57,3"></path>
+<path class="b-whisk" d="M43,-20 C55,-18 61,-8 57,3"></path>
+<path class="b-whisk2" d="M-45,-38 C-56,-41 -63,-35 -65,-27"></path>
+<path class="b-root" d="M-46,-34 C-46,-64 -32,-84 -15,-97 C-20,-101 -20,-112 -12,-117 C-6,-120 6,-120 12,-117 C20,-112 20,-101 15,-97 C32,-84 46,-64 46,-34 C46,-10 28,6 0,6 C-28,6 -46,-10 -46,-34 Z"></path>
+<path class="b-shine" d="M-33,-58 C-31,-70 -26,-79 -20,-86"></path>
+<path class="b-ring" d="M-16,-108 Q0,-103 16,-108"></path>
+<path class="b-ring" d="M-14,-97 Q0,-92 14,-97"></path>
+<path class="b-ring" d="M-27,-85 Q0,-78 27,-85"></path>
+<circle class="b-rim" cx="0" cy="-46" r="33"></circle>
+<circle class="b-face" cx="0" cy="-46" r="30"></circle>
+<rect class="b-eye" x="-13.3" y="-54" width="4.6" height="12" rx="2.3"></rect>
+<rect class="b-eye" x="8.7" y="-54" width="4.6" height="12" rx="2.3"></rect>
+<path class="b-ink" d="M-4,-60.4 L-20,-61.6"></path>
+<path class="b-ink" d="M4,-60.4 L20,-61.6"></path>
+<path class="b-ink" d="M-6,-31 Q0,-25 6,-31"></path>
+</g>
+</g>
+</svg>
+</div>
+</sc-if>
+
+<div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+<div style="font-size: 13px; line-height: 18px; color: #66666D">目前境界</div>
+<div style="display: flex; align-items: baseline; gap: 4px; font-family: 'LXGW WenKai TC', serif; color: #7A5916">
+<span style="font-size: 44px; line-height: 50px; font-weight: 700">金丹</span>
+<span style="font-size: 24px; line-height: 30px; font-weight: 700">後期</span>
+</div>
+<div style="font-size: 15px; line-height: 20px; color: #66666D">FFMI 20.6・看得出有在練</div>
+<div style="margin-top: 4px; align-self: flex-start; padding: 4px 10px; border-radius: 999px; background: #F1E6CC; color: #7A5916; font-size: 12px; line-height: 16px; font-weight: 500">根基穩固・體脂 15.0%</div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<span style="font-size: 15px; line-height: 20px; color: #66666D">下一期 元嬰初期</span>
+<span style="font-size: 17px; line-height: 22px; font-weight: 600">還差 1.3 公斤肌肉</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px" role="img" aria-label="金丹三期進度：初期、中期已過，後期走了 16%">
+<div style="height: 8px; border-radius: 999px; background: #916B1B"></div>
+<div style="height: 8px; border-radius: 999px; background: #916B1B"></div>
+<div style="height: 8px; border-radius: 999px; background: #F1E6CC; overflow: hidden"><div style="width: 16%; height: 8px; background: #916B1B"></div></div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; font-size: 12px; line-height: 16px; color: #66666D">
+<span>初期</span><span>中期</span><span style="color: #1D1D1F; font-weight: 600">後期</span>
+</div>
+</div>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 20px; padding: 10px 8px 10px 16px; display: flex; align-items: center; gap: 12px">
+<div style="width: 36px; height: 36px; border-radius: 999px; background: #F1E6CC; color: #916B1B; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"></path></svg>
+</div>
+<div style="flex: 1; min-width: 0">
+<div style="font-size: 13px; line-height: 18px; color: #66666D">健康 app・11 月 3 日量測</div>
+<div style="font-size: 16px; line-height: 21px; font-weight: 600">72.0 公斤・體脂 15.0%</div>
+</div>
+<button type="button" style="min-height: 44px; padding: 0 12px; border: none; background: transparent; font-family: inherit; font-size: 15px; font-weight: 600; color: #7A5916; border-radius: 12px">手動輸入</button>
+</div>
+
+<div style="background: #FBF7ED; border: 1px solid #F1E6CC; border-radius: 20px; padding: 14px 16px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<div>
+<div style="font-size: 22px; line-height: 28px; font-weight: 700">3<span style="font-size: 13px; font-weight: 600"> 天</span></div>
+<div style="font-size: 13px; line-height: 18px; color: #66666D">本週</div>
+</div>
+<div>
+<div style="font-size: 22px; line-height: 28px; font-weight: 700">62<span style="font-size: 13px; font-weight: 600"> 天</span></div>
+<div style="font-size: 13px; line-height: 18px; color: #66666D">累計修煉</div>
+</div>
+<div>
+<div style="font-family: 'LXGW WenKai TC', serif; font-size: 20px; line-height: 28px; font-weight: 700; color: #7A5916">真傳弟子</div>
+<div style="font-size: 13px; line-height: 18px; color: #66666D">宗門身分</div>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px">
+<div style="margin: 0 4px; font-size: 20px; line-height: 25px; font-weight: 600">今天的修煉</div>
+<div style="background: #FFFFFF; border-radius: 20px; padding: 0 16px">
+<div style="min-height: 52px; padding: 12px 0; display: flex; align-items: center; gap: 12px">
+<div style="flex: 1">
+<div style="font-size: 17px; line-height: 22px"><span style="font-family: 'LXGW WenKai TC', serif; font-weight: 700">坐馬樁</span>・深蹲</div>
+<div style="font-size: 13px; line-height: 18px; color: #66666D">90 公斤 × 5 下 × 3 組</div>
+</div>
+<span style="padding: 4px 10px; border-radius: 999px; background: #F1E6CC; color: #7A5916; font-size: 12px; font-weight: 500">大成</span>
+</div>
+<div style="height: 1px; background: #E5E1D8"></div>
+<div style="min-height: 52px; padding: 12px 0; display: flex; align-items: center; gap: 12px">
+<div style="flex: 1">
+<div style="font-size: 17px; line-height: 22px"><span style="font-family: 'LXGW WenKai TC', serif; font-weight: 700">推山掌</span>・臥推</div>
+<div style="font-size: 13px; line-height: 18px; color: #66666D">70 公斤 × 5 下 × 3 組</div>
+</div>
+<span style="padding: 4px 10px; border-radius: 999px; background: #F1E6CC; color: #7A5916; font-size: 12px; font-weight: 500">大成</span>
+</div>
+</div>
+</div>
+</div>
+
+<div style="position: absolute; left: 0; right: 0; bottom: 0; background: #F7F4EC; border-top: 1px solid #E5E1D8; padding: 12px 20px 26px; display: flex; flex-direction: column; align-items: center; gap: 12px">
+<button type="button" style="width: 100%; height: 52px; border: none; border-radius: 16px; background: #916B1B; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; font-size: 17px; font-weight: 600">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+記一筆修煉
+</button>
+<div style="display: flex; gap: 8px" role="img" aria-label="第 2 頁，共 3 頁">
+<span style="width: 7px; height: 7px; border-radius: 999px; background: #A1A1A6"></span>
+<span style="width: 18px; height: 7px; border-radius: 999px; background: #916B1B"></span>
+<span style="width: 7px; height: 7px; border-radius: 999px; background: #A1A1A6"></span>
+</div>
+</div>
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1378,"height":1030}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+phones: [
+{ label: '現在：水彩立繪', note: 'ChatGPT 畫的那張，不會動', isNow: true, isA: false, isB: false },
+{ label: 'A 款：臉畫在人蔘上', note: '火柴人，會動', isNow: false, isA: true, isB: false },
+{ label: 'B 款：戴人蔘頭套', note: '火柴人，會動', isNow: false, isA: false, isB: true }
+]
+};
+}
+}
+</script>
+</body>
+</html>
