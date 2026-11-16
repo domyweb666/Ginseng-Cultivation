@@ -203,7 +203,13 @@ extension RencanUITestCase {
             query, "分頁列的「\(label)」", timeout: timeout, file: file, line: line
         )
         tab.tap()
-        let isSelected = waitUntil(timeout: 5) { tab.isSelected }
+        var isSelected = waitUntil(timeout: 5) { tab.isSelected }
+        if !isSelected {
+            // 模擬器很慢的時候，點一下會被當成按住：分頁列那一格亮起來，頁面沒換
+            //（2026-11-16 檢查線第一支測試紅過一次，那次開 app 就花了 37 秒）。再點一次。
+            tab.tap()
+            isSelected = waitUntil(timeout: 5) { tab.isSelected }
+        }
         XCTAssertTrue(isSelected, "點了分頁列的「\(label)」，它沒有變成選中", file: file, line: line)
     }
 

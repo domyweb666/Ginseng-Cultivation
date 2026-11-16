@@ -150,7 +150,12 @@ final class SettingsReminderUITests: RencanUITestCase {
     private func pickDayFive() {
         requireVisible(idQuery("reminder-day"), "提醒日那顆按鈕").tap()
         let exactLabel = NSPredicate(format: "label == %@", "每月 5 日")
-        let options = app.descendants(matching: .any).matching(exactLabel)
+        // 選單裡同一個字有兩個元素：外層的格子（Other）和裡面的按鈕。問外層那個點不點得到，
+        // XCUITest 會直接記一條失敗（2026-11-16 檢查線連紅兩次）。所以先只在按鈕裡找，
+        // 這一版系統的選單沒有按鈕才退回原本的找法。
+        let buttons = app.buttons.matching(exactLabel)
+        let hasButton = buttons.firstMatch.waitForExistence(timeout: 8)
+        let options = hasButton ? buttons : app.descendants(matching: .any).matching(exactLabel)
         let option = requireVisible(options, "提醒日選單裡的「每月 5 日」", timeout: 8)
         shot("提醒日選單")
         option.tap()
