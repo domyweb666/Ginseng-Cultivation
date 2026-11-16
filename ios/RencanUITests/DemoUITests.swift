@@ -128,20 +128,22 @@ final class SteleCardsUITests: RencanUITestCase {
 }
 
 /// 境界碑的立繪有沒有在動。測試模式預設不播，這一支另外帶 -rencanPlayPortrait 讓它照播，
-/// 隔三秒（20 格）各拍一次立繪，兩張要不一樣。順不順只有真機看得出來。
+/// 隔三秒（20 格）各拍一次螢幕，兩張要不一樣。順不順只有真機看得出來。
 final class PortraitMotionUITests: RencanUITestCase {
     func test境界碑的立繪隔三秒換了格() {
         launch(["-rencanSeed", "demo", "-rencanPlayPortrait"])
         // 只確認它在，不問點不點得到：播動畫時立繪關掉了觸控。
-        let portrait = require(
+        require(
             anyElements(containing: "金丹期人蔘立繪").firstMatch, "境界碑的立繪", timeout: 30
         )
-        let first = portrait.screenshot().pngRepresentation
+        // 拍整個螢幕來比：只拍立繪那個元素，模擬器會回「畫不出截圖」（2026-11-16 檢查線紅過）。
+        // 狀態列的時間在模擬器上是固定的，整頁只有立繪會變。
+        let first = XCUIScreen.main.screenshot().pngRepresentation
         shot("動畫-第一張")
         Thread.sleep(forTimeInterval: 3)
-        let second = portrait.screenshot().pngRepresentation
+        let second = XCUIScreen.main.screenshot().pngRepresentation
         shot("動畫-三秒後")
-        XCTAssertNotEqual(first, second, "隔了三秒，立繪還是同一格")
+        XCTAssertNotEqual(first, second, "隔了三秒，畫面一點都沒變，立繪沒有換格")
     }
 }
 
