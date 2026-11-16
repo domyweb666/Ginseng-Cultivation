@@ -26,12 +26,14 @@ final class MeasureUITests: RencanUITestCase {
 
         submit.tap()
         passCelebration(heading: "踏入仙途", shotName: "踏入仙途慶祝", sheetButton: submit)
-        seeText("目前境界")
+        seeStele()
         requireVisible(anyElements(containing: "FFMI 20.18"), "境界碑上的 FFMI 20.18")
         requireVisible(anyElements(containing: "根基穩固・體脂 15.0%"), "境界碑上的根基那一行")
-        requireVisible(anyElements(containing: "70.0 公斤・體脂 15.0%"), "來源列的體重與體脂")
         XCTAssertFalse(app.staticTexts["還沒量過體組成"].exists, "量過了，空狀態還在")
         shot("境界碑有數字")
+        // 來源列在境界碑下面，立繪變高之後可能要捲一下才看得到。
+        scrollToSee(anyElements(containing: "70.0 公斤・體脂 15.0%"), "來源列的體重與體脂")
+        shot("來源列")
     }
 
     /// 鍵盤開著的時候預覽可能被擋住，把表單往上推一點再截。

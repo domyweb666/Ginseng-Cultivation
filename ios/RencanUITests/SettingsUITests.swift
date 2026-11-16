@@ -11,7 +11,7 @@ extension RencanUITestCase {
     /// 開示範資料，按齒輪到設定頁。
     func openDemoSettings() {
         launch(["-rencanSeed", "demo"])
-        seeText("目前境界", timeout: 30)
+        seeStele(timeout: 30)
         openTab("設定")
     }
 
@@ -197,7 +197,7 @@ final class SettingsDeleteUITests: RencanUITestCase {
         cancelDialog(confirm)
         shot("取消之後")
         backToRealmFromSettings()
-        seeText("目前境界")
+        seeStele()
         requireVisible(anyElements(containing: "FFMI 20.32"), "取消之後還在的 FFMI 20.32")
         shot("取消之後境界頁紀錄還在")
 

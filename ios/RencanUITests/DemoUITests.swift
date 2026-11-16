@@ -15,11 +15,10 @@ extension RencanUITestCase {
 final class DemoRealmUITests: RencanUITestCase {
     func test示範資料境界頁與分析境界段() {
         launch(["-rencanSeed", "demo"])
-        seeText("目前境界", timeout: 30)
+        seeStele(timeout: 30)
         requireVisible(anyElements(containing: "FFMI 20.32"), "境界碑上的 FFMI 20.32")
         shot("境界頁")
-        scrollDown()
-        requireVisible(anyElements(containing: "100 公斤 × 5 下 × 3 組"), "今天的坐馬樁那一筆")
+        scrollToSee(anyElements(containing: "100 公斤 × 5 下 × 3 組"), "今天的坐馬樁那一筆")
         shot("境界頁-今天的修煉")
         scrollUp()
 
@@ -50,7 +49,7 @@ final class DemoRealmUITests: RencanUITestCase {
 final class DemoGongUITests: RencanUITestCase {
     func test示範資料功法段與單一功法頁() {
         launch(["-rencanSeed", "demo"])
-        seeText("目前境界", timeout: 30)
+        seeStele(timeout: 30)
         openAnalysis()
         tapVisibleButton("功法")
         seeText("六門功法")
@@ -88,7 +87,7 @@ final class DemoGongUITests: RencanUITestCase {
 final class DemoSettingsUITests: RencanUITestCase {
     func test示範資料設定頁() {
         launch(["-rencanSeed", "demo"])
-        seeText("目前境界", timeout: 30)
+        seeStele(timeout: 30)
         openTab("設定")
         seeText("身體")
         requireVisible(anyElements(containing: "174"), "身高 174")
@@ -101,8 +100,30 @@ final class DemoSettingsUITests: RencanUITestCase {
         requireVisible(anyElements(containing: "174"), "減回來的身高 174")
 
         openTab("境界")
-        seeText("目前境界")
+        seeStele()
         requireVisible(anyElements(containing: "FFMI 20.32"), "身高改回 174 後的 FFMI 20.32")
+    }
+}
+
+/// `-rencanSeed realm0` 到 `realm6`：七個境界各一筆量測，看深色卡的七個底色、印章、立繪。
+/// `-rencanSeed unstable`：金丹但體脂 24%，看根基不穩那一行與灰掉的進度條。
+final class SteleCardsUITests: RencanUITestCase {
+    func test七個境界的深色卡與根基不穩() {
+        let realmNames = ["煉氣", "築基", "金丹", "元嬰", "化神", "大乘", "渡劫"]
+        for (index, name) in realmNames.enumerated() {
+            launch(["-rencanSeed", "realm\(index)"])
+            requireVisible(
+                anyElements(containing: "\(name)期人蔘立繪"), "\(name)的立繪", timeout: 30
+            )
+            shot("深色卡-\(name)")
+        }
+
+        launch(["-rencanSeed", "unstable"])
+        seeStele(timeout: 30)
+        requireVisible(anyElements(containing: "根基不穩・體脂 24.0%"), "根基不穩那一行")
+        shot("深色卡-根基不穩")
+        scrollToSee(anyElements(containing: "以下境界才生效"), "白卡上降體脂的那一句")
+        shot("根基不穩-白卡")
     }
 }
 
@@ -111,7 +132,7 @@ final class DemoSettingsUITests: RencanUITestCase {
 final class FemaleUITests: RencanUITestCase {
     func test女性版境界頁與分析境界段() {
         launch(["-rencanSeed", "female"])
-        seeText("目前境界", timeout: 30)
+        seeStele(timeout: 30)
         requireVisible(anyElements(containing: "體脂 23.0%"), "境界碑上的體脂 23.0%")
         shot("境界頁")
 

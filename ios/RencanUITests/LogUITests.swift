@@ -43,7 +43,7 @@ final class LogUITests: RencanUITestCase {
 final class LogPreviewUITests: RencanUITestCase {
     func test有體重時預覽跟著數字變() {
         launch(["-rencanSeed", "demo"])
-        seeText("目前境界", timeout: 30)
+        seeStele(timeout: 30)
         tapVisibleButton("記一筆修煉")
         let submit = require(app.buttons["記下"], "記一筆表單的「記下」按鈕")
         // 表單先帶上次記的那一門（推山掌 62.5 公斤）
@@ -60,9 +60,8 @@ final class LogPreviewUITests: RencanUITestCase {
 
         submit.tap()
         passCelebration(heading: "功法精進", shotName: "功法精進慶祝", sheetButton: submit)
-        scrollDown()
         let rows = anyElements(containing: "102.5 公斤 × 5 下 × 3 組")
-        requireVisible(rows, "今天的修煉裡剛記的 102.5 公斤那一筆")
+        scrollToSee(rows, "今天的修煉裡剛記的 102.5 公斤那一筆")
         shot("今天的修煉三筆")
     }
 

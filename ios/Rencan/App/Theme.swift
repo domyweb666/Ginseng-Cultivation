@@ -39,6 +39,30 @@ struct RencanPalette {
     // 粒子自己的顏色，深淺色同一個值，不跟主題換（.vibe/tools/domy_colors.mjs 的 fixed）。
     /// 慶祝粒子的翠綠（網頁版粒子是金 2/3、翠 1/3）
     let sparkJade = Color("SparkJade")
+
+    // 境界碑深色卡自己的顏色，深淺色同一個值（同一支工具的 fixed）。
+    /// 深色卡上的境界名與期別
+    let realmName = Color("RealmName")
+    /// 深色卡上根基不穩那一行；在七個底色上的對比都有 4.5 以上
+    let realmWarning = Color("RealmWarning")
+    /// 紅印章，和印章上的字
+    let seal = Color("Seal")
+    let onSeal = Color("OnSeal")
+
+    /// 深色卡的底色，一境一個（0 煉氣到 6 渡劫）。
+    func realmBase(_ realmIndex: Int) -> Color {
+        Color("RealmBase" + String(RencanPalette.realmSlot(realmIndex)))
+    }
+
+    /// 深色卡上 FFMI 那一行小字，一境一個。
+    func realmSub(_ realmIndex: Int) -> Color {
+        Color("RealmSub" + String(RencanPalette.realmSlot(realmIndex)))
+    }
+
+    /// 顏色集只有 0 到 6，超出去的序號夾回來，免得取到不存在的顏色變成透明。
+    private static func realmSlot(_ realmIndex: Int) -> Int {
+        max(0, min(Tables.realms.count - 1, realmIndex))
+    }
 }
 
 extension Color {
@@ -55,13 +79,15 @@ enum RencanType {
     static var pageTitle: Font { display(34, relativeTo: .largeTitle) }
     /// 境界頁頂端的小標題
     static var realmHeader: Font { display(22, relativeTo: .title2) }
-    /// 境界名（金丹）
-    static var realmName: Font { display(44, relativeTo: .largeTitle) }
+    /// 境界名（金丹），深色卡上立繪下面那一行
+    static var realmName: Font { display(32, relativeTo: .title) }
     /// 功法名、宗門身分這類行內修仙名詞
     static var term: Font { display(20, relativeTo: .title3) }
 
     /// 期別（後期），跟在境界名後面
-    static var realmStage: Font { display(24, relativeTo: .title2) }
+    static var realmStage: Font { display(20, relativeTo: .title3) }
+    /// 紅印章上的字。印章是固定大小的方塊，字不跟著系統文字大小放大。
+    static var seal: Font { .custom(displayFontName, fixedSize: 22) }
     /// 清單列裡的功法名
     static var termBody: Font { display(17, relativeTo: .body) }
     /// 宗門卡上的大身分

@@ -163,6 +163,16 @@ extension RencanUITestCase {
         return found ?? query.firstMatch
     }
 
+    /// 等境界碑出現（量過體組成之後，境界頁最上面那張深色卡）。認的是立繪的旁白文字；
+    /// 還沒量過時那張雜役服立繪唸的是別的字，不會認錯。
+    @discardableResult
+    func seeStele(
+        timeout: TimeInterval = 15, file: StaticString = #filePath, line: UInt = #line
+    ) -> XCUIElement {
+        let query = anyElements(containing: "期人蔘立繪")
+        return requireVisible(query, "境界碑", timeout: timeout, file: file, line: line)
+    }
+
     /// 等一段文字真的出現在畫面上（整段要一樣）。
     @discardableResult
     func seeText(

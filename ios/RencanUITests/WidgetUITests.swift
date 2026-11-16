@@ -11,7 +11,7 @@ final class WidgetUITests: RencanUITestCase {
 
     func test主畫面加小工具看樣子() throws {
         launch(["-rencanSeed", "demo"])
-        seeText("目前境界", timeout: 30)
+        seeStele(timeout: 30)
         XCUIDevice.shared.press(.home)
 
         // 按住自己的圖示會跳選單，裡面有「編輯主畫面」；比按空白處穩，空白處在哪每台模擬器不一樣。

@@ -8,6 +8,8 @@ import SwiftData
 ///   -rencanSeed profile    預先填好身高 174、男
 ///   -rencanSeed demo       另外塞幾筆量測與修煉，畫面有東西可以截圖
 ///   -rencanSeed female     身高 160、女，加一筆量測
+///   -rencanSeed realm0     身高 174、男，一筆落在煉氣中段的量測；realm1 到 realm6 是築基到渡劫
+///   -rencanSeed unstable   身高 174、男，金丹但體脂 24%（根基不穩）
 ///   -rencanHoldCelebration 全螢幕慶祝不自己關，等測試點掉（XCUITest 用；Limrun 走流程不帶）
 @MainActor
 enum UITestSupport {
@@ -55,10 +57,30 @@ enum UITestSupport {
                 for record in demoLifts() {
                     context.insert(record)
                 }
+            case "unstable":
+                try services.store.saveProfile(heightCm: seedHeightCm, sex: .male)
+                context.insert(realmMeasurement(realmIndex: 2, bodyFat: 24))
             default:
-                return
+                guard name.hasPrefix(realmSeedPrefix),
+                    let realmIndex = Int(name.dropFirst(realmSeedPrefix.count)),
+                    Tables.realms.indices.contains(realmIndex)
+                else { return }
+                try services.store.saveProfile(heightCm: seedHeightCm, sex: .male)
+                context.insert(realmMeasurement(realmIndex: realmIndex, bodyFat: 12))
             }
             try context.save()
+        }
+
+        private static let seedHeightCm: Double = 174
+        private static let realmSeedPrefix = "realm"
+
+        /// 剛好落在某一境中段的量測：FFMI 取那一境的下限加半境，去脂體重用規則引擎反推。
+        private static func realmMeasurement(realmIndex: Int, bodyFat: Double) -> Measurement {
+            let realm = Tables.realms[realmIndex]
+            let ffmi = (realm.lowerFFMI + realm.upperFFMI) / 2
+            let lean = Formulas.leanFor(ffmi: ffmi, heightCm: seedHeightCm)
+            let weight = lean / (1 - bodyFat / 100)
+            return measurement(weight, bodyFat, daysAgo: 1, lean: lean)
         }
 
         private static func measurement(

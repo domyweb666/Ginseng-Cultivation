@@ -1,25 +1,67 @@
 import RencanCore
 import SwiftUI
 
-/// 境界碑：立繪、境界與期別、FFMI、根基、距下一期還差多少肌肉、三期進度。
+/// 版面數值照設計畫布「七個境界的深色卡」（390 寬）。
+private enum Metrics {
+    /// 立繪四周露出底色的寬度、立繪的圓角（卡片圓角 24 減掉這一圈 7）、立繪與字之間
+    static let framePadding: CGFloat = 7
+    static let portraitCornerRadius: CGFloat = 17
+    static let captionSpacing: CGFloat = 6
+    /// 字那一列：左邊的內距、其餘三邊的內距（也是字與印章之間）
+    static let captionLeading: CGFloat = 14
+    static let captionPadding: CGFloat = 10
+    /// 境界名與小字之間、境界名與期別之間、三角符號與小字之間
+    static let nameSpacing: CGFloat = 2
+    static let stageSpacing: CGFloat = 6
+    static let warningSpacing: CGFloat = 4
+    /// 紅印章
+    static let sealSize: CGFloat = 34
+    static let sealCornerRadius: CGFloat = 6
+    /// 印章上的字，一境一個（煉氣到渡劫）
+    static let sealGlyphs = ["壹", "貳", "參", "肆", "伍", "陸", "柒"]
+    /// 深色卡最窄多寬：立繪加左右各一圈邊。立繪不能縮，縮了像素的格子就不齊。
+    static let minimumWidth = RencanLayout.largePortraitSize.width + framePadding * 2
+}
+
+/// 境界碑：上面一張深色卡（立繪當主角，下面一列境界與期別、FFMI 與根基、紅印章），
+/// 下面一張白卡（距下一期還差多少肌肉、三期進度）。
+/// 深色卡的底色跟著境界換，深淺色模式長一樣。
 /// 體脂超過門檻時照樣顯示境界，但標「根基不穩」、進度條灰掉（PRD S7）。
 struct SteleView: View {
     let stele: SteleDigest
     let sex: Sex
 
     var body: some View {
-        VStack(alignment: .leading, spacing: RencanLayout.sectionSpacing) {
-            HStack(alignment: .center, spacing: RencanLayout.sectionSpacing) {
-                portrait
-                summary
-            }
+        VStack(spacing: RencanLayout.groupSpacing) {
+            hero
             progress
+                .rencanCard()
         }
-        .rencanCard(cornerRadius: RencanLayout.heroCornerRadius)
-        .accessibilityIdentifier("stele")
     }
 
     private var standing: RealmStanding { stele.standing }
+
+    private var hero: some View {
+        VStack(spacing: Metrics.captionSpacing) {
+            portrait
+            caption
+        }
+        .padding(Metrics.framePadding)
+        .frame(minWidth: Metrics.minimumWidth, maxWidth: .infinity)
+        .background(
+            Color.rencan.realmBase(standing.realmIndex),
+            in: RoundedRectangle(cornerRadius: RencanLayout.heroCornerRadius)
+        )
+        .shadow(
+            color: Color.rencan.shadow.opacity(RencanLayout.shadowOpacity),
+            radius: RencanLayout.shadowRadius,
+            y: RencanLayout.shadowY
+        )
+        // 螢幕寬 375 的手機放不下最窄寬度：對外只佔拿到的寬，多出來的左右平均凸出去，
+        // 不把整頁撐寬。
+        .frame(maxWidth: .infinity)
+        .accessibilityIdentifier("stele")
+    }
 
     private var portrait: some View {
         Image(RencanPortrait.name(realmIndex: standing.realmIndex, sex: sex))
@@ -27,31 +69,60 @@ struct SteleView: View {
             .resizable()
             .scaledToFill()
             .frame(
-                width: RencanLayout.portraitSize.width, height: RencanLayout.portraitSize.height
+                width: RencanLayout.largePortraitSize.width,
+                height: RencanLayout.largePortraitSize.height
             )
-            .background(Color.rencan.tint)
-            .clipShape(RoundedRectangle(cornerRadius: RencanLayout.portraitCornerRadius))
+            .clipShape(RoundedRectangle(cornerRadius: Metrics.portraitCornerRadius))
             .accessibilityLabel("\(standing.realm.name)期人蔘立繪")
     }
 
-    private var summary: some View {
-        VStack(alignment: .leading, spacing: RencanLayout.chipVerticalPadding) {
-            Text("目前境界")
-                .font(RencanType.footnote)
-                .foregroundStyle(Color.rencan.textSecondary)
-            HStack(alignment: .firstTextBaseline, spacing: RencanLayout.chipVerticalPadding) {
-                Text(standing.realm.name)
-                    .font(RencanType.realmName)
-                Text(Tables.stages[standing.stageIndex])
-                    .font(RencanType.realmStage)
+    private var caption: some View {
+        HStack(alignment: .center, spacing: Metrics.captionPadding) {
+            VStack(alignment: .leading, spacing: Metrics.nameSpacing) {
+                HStack(alignment: .firstTextBaseline, spacing: Metrics.stageSpacing) {
+                    Text(standing.realm.name)
+                        .font(RencanType.realmName)
+                    Text(Tables.stages[standing.stageIndex])
+                        .font(RencanType.realmStage)
+                }
+                .foregroundStyle(Color.rencan.realmName)
+                .accessibilityElement(children: .combine)
+                statusLine
             }
-            .foregroundStyle(Color.rencan.strong)
-            .accessibilityElement(children: .combine)
-            Text("FFMI \(Formulas.fmt(stele.ffmi, digits: 2))・\(standing.realm.summary)")
-                .font(RencanType.subheadline)
-                .foregroundStyle(Color.rencan.textSecondary)
-            RencanChip(text: gateText, isWarning: !stele.isStable)
+            Spacer(minLength: 0)
+            seal
         }
+        .padding(.leading, Metrics.captionLeading)
+        .padding([.trailing, .vertical], Metrics.captionPadding)
+    }
+
+    /// FFMI 加根基那一句。根基不穩時換成淺紅，前面加三角符號：
+    /// app 原本的紅在深色底上看不清楚，符號是給分不出紅色的人看的。
+    private var statusLine: some View {
+        HStack(alignment: .firstTextBaseline, spacing: Metrics.warningSpacing) {
+            if !stele.isStable {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .accessibilityHidden(true)
+            }
+            Text("FFMI \(Formulas.fmt(stele.ffmi, digits: 2))・\(gateText)")
+        }
+        .font(RencanType.footnote)
+        .foregroundStyle(
+            stele.isStable
+                ? Color.rencan.realmSub(standing.realmIndex) : Color.rencan.realmWarning
+        )
+    }
+
+    /// 純裝飾，旁白不唸。
+    private var seal: some View {
+        Text(Metrics.sealGlyphs[min(standing.realmIndex, Metrics.sealGlyphs.count - 1)])
+            .font(RencanType.seal)
+            .foregroundStyle(Color.rencan.onSeal)
+            .frame(width: Metrics.sealSize, height: Metrics.sealSize)
+            .background(
+                Color.rencan.seal, in: RoundedRectangle(cornerRadius: Metrics.sealCornerRadius)
+            )
+            .accessibilityHidden(true)
     }
 
     private var bodyFat: String {
@@ -62,7 +133,7 @@ struct SteleView: View {
         Formulas.fmt(sex.bodyFatStableThresholdPercent, digits: 0)
     }
 
-    /// 根基那一行（網頁版 index.html L357–361 的四種說法）。
+    /// 根基那一句（網頁版 index.html L357–361 的四種說法）。
     private var gateText: String {
         switch stele.gate {
         case .stable:

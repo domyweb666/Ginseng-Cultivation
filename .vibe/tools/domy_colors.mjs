@@ -40,8 +40,28 @@ const sets = {
 
 // 粒子自己的顏色：深淺色同一個值，不來自 domy-design（2026-11-16 加）。
 // SparkJade 是慶祝粒子的翠綠。小人蔘的七個色 2026-11-16 跟著小人蔘一起拿掉了。
+// 境界碑深色卡的顏色 2026-11-16 加（組塊 L）：七個底色、七個小字色照畫布「七個境界的深色卡」，
+// 0 到 6 是煉氣到渡劫。RealmWarning 是根基不穩那一行的淺紅，在七個底色上的對比都有 4.5 以上。
 const fixed = {
   SparkJade: '#4CAF8D',
+  RealmBase0: '#734D29',
+  RealmBase1: '#5C6234',
+  RealmBase2: '#4D5525',
+  RealmBase3: '#7A4424',
+  RealmBase4: '#2E3966',
+  RealmBase5: '#7A5E0C',
+  RealmBase6: '#4A4249',
+  RealmSub0: '#EFE2D3',
+  RealmSub1: '#E9E8D0',
+  RealmSub2: '#E8E6CF',
+  RealmSub3: '#F1E1D5',
+  RealmSub4: '#D9DDF0',
+  RealmSub5: '#F3EBC8',
+  RealmSub6: '#E3DCDA',
+  RealmName: '#FFF4D2',
+  RealmWarning: '#FFD4C9',
+  Seal: '#B8402F',
+  OnSeal: '#FFFFFF',
 };
 for (const [name, hex] of Object.entries(fixed)) sets[name] = [hex, hex];
 

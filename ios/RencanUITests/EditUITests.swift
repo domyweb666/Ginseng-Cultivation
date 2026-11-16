@@ -7,7 +7,9 @@ extension RencanUITestCase {
     /// 開示範資料、把境界頁往下捲到「今天的修煉」整塊露出來（最下面那列才不會被底部按鈕擋住）。
     func launchDemoAtTodayList() {
         launch(["-rencanSeed", "demo"])
-        seeText("目前境界", timeout: 30)
+        seeStele(timeout: 30)
+        // 境界碑的立繪很高，捲一次不一定到底；捲兩次，第二次已經到底也沒關係。
+        scrollDown()
         scrollDown()
     }
 
