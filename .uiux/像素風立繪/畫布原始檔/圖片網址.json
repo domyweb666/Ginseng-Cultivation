@@ -1,14 +1,44 @@
-{"r0": {"strip": "/_blob/819973d203c694873596faab28b7882a", "eyes": "/_blob/bd0b1cd3e3495fe52bd810e1127fb9f9"},
- "r1": {"strip": "/_blob/148cc3e46f785b3da0106973389ca10d", "eyes": "/_blob/e6b97de1e63b26657f726f7da3e4ee05"},
- "r2": {"strip": "/_blob/e9ff3903c3e3c5c5aaf5a4d0ef24117a", "eyes": "/_blob/d363e65f026d777e71a64abf7f69f963"},
- "r3": {"strip": "/_blob/5a34db3673674ccce8715637a2803063"},
- "r4": {"strip": "/_blob/7feb62c732c330b8764c6620d819e31c"},
- "r5": {"strip": "/_blob/a673da384112d627cdc843d102c1171f", "eyes": "/_blob/677ac359e1dd068d609601c2dd983d9a"},
- "r6": {"strip": "/_blob/fb077a09cb36c07578c07fe3b05a0ba4", "eyes": "/_blob/f6f8747fc6a10fb1c8b7ee71cc870d2e"},
- "gr0": {"strip": "/_blob/ca8400c253b050f9be6d147d240348cd", "eyes": "/_blob/fb48605b74b9bb61520b30b81f906873"},
- "gr1": {"strip": "/_blob/875db50e72d92d3c8741a8b99ac7170e", "eyes": "/_blob/5af3a84b75abf54d7de0e588cbf5abca"},
- "gr2": {"strip": "/_blob/d98a9b14d51ebb91c65794f7ada76fb6", "eyes": "/_blob/63f3d34bd7cfa6796dbab74ba5d40391"},
- "gr3": {"strip": "/_blob/e8f93bb4cbd2d6c12a947521f45b5cdc"},
- "gr4": {"strip": "/_blob/e1dac3bc3dceabed917524c9aad17217"},
- "gr5": {"strip": "/_blob/8ebf9fd08a53ea80debef06db599c6d6", "eyes": "/_blob/f14c8666952e151c3e6e241286712300"},
- "gr6": {"strip": "/_blob/70063715db7da81f1fbc11c295f3d41b", "eyes": "/_blob/1269f063f46d33c2c12f0bff288c81b0"}}
+{
+ "r0": {
+  "strip": "/_blob/89ee52810dc7f86a6bcf59b5fa3d9f53"
+ },
+ "r1": {
+  "strip": "/_blob/80110bf1a09ed7bd39e7f8454f7f984e"
+ },
+ "r2": {
+  "strip": "/_blob/11de902cf23135a2e9c5e2f86ab4d0f2"
+ },
+ "r3": {
+  "strip": "/_blob/48468dff5b626db5f69bf917fb5fab95"
+ },
+ "r4": {
+  "strip": "/_blob/3212ae82894a1109d366eb913ccfc682"
+ },
+ "r5": {
+  "strip": "/_blob/db5f7fa2af85ab22771b7604a1c1d036"
+ },
+ "r6": {
+  "strip": "/_blob/9112fda329491f4d0ca4aa210b000e3d"
+ },
+ "gr0": {
+  "strip": "/_blob/4cb19be9c8cecea95b954b802bb52d15"
+ },
+ "gr1": {
+  "strip": "/_blob/5583938114a9654cd15e10747a3ed14b"
+ },
+ "gr2": {
+  "strip": "/_blob/31a14383e1d61847d330950777dccae4"
+ },
+ "gr3": {
+  "strip": "/_blob/b0d2bcd7851d3ba01224371c933de8cb"
+ },
+ "gr4": {
+  "strip": "/_blob/a99b48e564d4884f6dc9eb5531bbc111"
+ },
+ "gr5": {
+  "strip": "/_blob/5ccad71b65b75cf959a922cd7027ef1c"
+ },
+ "gr6": {
+  "strip": "/_blob/6a11414a23a73bb8fb1addbaf4be614b"
+ }
+}

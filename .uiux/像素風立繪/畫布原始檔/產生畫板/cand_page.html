@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>化神、元嬰、大乘的底色候選</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap">
+<style>
+body{margin:0}
+.lp{position:relative;overflow:hidden;background:#FFFFFF}
+.lp-strip{display:block;height:100%;width:4800%;max-width:none;image-rendering:pixelated;animation:lp-play 4.8s steps(48) infinite}
+@keyframes lp-play{to{transform:translateX(-100%)}}
+@media (prefers-reduced-motion:reduce){.lp-strip{animation:none !important}}
+</style>
+</helmet>
+<div style="width: __W__px; height: __H__px; box-sizing: border-box; padding: 56px; display: flex; flex-direction: column; gap: 36px; background: #EFEBE3; color: #1D1D1F; font-family: -apple-system, 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h1 style="margin: 0; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 400; font-size: 48px; line-height: 1.25; color: #7A5916">化神、元嬰、大乘的底色候選</h1>
+<p style="margin: 0; font-size: 18px; line-height: 1.6; color: #5F5F66">每一列最左邊是現在的，右邊三個是候選。每張下面那排七個色塊，是把這個顏色放進七境（煉氣到渡劫）裡的樣子，有框的那格就是這一境。其他四境照上次那組沒動。</p>
+</div>
+__ROWS__
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":__W__,"height":__H__}}'>
+class Component extends DCLogic {
+renderVals() {
+return __DATA__;
+}
+}
+</script>
+</body>
+</html>

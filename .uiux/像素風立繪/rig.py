@@ -274,6 +274,54 @@ def breath(f, period=24, up=(4, 14)):
     return 1 if up[0] <= (f % period) < up[1] else 0
 
 
+# ---------- 姿勢（照像素 B-roll 的 motion.js：預備、出手、回彈，一拍一拍地演）----------
+# 姿勢是 {dx, dy, sq, ln}：dx、dy 是整個人的位移，sq 正的是壓扁（頭往下沉）、負的是拉長，ln 是身體傾斜幾度。
+# 單位不是格，是「一份」，畫的時候再乘上 U 格。壓扁是把身體中段壓短，頭和臉不變形。
+U = 3
+
+
+def pose(dx=0.0, dy=0.0, sq=0.0, ln=0.0):
+    return {'dx': dx, 'dy': dy, 'sq': sq, 'ln': ln}
+
+
+def padd(*ps):
+    out = pose()
+    for p in ps:
+        for k in out:
+            out[k] += p.get(k, 0)
+    return out
+
+
+def seq(f, a, vals):
+    """從第 a 格開始，一格一個值；範圍外是 0。"""
+    i = f - a
+    return vals[i] if 0 <= i < len(vals) else 0
+
+
+def breathe(f, beat=8, ramp=3):
+    """呼吸：一拍吸（往上拉長 1 份）、一拍吐，吸和吐各花 ramp 格。回傳 0 到 1。"""
+    g = f % (2 * beat)
+    if g < beat:
+        return min(1.0, (g + 1) / float(ramp))
+    return max(0.0, 1.0 - (g - beat + 1) / float(ramp))
+
+
+def follow(val, f, k=0.35, w=1.3, span=18):
+    """被帶著動的東西（葉子、頭髮、流蘇、水桶）：把 val 每一格的變化當成推了一下，各自盪幾下再停。
+    val 要是以 N 為週期的函式。回傳值的單位跟 val 一樣。"""
+    s = 0.0
+    for j in range(span):
+        v = val(f - j) - val(f - j - 1)
+        if v:
+            s += v * math.exp(-k * j) * math.cos(w * j)
+    return s
+
+
+def f_flap(W, pivot, amount, length, power=1.5):
+    """葉子兩邊的尖端一起往下垂（amount 正）或往上翹（負），越靠外動越多。"""
+    return W * 0, W * amount * np.clip(np.abs(XS - pivot[0]) / float(length), 0, 1) ** power
+
+
 # ---------- 骨架 ----------
 class Part:
     def __init__(self, name, mask, move=None, parent=None):
@@ -294,6 +342,7 @@ class Rig:
         self.post = []      # 整張的處理（閃白、震動）fn(畫面, 格) -> 畫面
         self.soft = []      # 柔性變形 fn(格) -> [(DX, DY), ...]
         self.regions = {}   # 名字 -> 權重圖，只給檢查圖用
+        self._blink = None  # (閉眼圖, 哪幾格閉眼)
         self._built = False
 
     def region(self, name, mask, r=3):
@@ -301,6 +350,10 @@ class Rig:
         W = feather(mask, r)
         self.regions[name] = W
         return W
+
+    def blink(self, img, frames):
+        """眨眼直接畫進動畫：frames 這幾格換成閉眼圖（跟底圖只差眼睛那一塊）。頭會大幅移動，眨眼圖沒辦法另外疊。"""
+        self._blink = (img, set(frames))
 
     def part(self, name, mask, move=None, parent=None):
         p = Part(name, mask.copy(), move, parent)
@@ -318,23 +371,17 @@ class Rig:
                 above |= q.mask
             hole = p.mask & above
             p.tex = inpaint(self.base, hole, p.mask) if hole.any() else self.base
+            p.alt = p.tex
+            if self._blink:
+                diff = np.abs(self._blink[0] - self.base).sum(-1) > 0
+                p.alt = p.tex.copy()
+                p.alt[diff & ~hole] = self._blink[0][diff & ~hole]
         self._built = True
 
     def frame(self, f):
+        """先在原圖上做柔性變形（頭髮、葉子、布料還在原本的位置時先推好），再把零件切下來照姿勢擺。"""
         if not self._built:
             self.build()
-        out = self.bg.copy()
-        for fx in self.back:
-            fx(out, f)
-        for p in self.parts:
-            X, Y = XS, YS
-            for t in p.chain(f):
-                X, Y = t(X, Y)
-            sx, sy = np.floor(X + 0.5).astype(int), np.floor(Y + 0.5).astype(int)
-            ok = (sx >= 0) & (sx < GW) & (sy >= 0) & (sy < GH)
-            m = np.zeros((GH, GW), dtype=bool)
-            m[ok] = p.mask[sy[ok], sx[ok]]
-            out[m] = p.tex[sy[m], sx[m]]
         if self.soft:
             DX = np.zeros((GH, GW), dtype=np.float32)
             DY = np.zeros((GH, GW), dtype=np.float32)
@@ -342,9 +389,25 @@ class Rig:
                 for dx, dy in fn(f):
                     DX += dx
                     DY += dy
-            sx = np.clip(np.floor(XS - DX + 0.5), 0, GW - 1).astype(int)
-            sy = np.clip(np.floor(YS - DY + 0.5), 0, GH - 1).astype(int)
-            out = out[sy, sx]
+            wx = np.clip(np.floor(XS - DX + 0.5), 0, GW - 1).astype(int)
+            wy = np.clip(np.floor(YS - DY + 0.5), 0, GH - 1).astype(int)
+            warp = lambda a: a[wy, wx]
+        else:
+            warp = lambda a: a
+        out = warp(self.bg).copy()
+        for fx in self.back:
+            fx(out, f)
+        closed = bool(self._blink) and (f % N) in self._blink[1]
+        for p in self.parts:
+            mask, tex = warp(p.mask), warp(p.alt if closed else p.tex)
+            X, Y = XS, YS
+            for tr in p.chain(f):
+                X, Y = tr(X, Y)
+            sx, sy = np.floor(X + 0.5).astype(int), np.floor(Y + 0.5).astype(int)
+            ok = (sx >= 0) & (sx < GW) & (sy >= 0) & (sy < GH)
+            m = np.zeros((GH, GW), dtype=bool)
+            m[ok] = mask[sy[ok], sx[ok]]
+            out[m] = tex[sy[m], sx[m]]
         for fx in self.front:
             fx(out, f)
         for fx in self.post:

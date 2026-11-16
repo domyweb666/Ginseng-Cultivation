@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>化神、元嬰、大乘的底色候選</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap">
+<style>
+body{margin:0}
+.lp{position:relative;overflow:hidden;background:#FFFFFF}
+.lp-strip{width:100%;height:100%;background-repeat:no-repeat;background-size:4800% 100%;image-rendering:pixelated;animation:lp-play 4.8s steps(48,jump-none) infinite}
+@keyframes lp-play{from{background-position:0% 0}to{background-position:100% 0}}
+@media (prefers-reduced-motion:reduce){.lp-strip{animation:none !important}}
+.st-r0{background-image:url(/_blob/89ee52810dc7f86a6bcf59b5fa3d9f53)}
+.st-r1{background-image:url(/_blob/80110bf1a09ed7bd39e7f8454f7f984e)}
+.st-r2{background-image:url(/_blob/11de902cf23135a2e9c5e2f86ab4d0f2)}
+.st-r3{background-image:url(/_blob/48468dff5b626db5f69bf917fb5fab95)}
+.st-r4{background-image:url(/_blob/3212ae82894a1109d366eb913ccfc682)}
+.st-r5{background-image:url(/_blob/db5f7fa2af85ab22771b7604a1c1d036)}
+.st-r6{background-image:url(/_blob/9112fda329491f4d0ca4aa210b000e3d)}
+.st-gr0{background-image:url(/_blob/4cb19be9c8cecea95b954b802bb52d15)}
+.st-gr1{background-image:url(/_blob/5583938114a9654cd15e10747a3ed14b)}
+.st-gr2{background-image:url(/_blob/31a14383e1d61847d330950777dccae4)}
+.st-gr3{background-image:url(/_blob/b0d2bcd7851d3ba01224371c933de8cb)}
+.st-gr4{background-image:url(/_blob/a99b48e564d4884f6dc9eb5531bbc111)}
+.st-gr5{background-image:url(/_blob/5ccad71b65b75cf959a922cd7027ef1c)}
+.st-gr6{background-image:url(/_blob/6a11414a23a73bb8fb1addbaf4be614b)}
+</style>
+</helmet>
+<div style="width: 1720px; height: 2414px; box-sizing: border-box; padding: 56px; display: flex; flex-direction: column; gap: 36px; background: #EFEBE3; color: #1D1D1F; font-family: -apple-system, 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h1 style="margin: 0; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 400; font-size: 48px; line-height: 1.25; color: #7A5916">化神、元嬰、大乘的底色候選</h1>
+<p style="margin: 0; font-size: 18px; line-height: 1.6; color: #5F5F66">每一列最左邊是現在的，右邊三個是候選。每張下面那排七個色塊，是把這個顏色放進七境（煉氣到渡劫）裡的樣子，有框的那格就是這一境。其他四境照上次那組沒動。</p>
+</div>
+<div style="display: flex; gap: 28px; align-items: flex-start">
+<div style="width: 96px; height: 516px; display: flex; align-items: center; justify-content: center; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 36px; color: #7A5916">元嬰</div>
+<sc-for list="{{ying}}" as="c" hint-placeholder-count="4">
+<div style="width: 350px; display: flex; flex-direction: column; gap: 12px">
+<div style="box-sizing: border-box; width: 350px; padding: 7px; border-radius: 24px; background: {{c.bg}}; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 4px 18px rgba(25, 22, 20, 0.10)">
+<div class="lp" style="width: 336px; height: 420px; border-radius: 17px" role="img" aria-label="{{c.alt}}">
+<div class="lp-strip {{c.cls}}" style="animation-delay: {{c.delay}}"></div>
+</div>
+<div style="box-sizing: border-box; padding: 10px 10px 10px 14px; display: flex; align-items: center; gap: 10px">
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<div style="display: flex; align-items: baseline; gap: 6px; font-family: 'LXGW WenKai TC', serif; color: #FFF4D2">
+<span style="font-size: 32px; line-height: 36px; font-weight: 700">{{c.realm}}</span>
+<span style="font-size: 20px; line-height: 24px; font-weight: 700">初期</span>
+</div>
+<div style="font-size: 13px; line-height: 18px; color: {{c.sub}}">{{c.ffmi}}</div>
+</div>
+<span style="width: 34px; height: 34px; border-radius: 6px; background: #B8402F; color: #FFFFFF; font-family: 'LXGW WenKai TC', serif; font-weight: 700; font-size: 22px; line-height: 1; display: flex; align-items: center; justify-content: center">{{c.seal}}</span>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 0 6px">
+<div style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 22px; line-height: 1.3; color: #5E4410">{{c.label}}</div>
+<div style="font-size: 15px; line-height: 1.55; color: #5F5F66; min-height: 70px">{{c.note}}</div>
+<div style="display: flex; gap: 4px" role="img" aria-label="放進七境裡的樣子">
+<span style="flex: 1; height: 28px; border-radius: 6px; background: {{c.s0}}; box-shadow: {{c.h0}}"></span>
+<span style="flex: 1; height: 28px; border-radius: 6px; background: {{c.s1}}; box-shadow: {{c.h1}}"></span>
+<span style="flex: 1; height: 28px; border-radius: 6px; background: {{c.s2}}; box-shadow: {{c.h2}}"></span>
+<span style="flex: 1; height: 28px; border-radius: 6px; background: {{c.s3}}; box-shadow: {{c.h3}}"></span>
+<span style="flex: 1; height: 28px; border-radius: 6px; background: {{c.s4}}; box-shadow: {{c.h4}}"></span>
+<span style="flex: 1; height: 28px; border-radius: 6px; background: {{c.s5}}; box-shadow: {{c.h5}}"></span>
+<span style="flex: 1; height: 28px; border-radius: 6px; background: {{c.s6}}; box-shadow: {{c.h6}}"></span>
+</div>
+</div>
+</div>
+</sc-for>
+</div>
+
+<div style="display: flex; gap: 28px; align-items: flex-start">
+<div style="width: 96px; height: 516px; display: flex; align-items: center; justify-content: center; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 36px; color: #7A5916">化神</div>
+<sc-for list="{{hua}}" as="c" hint-placeholder-count="4">
+<div style="width: 350px; display: flex; flex-direction: column; gap: 12px">
+<div style="box-sizing: border-box; width: 350px; padding: 7px; border-radius: 24px; background: {{c.bg}}; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 4px 18px rgba(25, 22, 20, 0.10)">
+<div class="lp" style="width: 336px; height: 420px; border-radius: 17px" role="img" aria-label="{{c.alt}}">
+<div class="lp-strip {{c.cls}}" style="animation-delay: {{c.delay}}"></div>
+</div>
+<div style="box-sizing: border-box; padding: 10px 10px 10px 14px; display: flex; align-items: center; gap: 10px">
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<div style="display: flex; align-items: baseline; gap: 6px; font-family: 'LXGW WenKai TC', serif; color: #FFF4D2">
+<span style="font-size: 32px; line-height: 36px; font-weight: 700">{{c.realm}}</span>
+<span style="font-size: 20px; line-height: 24px; font-weight: 700">初期</span>
+</div>
+<div style="font-size: 13px; line-height: 18px; color: {{c.sub}}">{{c.ffmi}}</div>
+</div>
+<span style="width: 34px; height: 34px; border-radius: 6px; background: #B8402F; color: #FFFFFF; font-family: 'LXGW WenKai TC', serif; font-weight: 700; font-size: 22px; line-height: 1; display: flex; align-items: center; justify-content: center">{{c.seal}}</span>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 0 6px">
+<div style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 22px; line-height: 1.3; color: #5E4410">{{c.label}}</div>
+<div style="font-size: 15px; line-height: 1.55; color: #5F5F66; min-height: 70px">{{c.note}}</div>
+<div style="display: flex; gap: 4px" role="img" aria-label="放進七境裡的樣子">
+<span style="flex: 1; height: 28px; border-radius: 6px; background: {{c.s0}}; box-shadow: {{c.h0}}"></span>
+<span style="flex: 1; height: 28px; border-radius: 6px; background: {{c.s1}}; box-shadow: {{c.h1}}"></span>
+<span style="flex: 1; height: 28px; border-radius: 6px; background: {{c.s2}}; box-shadow: {{c.h2}}"></span>
+<span style="flex: 1; height: 28px; border-radius: 6px; background: {{c.s3}}; box-shadow: {{c.h3}}"></span>
+<span style="flex: 1; height: 28px; border-radius: 6px; background: {{c.s4}}; box-shadow: {{c.h4}}"></span>
+<span style="flex: 1; height: 28px; border-radius: 6px; background: {{c.s5}}; box-shadow: {{c.h5}}"></span>
+<span style="flex: 1; height: 28px; border-radius: 6px; background: {{c.s6}}; box-shadow: {{c.h6}}"></span>
+</div>
+</div>
+</div>
+</sc-for>
+</div>
+
+<div style="display: flex; gap: 28px; align-items: flex-start">
+<div style="width: 96px; height: 516px; display: flex; align-items: center; justify-content: center; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 36px; color: #7A5916">大乘</div>
+<sc-for list="{{cheng}}" as="c" hint-placeholder-count="4">
+<div style="width: 350px; display: flex; flex-direction: column; gap: 12px">
+<div style="box-sizing: border-box; width: 350px; padding: 7px; border-radius: 24px; background: {{c.bg}}; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 4px 18px rgba(25, 22, 20, 0.10)">
+<div class="lp" style="width: 336px; height: 420px; border-radius: 17px" role="img" aria-label="{{c.alt}}">
+<div class="lp-strip {{c.cls}}" style="animation-delay: {{c.delay}}"></div>
+</div>
+<div style="box-sizing: border-box; padding: 10px 10px 10px 14px; display: flex; align-items: center; gap: 10px">
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<div style="display: flex; align-items: baseline; gap: 6px; font-family: 'LXGW WenKai TC', serif; color: #FFF4D2">
+<span style="font-size: 32px; line-height: 36px; font-weight: 700">{{c.realm}}</span>
+<span style="font-size: 20px; line-height: 24px; font-weight: 700">初期</span>
+</div>
+<div style="font-size: 13px; line-height: 18px; color: {{c.sub}}">{{c.ffmi}}</div>
+</div>
+<span style="width: 34px; height: 34px; border-radius: 6px; background: #B8402F; color: #FFFFFF; font-family: 'LXGW WenKai TC', serif; font-weight: 700; font-size: 22px; line-height: 1; display: flex; align-items: center; justify-content: center">{{c.seal}}</span>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 0 6px">
+<div style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 22px; line-height: 1.3; color: #5E4410">{{c.label}}</div>
+<div style="font-size: 15px; line-height: 1.55; color: #5F5F66; min-height: 70px">{{c.note}}</div>
+<div style="display: flex; gap: 4px" role="img" aria-label="放進七境裡的樣子">
+<span style="flex: 1; height: 28px; border-radius: 6px; background: {{c.s0}}; box-shadow: {{c.h0}}"></span>
+<span style="flex: 1; height: 28px; border-radius: 6px; background: {{c.s1}}; box-shadow: {{c.h1}}"></span>
+<span style="flex: 1; height: 28px; border-radius: 6px; background: {{c.s2}}; box-shadow: {{c.h2}}"></span>
+<span style="flex: 1; height: 28px; border-radius: 6px; background: {{c.s3}}; box-shadow: {{c.h3}}"></span>
+<span style="flex: 1; height: 28px; border-radius: 6px; background: {{c.s4}}; box-shadow: {{c.h4}}"></span>
+<span style="flex: 1; height: 28px; border-radius: 6px; background: {{c.s5}}; box-shadow: {{c.h5}}"></span>
+<span style="flex: 1; height: 28px; border-radius: 6px; background: {{c.s6}}; box-shadow: {{c.h6}}"></span>
+</div>
+</div>
+</div>
+</sc-for>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1720,"height":2414}}'>
+class Component extends DCLogic {
+renderVals() {
+return {"ying": [{"bg": "#6F5E38", "sub": "#EEE7D2", "label": "現在的：古銅", "note": "白金袍的金壓暗。", "realm": "元嬰", "seal": "肆", "ffmi": "FFMI 21.8・根基穩固", "cls": "st-r3", "delay": "0s", "alt": "元嬰，現在的：古銅", "s0": "#734D29", "h0": "none", "s1": "#5C6234", "h1": "none", "s2": "#4D5525", "h2": "none", "s3": "#6F5E38", "h3": "0 0 0 3px #EFEBE3, 0 0 0 5px #1D1D1F", "s4": "#43528F", "h4": "none", "s5": "#8B540B", "h5": "none", "s6": "#4A4249", "h6": "none"}, {"bg": "#6B5D50", "sub": "#EDE6DF", "label": "候選一：灰褐", "note": "取雲和袍子陰影的暖灰。最不搶眼，跟煉氣、大乘的褐金拉得最開。", "realm": "元嬰", "seal": "肆", "ffmi": "FFMI 21.8・根基穩固", "cls": "st-r3", "delay": "0s", "alt": "元嬰，候選一：灰褐", "s0": "#734D29", "h0": "none", "s1": "#5C6234", "h1": "none", "s2": "#4D5525", "h2": "none", "s3": "#6B5D50", "h3": "0 0 0 3px #EFEBE3, 0 0 0 5px #1D1D1F", "s4": "#43528F", "h4": "none", "s5": "#8B540B", "h5": "none", "s6": "#4A4249", "h6": "none"}, {"bg": "#6E5F22", "sub": "#EEE9CC", "label": "候選二：橄欖金", "note": "比現在的更黃、更飽和一點，金的感覺比較明顯。會往築基、金丹的綠靠一點。", "realm": "元嬰", "seal": "肆", "ffmi": "FFMI 21.8・根基穩固", "cls": "st-r3", "delay": "0s", "alt": "元嬰，候選二：橄欖金", "s0": "#734D29", "h0": "none", "s1": "#5C6234", "h1": "none", "s2": "#4D5525", "h2": "none", "s3": "#6E5F22", "h3": "0 0 0 3px #EFEBE3, 0 0 0 5px #1D1D1F", "s4": "#43528F", "h4": "none", "s5": "#8B540B", "h5": "none", "s6": "#4A4249", "h6": "none"}, {"bg": "#7A4424", "sub": "#F1E1D5", "label": "候選三：檀木紅褐", "note": "取手杖的木頭色。最暖、最深。缺點是跟煉氣的褐很像，紅印章在上面比較不跳。", "realm": "元嬰", "seal": "肆", "ffmi": "FFMI 21.8・根基穩固", "cls": "st-r3", "delay": "0s", "alt": "元嬰，候選三：檀木紅褐", "s0": "#734D29", "h0": "none", "s1": "#5C6234", "h1": "none", "s2": "#4D5525", "h2": "none", "s3": "#7A4424", "h3": "0 0 0 3px #EFEBE3, 0 0 0 5px #1D1D1F", "s4": "#43528F", "h4": "none", "s5": "#8B540B", "h5": "none", "s6": "#4A4249", "h6": "none"}], "hua": [{"bg": "#43528F", "sub": "#DFE2F3", "label": "現在的：靛藍", "note": "夜空的藍壓暗一階。", "realm": "化神", "seal": "伍", "ffmi": "FFMI 22.8・根基穩固", "cls": "st-r4", "delay": "0s", "alt": "化神，現在的：靛藍", "s0": "#734D29", "h0": "none", "s1": "#5C6234", "h1": "none", "s2": "#4D5525", "h2": "none", "s3": "#6F5E38", "h3": "none", "s4": "#43528F", "h4": "0 0 0 3px #EFEBE3, 0 0 0 5px #1D1D1F", "s5": "#8B540B", "h5": "none", "s6": "#4A4249", "h6": "none"}, {"bg": "#2E3966", "sub": "#D9DDF0", "label": "候選一：深夜藍", "note": "同一個藍再壓深，比較沉、比較不亮眼。米白字最清楚。", "realm": "化神", "seal": "伍", "ffmi": "FFMI 22.8・根基穩固", "cls": "st-r4", "delay": "0s", "alt": "化神，候選一：深夜藍", "s0": "#734D29", "h0": "none", "s1": "#5C6234", "h1": "none", "s2": "#4D5525", "h2": "none", "s3": "#6F5E38", "h3": "none", "s4": "#2E3966", "h4": "0 0 0 3px #EFEBE3, 0 0 0 5px #1D1D1F", "s5": "#8B540B", "h5": "none", "s6": "#4A4249", "h6": "none"}, {"bg": "#57507A", "sub": "#E6E1F0", "label": "候選二：暮紫", "note": "取雲和飄帶的灰紫。比較柔，跟袍子的顏色比較合。", "realm": "化神", "seal": "伍", "ffmi": "FFMI 22.8・根基穩固", "cls": "st-r4", "delay": "0s", "alt": "化神，候選二：暮紫", "s0": "#734D29", "h0": "none", "s1": "#5C6234", "h1": "none", "s2": "#4D5525", "h2": "none", "s3": "#6F5E38", "h3": "none", "s4": "#57507A", "h4": "0 0 0 3px #EFEBE3, 0 0 0 5px #1D1D1F", "s5": "#8B540B", "h5": "none", "s6": "#4A4249", "h6": "none"}, {"bg": "#4C5A7A", "sub": "#DFE4EE", "label": "候選三：灰藍", "note": "把藍的飽和度拿掉一半。比較不鮮豔，跟其他幾境的濁色比較搭。", "realm": "化神", "seal": "伍", "ffmi": "FFMI 22.8・根基穩固", "cls": "st-r4", "delay": "0s", "alt": "化神，候選三：灰藍", "s0": "#734D29", "h0": "none", "s1": "#5C6234", "h1": "none", "s2": "#4D5525", "h2": "none", "s3": "#6F5E38", "h3": "none", "s4": "#4C5A7A", "h4": "0 0 0 3px #EFEBE3, 0 0 0 5px #1D1D1F", "s5": "#8B540B", "h5": "none", "s6": "#4A4249", "h6": "none"}], "cheng": [{"bg": "#8B540B", "sub": "#F6E7CB", "label": "現在的：琥珀", "note": "金袍的金壓暗，偏橘。", "realm": "大乘", "seal": "陸", "ffmi": "FFMI 24.3・根基穩固", "cls": "st-r5", "delay": "0s", "alt": "大乘，現在的：琥珀", "s0": "#734D29", "h0": "none", "s1": "#5C6234", "h1": "none", "s2": "#4D5525", "h2": "none", "s3": "#6F5E38", "h3": "none", "s4": "#43528F", "h4": "none", "s5": "#8B540B", "h5": "0 0 0 3px #EFEBE3, 0 0 0 5px #1D1D1F", "s6": "#4A4249", "h6": "none"}, {"bg": "#7A5E0C", "sub": "#F3EBC8", "label": "候選一：正金", "note": "往黃的方向拉，不那麼橘，比較像金子。", "realm": "大乘", "seal": "陸", "ffmi": "FFMI 24.3・根基穩固", "cls": "st-r5", "delay": "0s", "alt": "大乘，候選一：正金", "s0": "#734D29", "h0": "none", "s1": "#5C6234", "h1": "none", "s2": "#4D5525", "h2": "none", "s3": "#6F5E38", "h3": "none", "s4": "#43528F", "h4": "none", "s5": "#7A5E0C", "h5": "0 0 0 3px #EFEBE3, 0 0 0 5px #1D1D1F", "s6": "#4A4249", "h6": "none"}, {"bg": "#6E4A12", "sub": "#F1E4CC", "label": "候選二：深金褐", "note": "同一個色相再壓深。比較穩，缺點是跟煉氣的褐更近。", "realm": "大乘", "seal": "陸", "ffmi": "FFMI 24.3・根基穩固", "cls": "st-r5", "delay": "0s", "alt": "大乘，候選二：深金褐", "s0": "#734D29", "h0": "none", "s1": "#5C6234", "h1": "none", "s2": "#4D5525", "h2": "none", "s3": "#6F5E38", "h3": "none", "s4": "#43528F", "h4": "none", "s5": "#6E4A12", "h5": "0 0 0 3px #EFEBE3, 0 0 0 5px #1D1D1F", "s6": "#4A4249", "h6": "none"}, {"bg": "#6F6418", "sub": "#EFEBC8", "label": "候選三：橄欖金", "note": "再往黃綠靠。跟褐色那幾境分得最開，但會有點像築基。", "realm": "大乘", "seal": "陸", "ffmi": "FFMI 24.3・根基穩固", "cls": "st-r5", "delay": "0s", "alt": "大乘，候選三：橄欖金", "s0": "#734D29", "h0": "none", "s1": "#5C6234", "h1": "none", "s2": "#4D5525", "h2": "none", "s3": "#6F5E38", "h3": "none", "s4": "#43528F", "h4": "none", "s5": "#6F6418", "h5": "0 0 0 3px #EFEBE3, 0 0 0 5px #1D1D1F", "s6": "#4A4249", "h6": "none"}]};
+}
+}
+</script>
+</body>
+</html>

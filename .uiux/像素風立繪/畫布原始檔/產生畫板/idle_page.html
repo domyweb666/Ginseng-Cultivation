@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>G 款第二版：14 張各自的待機動作</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap">
+<style>
+body{margin:0}
+.lp{position:relative;overflow:hidden;background:#FFFFFF}
+.lp-strip{display:block;height:100%;width:4800%;max-width:none;image-rendering:pixelated;animation:lp-play 4.8s steps(48) infinite}
+.lp-eyes{position:absolute;left:0;top:0;width:100%;height:100%;image-rendering:pixelated;opacity:0;animation:lp-blink 4s steps(1) infinite}
+@keyframes lp-play{to{transform:translateX(-100%)}}
+@keyframes lp-blink{0%,94%{opacity:0}95%,98%{opacity:1}99%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.lp-strip,.lp-eyes{animation:none !important}}
+</style>
+</helmet>
+<div style="width: __W__px; height: __H__px; box-sizing: border-box; padding: 56px; display: flex; flex-direction: column; gap: 28px; background: #EFEBE3; color: #1D1D1F; font-family: -apple-system, 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h1 style="margin: 0; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 400; font-size: 48px; line-height: 1.25; color: #7A5916">G 款第二版：14 張各自的待機動作</h1>
+<p style="margin: 0; font-size: 18px; line-height: 1.6; color: #5F5F66">每條 48 格、一格 0.1 秒，4.8 秒一輪。平常只有呼吸、葉子、鬚和衣角在動，隔一陣子做一次招牌動作。卡片套上這次挑的七個底色。</p>
+</div>
+__MEN__
+__WOMEN__
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":__W__,"height":__H__}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+men: __MJ__,
+women: __WJ__
+};
+}
+}
+</script>
+</body>
+</html>

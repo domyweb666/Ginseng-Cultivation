@@ -1,0 +1,26 @@
+<div style="display: flex; gap: 24px; align-items: flex-start">
+<div style="width: 56px; height: 516px; display: flex; align-items: center; justify-content: center; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-size: 30px; color: #7A5916">__SEX__</div>
+<sc-for list="{{__LIST__}}" as="c" hint-placeholder-count="7">
+<div style="width: 350px; display: flex; flex-direction: column; gap: 12px">
+<div style="box-sizing: border-box; width: 350px; padding: 7px; border-radius: 24px; background: {{c.bg}}; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 4px 18px rgba(25, 22, 20, 0.10)">
+<div class="lp" style="width: 336px; height: 420px; border-radius: 17px" role="img" aria-label="{{c.alt}}">
+<img class="lp-strip" src="{{c.strip}}" alt="">
+<sc-if value="{{c.hasEyes}}" hint-placeholder-val="{{false}}">
+<img class="lp-eyes" src="{{c.eyes}}" alt="" style="animation-delay: {{c.delay}}">
+</sc-if>
+</div>
+<div style="box-sizing: border-box; padding: 10px 10px 10px 14px; display: flex; align-items: center; gap: 10px">
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<div style="font-family: 'LXGW WenKai TC', serif; font-size: 32px; line-height: 36px; font-weight: 700; color: #FFF4D2">{{c.realm}}</div>
+<div style="font-size: 13px; line-height: 18px; color: {{c.sub}}">{{c.who}}</div>
+</div>
+<span style="width: 34px; height: 34px; border-radius: 6px; background: #B8402F; color: #FFFFFF; font-family: 'LXGW WenKai TC', serif; font-weight: 700; font-size: 22px; line-height: 1; display: flex; align-items: center; justify-content: center">{{c.seal}}</span>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 0 6px">
+<div style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 22px; line-height: 1.3; color: #5E4410">{{c.act}}</div>
+<div style="font-size: 15px; line-height: 1.55; color: #5F5F66">{{c.how}}</div>
+</div>
+</div>
+</sc-for>
+</div>
