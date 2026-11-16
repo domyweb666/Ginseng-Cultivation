@@ -108,7 +108,10 @@ enum RencanLayout {
     /// 圖示按鈕的點擊範圍，照 iOS 的 44pt 下限。
     static let tapTarget: CGFloat = 44
     static let buttonHeight: CGFloat = 52
-    static let portraitSize = CGSize(width: 112, height: 140)
+    /// 立繪是 168×210 格的像素圖。框的寬高只能是它的整數倍，一格才會對到整數個點，
+    /// 不然在部分機型上線條會粗細不一。小位置一格一個點，大的一格兩個點。
+    static let portraitSize = CGSize(width: 168, height: 210)
+    static let largePortraitSize = CGSize(width: 336, height: 420)
     /// 卡片陰影（domy elevation 1）
     static let shadowRadius: CGFloat = 9
     static let shadowY: CGFloat = 4

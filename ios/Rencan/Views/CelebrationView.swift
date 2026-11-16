@@ -2,16 +2,12 @@ import SwiftUI
 
 /// 版面數值照設計畫布 Celebrate（390×844，從螢幕邊緣量）。
 private enum Metrics {
-    /// 內容離螢幕上緣、左右、下緣多遠
-    static let topPadding: CGFloat = 96
+    /// 內容離螢幕左右、下緣多遠
     static let sidePadding: CGFloat = 32
     static let bottomPadding: CGFloat = 40
-    /// 小標題、立繪、大字這幾塊之間
-    static let blockSpacing: CGFloat = 28
     /// 小標題的字距（畫布 0.4em）
     static let headingTracking: CGFloat = 6
-    /// 立繪：圖的大小與圓角、圖與金框的縫、金框粗細與外圓角
-    static let portraitSize = CGSize(width: 200, height: 250)
+    /// 立繪：圖的圓角、圖與金框的縫、金框粗細與外圓角
     static let portraitCornerRadius: CGFloat = 24
     static let frameGap: CGFloat = 6
     static let frameWidth: CGFloat = 3
@@ -24,6 +20,23 @@ private enum Metrics {
     static let barWidth: CGFloat = 120
     static let barHeight: CGFloat = 3
     static let footerSpacing: CGFloat = 10
+}
+
+/// 立繪的大小，和跟著它變的留白。
+/// regular 的留白照畫布。large 畫布沒畫，留白是照「螢幕高 844 的 iPhone 放得下」縮的。
+private struct PortraitLayout {
+    let portraitSize: CGSize
+    /// 內容離螢幕上緣多遠
+    let topPadding: CGFloat
+    /// 小標題、立繪、大字這幾塊之間
+    let blockSpacing: CGFloat
+
+    static let regular = PortraitLayout(
+        portraitSize: RencanLayout.portraitSize, topPadding: 96, blockSpacing: 28
+    )
+    static let large = PortraitLayout(
+        portraitSize: RencanLayout.largePortraitSize, topPadding: 72, blockSpacing: 20
+    )
 }
 
 /// 全螢幕慶祝：突破、晉升、功法破紀錄時蓋在三頁上面。4.5 秒自己關，點任何地方也關。
@@ -70,8 +83,22 @@ struct CelebrationView: View {
         }
     }
 
-    /// 有立繪時照畫布從上往下排；沒有立繪（功法突破、精進）時畫布沒畫，文字放在中間。
+    /// 有立繪時先試大的，這支手機放不下（螢幕矮、字調大、說明行數多）就換小的。
+    /// 沒有立繪（功法突破、精進）時照原本的留白。
+    @ViewBuilder
     private var content: some View {
+        if celebration.portrait == nil {
+            column(.regular)
+        } else {
+            ViewThatFits(in: .vertical) {
+                column(.large)
+                column(.regular)
+            }
+        }
+    }
+
+    /// 有立繪時照畫布從上往下排；沒有立繪時畫布沒畫，文字放在中間。
+    private func column(_ layout: PortraitLayout) -> some View {
         VStack(spacing: 0) {
             if celebration.portrait == nil {
                 Spacer(minLength: 0)
@@ -81,27 +108,28 @@ struct CelebrationView: View {
                 .tracking(Metrics.headingTracking)
                 .foregroundStyle(Color.rencan.bright)
             if let portrait = celebration.portrait {
-                portraitFrame(portrait)
-                    .padding(.top, Metrics.blockSpacing)
+                portraitFrame(portrait, size: layout.portraitSize)
+                    .padding(.top, layout.blockSpacing)
             }
             titleRow
-                .padding(.top, Metrics.blockSpacing)
+                .padding(.top, layout.blockSpacing)
             notes
                 .padding(.top, Metrics.noteSpacing)
-            Spacer(minLength: Metrics.blockSpacing)
+            Spacer(minLength: layout.blockSpacing)
             footer
         }
-        .padding(.top, Metrics.topPadding)
+        .padding(.top, layout.topPadding)
         .padding(.horizontal, Metrics.sidePadding)
         .padding(.bottom, Metrics.bottomPadding)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private func portraitFrame(_ name: String) -> some View {
+    private func portraitFrame(_ name: String, size: CGSize) -> some View {
         Image(name)
+            .interpolation(.none)
             .resizable()
             .scaledToFill()
-            .frame(width: Metrics.portraitSize.width, height: Metrics.portraitSize.height)
+            .frame(width: size.width, height: size.height)
             .background(Color.rencan.tint)
             .clipShape(RoundedRectangle(cornerRadius: Metrics.portraitCornerRadius))
             .padding(Metrics.frameGap + Metrics.frameWidth)

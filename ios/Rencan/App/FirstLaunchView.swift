@@ -55,6 +55,7 @@ struct FirstLaunchView: View {
     private var intro: some View {
         VStack(spacing: RencanLayout.itemSpacing) {
             Image(RencanPortrait.name(realmIndex: 0, sex: sex ?? .male))
+                .interpolation(.none)
                 .resizable()
                 .scaledToFill()
                 .frame(

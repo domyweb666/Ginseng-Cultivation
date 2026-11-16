@@ -23,6 +23,7 @@ struct SteleView: View {
 
     private var portrait: some View {
         Image(RencanPortrait.name(realmIndex: standing.realmIndex, sex: sex))
+            .interpolation(.none)
             .resizable()
             .scaledToFill()
             .frame(

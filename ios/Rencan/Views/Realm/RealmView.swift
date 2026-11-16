@@ -49,6 +49,7 @@ struct RealmView: View {
     private var emptyStele: some View {
         VStack(spacing: RencanLayout.groupSpacing) {
             Image(RencanPortrait.name(realmIndex: 0, sex: digest.sex ?? .male))
+                .interpolation(.none)
                 .resizable()
                 .scaledToFill()
                 .frame(
