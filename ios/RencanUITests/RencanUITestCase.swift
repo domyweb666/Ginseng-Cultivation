@@ -182,6 +182,21 @@ extension RencanUITestCase {
         requireVisible(query, "按鈕「\(label)」", timeout: timeout, file: file, line: line).tap()
     }
 
+    /// 點底部分頁列的那一格（境界、分析、設定），等它變成選中。
+    /// 不用 tapVisibleButton：分析頁的分段也有一顆「境界」，同名會點錯。
+    func openTab(
+        _ label: String, timeout: TimeInterval = 15, file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let query = app.tabBars.buttons.matching(named(label))
+        let tab = requireVisible(
+            query, "分頁列的「\(label)」", timeout: timeout, file: file, line: line
+        )
+        tab.tap()
+        let isSelected = waitUntil(timeout: 5) { tab.isSelected }
+        XCTAssertTrue(isSelected, "點了分頁列的「\(label)」，它沒有變成選中", file: file, line: line)
+    }
+
     /// 幾個元素裡先出現的那一個；都沒出現回 nil。
     func waitForAny(_ elements: [XCUIElement], timeout: TimeInterval) -> XCUIElement? {
         let deadline = Date().addingTimeInterval(timeout)

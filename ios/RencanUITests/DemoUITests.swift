@@ -5,10 +5,9 @@ import XCTest
 // 一個流程一個類別：截圖檔名的流水號是每個測試各自從 01 起算，分開才不會撞名。
 
 extension RencanUITestCase {
-    /// 從境界頁按右上角的圖示到分析頁。
+    /// 點分頁列的「分析」到分析頁。
     func openAnalysis() {
-        tapVisibleButton("分析")
-        seeText("分析")
+        openTab("分析")
     }
 }
 
@@ -90,8 +89,7 @@ final class DemoSettingsUITests: RencanUITestCase {
     func test示範資料設定頁() {
         launch(["-rencanSeed", "demo"])
         seeText("目前境界", timeout: 30)
-        tapVisibleButton("設定")
-        seeText("設定")
+        openTab("設定")
         seeText("身體")
         requireVisible(anyElements(containing: "174"), "身高 174")
         shot("設定頁")
@@ -102,7 +100,7 @@ final class DemoSettingsUITests: RencanUITestCase {
         tapVisibleButton("身高減一公分")
         requireVisible(anyElements(containing: "174"), "減回來的身高 174")
 
-        tapVisibleButton("回境界")
+        openTab("境界")
         seeText("目前境界")
         requireVisible(anyElements(containing: "FFMI 20.32"), "身高改回 174 後的 FFMI 20.32")
     }

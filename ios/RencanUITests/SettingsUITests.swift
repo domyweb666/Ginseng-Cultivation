@@ -12,8 +12,7 @@ extension RencanUITestCase {
     func openDemoSettings() {
         launch(["-rencanSeed", "demo"])
         seeText("目前境界", timeout: 30)
-        tapVisibleButton("設定")
-        seeText("設定")
+        openTab("設定")
     }
 
     /// 往下捲一小段（大約五分之一個螢幕），微調位置用。
@@ -40,13 +39,9 @@ extension RencanUITestCase {
         return requireVisible(query, what, timeout: 5)
     }
 
-    /// 設定頁捲回最上面，按右上角的箭頭回境界頁（箭頭在頁首，往下捲過就點不到）。
+    /// 點分頁列的「境界」回境界頁。
     func backToRealmFromSettings() {
-        let back = app.buttons.matching(named("回境界"))
-        for _ in 0..<8 where visibleElement(in: back) == nil {
-            scrollUp()
-        }
-        requireVisible(back, "設定頁右上角的「回境界」", timeout: 5).tap()
+        openTab("境界")
     }
 
     /// 開關現在的狀態："1" 是開，"0" 是關。
@@ -206,8 +201,7 @@ final class SettingsDeleteUITests: RencanUITestCase {
         requireVisible(anyElements(containing: "FFMI 20.32"), "取消之後還在的 FFMI 20.32")
         shot("取消之後境界頁紀錄還在")
 
-        tapVisibleButton("設定")
-        seeText("設定")
+        openTab("設定")
         let again = openDeleteDialog()
         again.tap()
         // 小提示只留 2.6 秒：先記下有沒有看到、照樣截圖往下走，最後才算帳，後面的圖才不會少。
@@ -255,8 +249,7 @@ final class SettingsDeleteUITests: RencanUITestCase {
 
     /// 身高與性別不算紀錄，全部刪除之後要留著。
     private func checkProfileKept() {
-        tapVisibleButton("設定")
-        seeText("設定")
+        openTab("設定")
         requireVisible(anyElements(containing: "174"), "全部刪除之後還留著的身高 174")
         let male = requireVisible(app.buttons.matching(named("男")), "性別的「男」那一格")
         XCTAssertTrue(male.isSelected, "全部刪除之後，性別選中的不是「男」")

@@ -31,8 +31,7 @@ final class FirstLaunchUITests: RencanUITestCase {
         shot("境界頁空狀態")
 
         // 剛才填的身高有存起來
-        tapVisibleButton("設定")
-        seeText("設定")
+        openTab("設定")
         requireVisible(anyElements(containing: "174"), "設定頁的身高 174")
         shot("設定頁身高174")
     }

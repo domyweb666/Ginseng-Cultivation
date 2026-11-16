@@ -221,7 +221,9 @@ async function walkDemo() {
   await shot("示範-境界怎麼算展開");
   for (const index of [1, 2, 3, 4]) await scrollUp();
   // 分段控制的兩段在 Limrun 的元件樹裡沒有標籤，直接點它右半邊的位置（頁標題下面那一列）
-  const title = (await nodes()).find((node) => node.AXLabel === "分析" && node.frame);
+  const title = (await nodes())
+    .filter((node) => node.AXLabel === "分析" && node.frame)
+    .sort((a, b) => a.frame.y - b.frame.y)[0]; // 最上面那個是頁標題，底部那個是分頁列
   const segmentY = title ? title.frame.y + title.frame.height + 34 : screen.height * 0.155;
   await client.tap(screen.width * 0.73, segmentY);
   await sleep(900);
@@ -248,7 +250,7 @@ async function walkDemo() {
     await shot(`示範-功法段往下${index}`);
   }
   for (const index of [1, 2, 3]) await scrollUp();
-  await tap("回境界");
+  await tap("境界");
   check("到設定頁", (await tap("設定")) && (await waitFor("身體")));
   await shot("示範-設定頁");
   for (const index of [1, 2, 3]) {
@@ -256,7 +258,7 @@ async function walkDemo() {
     await shot(`示範-設定頁往下${index}`);
   }
   for (const index of [1, 2, 3, 4]) await scrollUp();
-  await tap("回境界");
+  await tap("境界");
 
   try {
     const execution = client.simctl(["ui", "booted", "appearance", "dark"]);
@@ -265,7 +267,7 @@ async function walkDemo() {
     await shot("示範-深色境界頁");
     await tap("分析");
     await shot("示範-深色分析頁");
-    await tap("回境界");
+    await tap("境界");
     const back = client.simctl(["ui", "booted", "appearance", "light"]);
     if (typeof back?.wait === "function") await back.wait();
   } catch (error) {
@@ -393,7 +395,9 @@ async function walkMascot() {
   if (await tap("分析")) {
     await sleep(900);
     await shot("空狀態-分析境界段");
-    const title = (await nodes()).find((node) => node.AXLabel === "分析" && node.frame);
+    const title = (await nodes())
+      .filter((node) => node.AXLabel === "分析" && node.frame)
+      .sort((a, b) => a.frame.y - b.frame.y)[0]; // 最上面那個是頁標題，底部那個是分頁列
     const segmentY = title ? title.frame.y + title.frame.height + 34 : screen.height * 0.155;
     await client.tap(screen.width * 0.73, segmentY);
     await sleep(900);

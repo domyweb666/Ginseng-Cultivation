@@ -2,12 +2,12 @@ import RencanCore
 import SwiftData
 import SwiftUI
 
-/// 三頁哪一頁。順序就是左右滑的順序：設定在左、境界在中、分析在右。
+/// 三頁哪一頁。順序就是底部分頁列由左到右：境界、分析、設定（照 iOS 習慣設定放最右）。
 /// 深連結（通知、小工具、Siri）只准帶這三個值（標準清單 I2）。
 enum RencanPage: Int, CaseIterable {
-    case settings
     case realm
     case analysis
+    case settings
 }
 
 /// 健康 app 這條線現在怎麼樣。境界頁的來源列與空狀態照這個決定顯示什麼（片 E2）。
@@ -180,9 +180,9 @@ struct RootTabView: View {
     }
 }
 
-/// 三頁左右滑，預設停在境界（.uiux/02-流程.md）。用 TabView 的 page 樣式，滑動手感跟系統一樣。
-/// 系統頁點在暖米白底上看不見，所以關掉，改用自己畫的 PageDots。
-/// 表單、小提示、復原、慶祝都掛在這一層，三頁共用。
+/// 三頁用系統原生的底部分頁列換，預設停在境界。iOS 26 上會自動長成浮在底部的玻璃膠囊；
+/// 2026-11-16 多米要的，取代原本的左右滑加自己畫的頁點（換頁只能點分頁列，不能再滑）。
+/// 表單、慶祝掛在這一層，三頁共用；小提示與復原掛在目前那一頁上，才不會蓋住分頁列。
 struct PagesView: View {
     @Environment(AppFlow.self) private var flow
     let digest: Digest
@@ -192,25 +192,22 @@ struct PagesView: View {
 
     var body: some View {
         @Bindable var flow = flow
-        VStack(spacing: 0) {
-            TabView(selection: $flow.page) {
-                SettingsView(digest: digest)
-                    .tag(RencanPage.settings)
-                RealmView(
-                    digest: digest, lifts: lifts, latestSource: latestSource,
-                    healthStatus: healthStatus
-                )
-                .tag(RencanPage.realm)
-                AnalysisView(digest: digest, lifts: lifts)
-                    .tag(RencanPage.analysis)
-            }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            PageDots(current: flow.page)
-                .padding(.vertical, RencanLayout.itemSpacing)
-        }
-        .overlay(alignment: .bottom) {
-            FlowBanners()
-                .padding(.bottom, RencanLayout.bannerBottomInset)
+        TabView(selection: $flow.page) {
+            RealmView(
+                digest: digest, lifts: lifts, latestSource: latestSource,
+                healthStatus: healthStatus
+            )
+            .banners(on: .realm, current: flow.page)
+            .tabItem { Label("境界", systemImage: "mountain.2") }
+            .tag(RencanPage.realm)
+            AnalysisView(digest: digest, lifts: lifts)
+                .banners(on: .analysis, current: flow.page)
+                .tabItem { Label("分析", systemImage: "chart.xyaxis.line") }
+                .tag(RencanPage.analysis)
+            SettingsView(digest: digest)
+                .banners(on: .settings, current: flow.page)
+                .tabItem { Label("設定", systemImage: "gearshape") }
+                .tag(RencanPage.settings)
         }
         .sheet(item: $flow.sheet) { sheet in
             sheetContent(sheet)
@@ -236,6 +233,22 @@ struct PagesView: View {
             EditRecordView(record: record, digest: digest)
         case .moveDetail(let key):
             MoveDetailView(key: key, digest: digest, lifts: lifts)
+        }
+    }
+}
+
+extension View {
+    /// 小提示與復原列只掛在目前那一頁，同一時間只有一份（兩份會各自倒數）。
+    /// 境界頁底下有「記一筆修煉」，要再往上讓出那顆按鈕。
+    func banners(on page: RencanPage, current: RencanPage) -> some View {
+        overlay(alignment: .bottom) {
+            if page == current {
+                FlowBanners()
+                    .padding(
+                        .bottom,
+                        page == .realm ? RencanLayout.bannerBottomInset : RencanLayout.itemSpacing
+                    )
+            }
         }
     }
 }

@@ -2,13 +2,11 @@ import RencanCore
 import SwiftUI
 
 private enum Metrics {
-    /// 箭頭按鈕的點擊範圍比圖示寬，往左推這麼多，圖示才會對齊底下卡片的左緣（畫布 -10）。
-    static let backButtonOutdent: CGFloat = 10
-    /// 箭頭與標題之間
-    static let titleGap: CGFloat = 4
+    /// 標題比卡片邊再縮進一點，跟設定頁一樣
+    static let titleInset: CGFloat = 4
 }
 
-/// 分析頁（右頁，照畫布 AnalysisRealm、AnalysisGong）：回境界箭頭加文楷大標題、分段切換境界／功法。
+/// 分析頁（分頁列中間那格，照畫布 AnalysisRealm、AnalysisGong）：文楷大標題、分段切換境界／功法。
 /// 境界段在 AnalysisRealmSection，功法段在 GongView，兩段拿的是同一份 Digest。
 struct AnalysisView: View {
     enum Segment: String, CaseIterable, Identifiable {
@@ -41,16 +39,16 @@ struct AnalysisView: View {
         }
     }
 
-    /// 換頁狀態在 AppFlow，箭頭按鈕自己會讀，這裡不用傳。
+    /// 換頁改由底部分頁列負責，頁首只剩標題。
     private var header: some View {
-        HStack(spacing: Metrics.titleGap) {
-            BackToRealmButton(edge: .leading)
+        HStack {
             Text("分析")
                 .font(RencanType.pageTitle)
+                .padding(.horizontal, Metrics.titleInset)
                 .accessibilityAddTraits(.isHeader)
             Spacer(minLength: 0)
         }
-        .padding(.leading, -Metrics.backButtonOutdent)
+        .frame(minHeight: RencanLayout.tapTarget)
     }
 
     private var segmentPicker: some View {

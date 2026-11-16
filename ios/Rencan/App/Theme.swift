@@ -120,14 +120,12 @@ enum RencanLayout {
     static let tapTarget: CGFloat = 44
     static let buttonHeight: CGFloat = 52
     static let portraitSize = CGSize(width: 112, height: 140)
-    static let pageDot: CGFloat = 7
-    static let pageDotActiveWidth: CGFloat = 18
     /// 卡片陰影（domy elevation 1）
     static let shadowRadius: CGFloat = 9
     static let shadowY: CGFloat = 4
     static let shadowOpacity: Double = 0.06
-    /// 小提示與復原列離底部多遠（讓出頁點與主按鈕）
-    static let bannerBottomInset: CGFloat = 104
+    /// 境界頁的小提示與復原列離分頁列多遠（讓出「記一筆修煉」：按鈕 52、上下各 8）
+    static let bannerBottomInset: CGFloat = 68
     /// 慶祝畫面淡入淡出的秒數
     static let fadeSeconds: Double = 0.25
     /// 列的最小高度（設定列、清單列）

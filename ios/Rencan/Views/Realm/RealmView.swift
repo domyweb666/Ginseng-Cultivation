@@ -41,18 +41,13 @@ struct RealmView: View {
         .safeAreaInset(edge: .bottom) { logButton }
     }
 
-    /// 左齒輪、右分析圖示：左右滑的看得見替身（標準清單 A2）。
+    /// 頁首只剩置中的「境界」。換頁改由底部分頁列負責，原本左右兩顆圖示拿掉了。
     private var header: some View {
-        HStack {
-            PageIconButton(target: .settings, systemImage: "gearshape", label: "設定")
-            Spacer()
-            Text("境界")
-                .font(RencanType.realmHeader)
-                .foregroundStyle(Color.rencan.strong)
-                .accessibilityAddTraits(.isHeader)
-            Spacer()
-            PageIconButton(target: .analysis, systemImage: "chart.xyaxis.line", label: "分析")
-        }
+        Text("境界")
+            .font(RencanType.realmHeader)
+            .foregroundStyle(Color.rencan.strong)
+            .accessibilityAddTraits(.isHeader)
+            .frame(maxWidth: .infinity, minHeight: RencanLayout.tapTarget)
     }
 
     /// 還沒量過：雜役服立繪、一句說明、手動輸入的入口。健康 app 讀不到時照畫布 RealmEmpty

@@ -90,12 +90,12 @@ try {
   await sleep(6000);
   await saveScreenshot(client, "01-境界");
 
-  // 三頁左右滑：境界頁左上齒輪到設定、右上圖示到分析，側頁的「回境界」回中頁（都是無障礙標籤）
+  // 底部原生分頁列三格：點「設定」「分析」換頁，點「境界」回來（都是分頁列按鈕的無障礙標籤）
   for (const [index, page] of [["02", "設定"], ["03", "分析"]]) {
     await client.tapElement({ AXLabel: page });
     await sleep(1500);
     await saveScreenshot(client, `${index}-${page}`);
-    await client.tapElement({ AXLabel: "回境界" });
+    await client.tapElement({ AXLabel: "境界" });
     await sleep(1000);
   }
 

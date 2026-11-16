@@ -23,7 +23,7 @@ private enum Metrics {
     static let segmentShadowY: CGFloat = 1
 }
 
-/// 設定頁（左頁，照畫布 Settings）：左邊文楷大標題、右邊回境界箭頭，下面一區一張卡。
+/// 設定頁（分頁列最右那格，照畫布 Settings）：文楷大標題，下面一區一張卡。
 /// 由上到下：身體、提醒、資料（匯出、匯入、刪除全部紀錄）、權限與關於。
 /// 每一區自己一個檔（Settings*Section.swift），這裡只管「身體」區與排順序。
 struct SettingsView: View {
@@ -56,8 +56,8 @@ struct SettingsView: View {
                 .padding(.horizontal, Metrics.titleInset)
                 .accessibilityAddTraits(.isHeader)
             Spacer()
-            BackToRealmButton(edge: .trailing)
         }
+        .frame(minHeight: RencanLayout.tapTarget)
     }
 
     /// 「身體」區：身高與性別同一張卡，改了馬上存，境界跟著重算。
