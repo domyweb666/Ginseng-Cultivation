@@ -14,6 +14,7 @@ body{margin:0}
 .lp{position:relative;overflow:hidden;background:#FFFFFF}
 .lp-strip{display:block;height:100%;max-width:none;image-rendering:pixelated;animation:lp-play 2.24s steps(16) infinite}
 .s16{width:1600%}
+.s12{width:1200%;animation-duration:1.68s;animation-timing-function:steps(12)}
 .s20{width:2000%;animation-duration:2.8s;animation-timing-function:steps(20)}
 .lp-eyes{position:absolute;left:0;top:0;width:100%;height:100%;image-rendering:pixelated;opacity:0;animation:lp-blink 4s steps(1) infinite}
 @keyframes lp-play{to{transform:translateX(-100%)}}
@@ -21,8 +22,8 @@ body{margin:0}
 @media (prefers-reduced-motion:reduce){.lp-strip,.lp-eyes{animation:none !important}}
 </style>
 </helmet>
-<div style="width: 1980px; height: 1500px; box-sizing: border-box; padding: 56px; display: flex; gap: 56px; background: #EFEBE3; color: #1D1D1F; font-family: -apple-system, 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif">
-<sc-for list="{{phones}}" as="ph" hint-placeholder-count="3">
+<div style="width: 2620px; height: 1500px; box-sizing: border-box; padding: 56px; display: flex; gap: 56px; background: #EFEBE3; color: #1D1D1F; font-family: -apple-system, 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif">
+<sc-for list="{{phones}}" as="ph" hint-placeholder-count="4">
 <div style="width: 585px; display: flex; flex-direction: column; gap: 16px">
 <div style="display: flex; flex-direction: column; gap: 4px; height: 96px">
 <div style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 32px; line-height: 1.3; color: #7A5916">{{ph.label}}</div>
@@ -69,8 +70,8 @@ body{margin:0}
 </div>
 <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px" role="img" aria-label="三期進度">
 <div style="height: 8px; border-radius: 999px; background: #F1E6CC; overflow: hidden"><div style="width: {{ph.p1}}; height: 8px; background: #916B1B"></div></div>
-<div style="height: 8px; border-radius: 999px; background: #F1E6CC"></div>
-<div style="height: 8px; border-radius: 999px; background: #F1E6CC"></div>
+<div style="height: 8px; border-radius: 999px; background: #F1E6CC; overflow: hidden"><div style="width: {{ph.p2}}; height: 8px; background: #916B1B"></div></div>
+<div style="height: 8px; border-radius: 999px; background: #F1E6CC; overflow: hidden"><div style="width: {{ph.p3}}; height: 8px; background: #916B1B"></div></div>
 </div>
 </div>
 
@@ -103,23 +104,27 @@ body{margin:0}
 </sc-for>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1980,"height":1500}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2620,"height":1500}}'>
 class Component extends DCLogic {
 renderVals() {
 return {
 phones: [
+{ label: '金丹，深色卡', note: '照渡劫那張的做法。底色取袍子最深的那個綠，字換成米白，拿掉漸層外框和米色名牌。',
+  cardBg: '#4D5525', nameColor: '#FFF4D2', subColor: '#E8E6CF', alt: '金丹期像素立繪，深綠色卡',
+  strip: '/_blob/04a7afb3e8df16f7b438723505e20d75', sc: 's12', hasEyes: true, eyes: '/_blob/5939dac0ca583795963eccaec7cdc934',
+  realm: '金丹', stage: '後期', sub: 'FFMI 20.6・根基穩固', seal: '參', next: '下一期 元嬰初期', need: '還差 1.3 公斤肌肉', p1: '100%', p2: '100%', p3: '16%', body: '72.0 公斤・體脂 15.0%' },
 { label: '化神，白卡', note: '化神的星空是一個圓，四個角本來就是白的，放在白卡上接得起來。',
   cardBg: '#FFFFFF', nameColor: '#5E4410', subColor: '#5F5F66', alt: '化神期像素立繪，白卡',
   strip: '/_blob/66b353b02edb433769adb9cef65e223b', sc: 's16', hasEyes: false, eyes: '',
-  realm: '化神', stage: '初期', sub: 'FFMI 22.8・根基穩固', seal: '伍', next: '下一期 化神中期', need: '還差 0.9 公斤肌肉', p1: '30%', body: '78.0 公斤・體脂 12.0%' },
+  realm: '化神', stage: '初期', sub: 'FFMI 22.8・根基穩固', seal: '伍', next: '下一期 化神中期', need: '還差 0.9 公斤肌肉', p1: '30%', p2: '0%', p3: '0%', body: '78.0 公斤・體脂 12.0%' },
 { label: '渡劫，白卡', note: '渡劫的烏雲一路畫到上緣，放在白卡上，頂端會有一條深色的硬邊。',
   cardBg: '#FFFFFF', nameColor: '#5E4410', subColor: '#5F5F66', alt: '渡劫期像素立繪，白卡',
   strip: '/_blob/ec4a18a3d4d2b22e96f9bf5dfb219167', sc: 's20', hasEyes: true, eyes: '/_blob/980d070d6da5ddf832e578e07bf7613a',
-  realm: '渡劫', stage: '初期', sub: 'FFMI 25.7・根基穩固', seal: '柒', next: '下一期 渡劫中期', need: '還差 1.1 公斤肌肉', p1: '14%', body: '82.0 公斤・體脂 10.0%' },
+  realm: '渡劫', stage: '初期', sub: 'FFMI 25.7・根基穩固', seal: '柒', next: '下一期 渡劫中期', need: '還差 1.1 公斤肌肉', p1: '14%', p2: '0%', p3: '0%', body: '82.0 公斤・體脂 10.0%' },
 { label: '渡劫，卡片跟著變深', note: '另一個做法。卡片底色取立繪上緣的深灰，字換成米白，烏雲就跟卡片連在一起。',
   cardBg: '#4A4249', nameColor: '#FFF4D2', subColor: '#E3DCDA', alt: '渡劫期像素立繪，深色卡',
   strip: '/_blob/ec4a18a3d4d2b22e96f9bf5dfb219167', sc: 's20', hasEyes: true, eyes: '/_blob/980d070d6da5ddf832e578e07bf7613a',
-  realm: '渡劫', stage: '初期', sub: 'FFMI 25.7・根基穩固', seal: '柒', next: '下一期 渡劫中期', need: '還差 1.1 公斤肌肉', p1: '14%', body: '82.0 公斤・體脂 10.0%' }
+  realm: '渡劫', stage: '初期', sub: 'FFMI 25.7・根基穩固', seal: '柒', next: '下一期 渡劫中期', need: '還差 1.1 公斤肌肉', p1: '14%', p2: '0%', p3: '0%', body: '82.0 公斤・體脂 10.0%' }
 ]
 };
 }
