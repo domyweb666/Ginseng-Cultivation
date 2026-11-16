@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>G 款第二版：14 張各自的待機動作</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap">
+<style>
+body{margin:0}
+.lp{position:relative;overflow:hidden;background:#FFFFFF}
+.lp-strip{display:block;height:100%;width:4800%;max-width:none;image-rendering:pixelated;animation:lp-play 4.8s steps(48) infinite}
+.lp-eyes{position:absolute;left:0;top:0;width:100%;height:100%;image-rendering:pixelated;opacity:0;animation:lp-blink 4s steps(1) infinite}
+@keyframes lp-play{to{transform:translateX(-100%)}}
+@keyframes lp-blink{0%,94%{opacity:0}95%,98%{opacity:1}99%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.lp-strip,.lp-eyes{animation:none !important}}
+</style>
+</helmet>
+<div style="width: 2790px; height: 1530px; box-sizing: border-box; padding: 56px; display: flex; flex-direction: column; gap: 28px; background: #EFEBE3; color: #1D1D1F; font-family: -apple-system, 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h1 style="margin: 0; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 400; font-size: 48px; line-height: 1.25; color: #7A5916">G 款第二版：14 張各自的待機動作</h1>
+<p style="margin: 0; font-size: 18px; line-height: 1.6; color: #5F5F66">每條 48 格、一格 0.1 秒，4.8 秒一輪。平常只有呼吸、葉子、鬚和衣角在動，隔一陣子做一次招牌動作。卡片套上這次挑的七個底色。</p>
+</div>
+<div style="display: flex; gap: 24px; align-items: flex-start">
+<div style="width: 56px; height: 516px; display: flex; align-items: center; justify-content: center; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-size: 30px; color: #7A5916">男</div>
+<sc-for list="{{men}}" as="c" hint-placeholder-count="7">
+<div style="width: 350px; display: flex; flex-direction: column; gap: 12px">
+<div style="box-sizing: border-box; width: 350px; padding: 7px; border-radius: 24px; background: {{c.bg}}; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 4px 18px rgba(25, 22, 20, 0.10)">
+<div class="lp" style="width: 336px; height: 420px; border-radius: 17px" role="img" aria-label="{{c.alt}}">
+<img class="lp-strip" src="{{c.strip}}" alt="">
+<sc-if value="{{c.hasEyes}}" hint-placeholder-val="{{false}}">
+<img class="lp-eyes" src="{{c.eyes}}" alt="" style="animation-delay: {{c.delay}}">
+</sc-if>
+</div>
+<div style="box-sizing: border-box; padding: 10px 10px 10px 14px; display: flex; align-items: center; gap: 10px">
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<div style="font-family: 'LXGW WenKai TC', serif; font-size: 32px; line-height: 36px; font-weight: 700; color: #FFF4D2">{{c.realm}}</div>
+<div style="font-size: 13px; line-height: 18px; color: {{c.sub}}">{{c.who}}</div>
+</div>
+<span style="width: 34px; height: 34px; border-radius: 6px; background: #B8402F; color: #FFFFFF; font-family: 'LXGW WenKai TC', serif; font-weight: 700; font-size: 22px; line-height: 1; display: flex; align-items: center; justify-content: center">{{c.seal}}</span>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 0 6px">
+<div style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 22px; line-height: 1.3; color: #5E4410">{{c.act}}</div>
+<div style="font-size: 15px; line-height: 1.55; color: #5F5F66">{{c.how}}</div>
+</div>
+</div>
+</sc-for>
+</div>
+
+<div style="display: flex; gap: 24px; align-items: flex-start">
+<div style="width: 56px; height: 516px; display: flex; align-items: center; justify-content: center; font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-size: 30px; color: #7A5916">女</div>
+<sc-for list="{{women}}" as="c" hint-placeholder-count="7">
+<div style="width: 350px; display: flex; flex-direction: column; gap: 12px">
+<div style="box-sizing: border-box; width: 350px; padding: 7px; border-radius: 24px; background: {{c.bg}}; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 4px 18px rgba(25, 22, 20, 0.10)">
+<div class="lp" style="width: 336px; height: 420px; border-radius: 17px" role="img" aria-label="{{c.alt}}">
+<img class="lp-strip" src="{{c.strip}}" alt="">
+<sc-if value="{{c.hasEyes}}" hint-placeholder-val="{{false}}">
+<img class="lp-eyes" src="{{c.eyes}}" alt="" style="animation-delay: {{c.delay}}">
+</sc-if>
+</div>
+<div style="box-sizing: border-box; padding: 10px 10px 10px 14px; display: flex; align-items: center; gap: 10px">
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<div style="font-family: 'LXGW WenKai TC', serif; font-size: 32px; line-height: 36px; font-weight: 700; color: #FFF4D2">{{c.realm}}</div>
+<div style="font-size: 13px; line-height: 18px; color: {{c.sub}}">{{c.who}}</div>
+</div>
+<span style="width: 34px; height: 34px; border-radius: 6px; background: #B8402F; color: #FFFFFF; font-family: 'LXGW WenKai TC', serif; font-weight: 700; font-size: 22px; line-height: 1; display: flex; align-items: center; justify-content: center">{{c.seal}}</span>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 0 6px">
+<div style="font-family: 'LXGW WenKai TC', 'Kaiti TC', serif; font-weight: 700; font-size: 22px; line-height: 1.3; color: #5E4410">{{c.act}}</div>
+<div style="font-size: 15px; line-height: 1.55; color: #5F5F66">{{c.how}}</div>
+</div>
+</div>
+</sc-for>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2790,"height":1530}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+men: [{"bg": "#734D29", "sub": "#EFE2D3", "realm": "煉氣", "seal": "壹", "who": "男・一般未訓練", "strip": "/_blob/819973d203c694873596faab28b7882a", "hasEyes": true, "eyes": "/_blob/bd0b1cd3e3495fe52bd810e1127fb9f9", "delay": "-0.0s", "act": "掂水桶", "how": "先蹲一格，把桶往上一提，放下後桶晃幾下才停。燈籠和布旗一直在動。", "alt": "煉氣，男，掂水桶"}, {"bg": "#5C6234", "sub": "#E9E8D0", "realm": "築基", "seal": "貳", "who": "男・有基礎", "strip": "/_blob/148cc3e46f785b3da0106973389ca10d", "hasEyes": true, "eyes": "/_blob/e6b97de1e63b26657f726f7da3e4ee05", "delay": "-1.3s", "act": "舉劍下劈", "how": "慢慢舉過頭，一下劈下來。手臂、袖子、身體都跟著帶，葉子晚一拍回彈。", "alt": "築基，男，舉劍下劈"}, {"bg": "#4D5525", "sub": "#E8E6CF", "realm": "金丹", "seal": "參", "who": "男・看得出有在練", "strip": "/_blob/e9ff3903c3e3c5c5aaf5a4d0ef24117a", "hasEyes": true, "eyes": "/_blob/d363e65f026d777e71a64abf7f69f963", "delay": "-2.6s", "act": "拋接金丹", "how": "手先沉一下才拋，頭抬起來看，接住時手一頓、迸出火花。", "alt": "金丹，男，拋接金丹"}, {"bg": "#6F5E38", "sub": "#EEE7D2", "realm": "元嬰", "seal": "肆", "who": "男・資深健身者", "strip": "/_blob/5a34db3673674ccce8715637a2803063", "hasEyes": false, "eyes": "", "delay": "-3.9s", "act": "拄杖點地", "how": "手杖提起來往地上一點，腳邊盪開兩圈光紋，流蘇被震得甩起來。", "alt": "元嬰，男，拄杖點地"}, {"bg": "#43528F", "sub": "#DFE2F3", "realm": "化神", "seal": "伍", "who": "男・菁英", "strip": "/_blob/7feb62c732c330b8764c6620d819e31c", "hasEyes": false, "eyes": "", "delay": "-1.2s", "act": "夜空漂浮", "how": "人慢慢起伏，飄帶一前一後地盪，垂著的腳跟著晃。一顆流星由慢到快劃過去。", "alt": "化神，男，夜空漂浮"}, {"bg": "#8B540B", "sub": "#F6E7CB", "realm": "大乘", "seal": "陸", "who": "男・天賦上限附近", "strip": "/_blob/a673da384112d627cdc843d102c1171f", "hasEyes": true, "eyes": "/_blob/677ac359e1dd068d609601c2dd983d9a", "delay": "-2.5s", "act": "佛光", "how": "背後的光慢慢轉，隔一陣子盪出一圈金環，兩手往上一托，皇冠閃一下。", "alt": "大乘，男，佛光"}, {"bg": "#4A4249", "sub": "#E3DCDA", "realm": "渡劫", "seal": "柒", "who": "男・自然人極限", "strip": "/_blob/fb077a09cb36c07578c07fe3b05a0ba4", "hasEyes": true, "eyes": "/_blob/f6f8747fc6a10fb1c8b7ee71cc870d2e", "delay": "-3.8s", "act": "扛天雷", "how": "天先暗兩格，大雷劈下來，整張閃白震一下。人往下一沉扛住，衣角亂甩。", "alt": "渡劫，男，扛天雷"}],
+women: [{"bg": "#734D29", "sub": "#EFE2D3", "realm": "煉氣", "seal": "壹", "who": "女・一般未訓練", "strip": "/_blob/ca8400c253b050f9be6d147d240348cd", "hasEyes": true, "eyes": "/_blob/fb48605b74b9bb61520b30b81f906873", "delay": "-2.1s", "act": "邊走邊搖", "how": "身體左右搖，桶慢半拍往反方向晃，髮帶和長髮跟著飄。", "alt": "煉氣，女，邊走邊搖"}, {"bg": "#5C6234", "sub": "#E9E8D0", "realm": "築基", "seal": "貳", "who": "女・有基礎", "strip": "/_blob/875db50e72d92d3c8741a8b99ac7170e", "hasEyes": true, "eyes": "/_blob/5af3a84b75abf54d7de0e588cbf5abca", "delay": "-3.4s", "act": "連點兩劍", "how": "一短一長。每點一下裙襬轉開、髮帶甩一下，再收回來。", "alt": "築基，女，連點兩劍"}, {"bg": "#4D5525", "sub": "#E8E6CF", "realm": "金丹", "seal": "參", "who": "女・看得出有在練", "strip": "/_blob/d98a9b14d51ebb91c65794f7ada76fb6", "hasEyes": true, "eyes": "/_blob/63f3d34bd7cfa6796dbab74ba5d40391", "delay": "-0.7s", "act": "金丹繞圈", "how": "金丹在掌心上方繞，後面拖一串光點，隔一陣子盪出一圈光環。", "alt": "金丹，女，金丹繞圈"}, {"bg": "#6F5E38", "sub": "#EEE7D2", "realm": "元嬰", "seal": "肆", "who": "女・資深健身者", "strip": "/_blob/e8f93bb4cbd2d6c12a947521f45b5cdc", "hasEyes": false, "eyes": "", "delay": "-2.0s", "act": "養元嬰", "how": "兩手各升起一顆光點，繞上去匯進頭頂的元嬰，元嬰跟著亮一下。", "alt": "元嬰，女，養元嬰"}, {"bg": "#43528F", "sub": "#DFE2F3", "realm": "化神", "seal": "伍", "who": "女・菁英", "strip": "/_blob/e1dac3bc3dceabed917524c9aad17217", "hasEyes": false, "eyes": "", "delay": "-3.3s", "act": "聚星", "how": "星光一顆顆被吸過來，繞個彎落進掌心，掌心跟著亮。長髮往兩邊散。", "alt": "化神，女，聚星"}, {"bg": "#8B540B", "sub": "#F6E7CB", "realm": "大乘", "seal": "陸", "who": "女・天賦上限附近", "strip": "/_blob/8ebf9fd08a53ea80debef06db599c6d6", "hasEyes": true, "eyes": "/_blob/f14c8666952e151c3e6e241286712300", "delay": "-0.6s", "act": "落花", "how": "金色花瓣一片片飄下來，邊落邊翻面。背後的光跟著呼吸一明一暗。", "alt": "大乘，女，落花"}, {"bg": "#4A4249", "sub": "#E3DCDA", "realm": "渡劫", "seal": "柒", "who": "女・自然人極限", "strip": "/_blob/70063715db7da81f1fbc11c295f3d41b", "hasEyes": true, "eyes": "/_blob/1269f063f46d33c2c12f0bff288c81b0", "delay": "-1.9s", "act": "電弧纏身", "how": "細電弧在身上亂竄、一閃就沒。左邊先落一道小雷，右邊再一道。", "alt": "渡劫，女，電弧纏身"}]
+};
+}
+}
+</script>
+</body>
+</html>
