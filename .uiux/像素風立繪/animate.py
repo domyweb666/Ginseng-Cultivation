@@ -1,8 +1,11 @@
-"""幫 14 張像素立繪各做一條待機動畫（橫向排開的長條圖，每條 48 格、一格 0.1 秒）。
+"""幫 14 張像素立繪各做一條待機動畫（12x8 的格子圖，共 96 格、一格 0.1 秒，一輪 9.6 秒）。
 
 做法照 E:\\像素broll\\pixel-broll-kit 的 motion.js：角色有清楚的姿勢、一拍一拍地演。
   - 大動作前先往反方向小動（蹲、縮），出手只用一兩格，落定時壓扁再回彈。
-  - 壓扁和拉長是把身體中段壓短或拉長，頭和臉不變形；腳踩在地上不動。
+  - 壓扁和拉長只動腿：頭、手、衣服是一整塊照姿勢位移，一格都不變形；腳踩在地上不動。
+    （第二版把衣服那一段壓短拉長、又讓袖子衣襬一直起伏，多米說衣服變動得很詭異。衣服的花紋一被擠壓就怪。）
+  - 布料（袖子、衣襬、裙子、飄帶）不做起伏，只有頭髮、鬚、葉子、道具會被帶著盪。
+  - 招牌動作排在前 48 格，後 48 格只有呼吸和眨眼，所以 9.6 秒才做一次。
   - 葉子、頭髮、流蘇、水桶是被身體帶著動的：身體一動，它們晚一拍盪幾下才停。
   - 眨眼直接畫進格子裡。
 每張的招牌動作：
@@ -56,16 +59,55 @@ def leafmask(base, bx):
     return close(box(*bx) & leafy(base), 1)
 
 
-def actor(rg, mask, band, posefn, pivot, pad=2):
-    """身體：照姿勢位移、傾斜、壓扁拉長。回傳零件、頭的上下位置（格，給葉子頭髮當推力）、取姿勢的函式。"""
-    P = lambda f: posefn(f % N)
+def rooty(base):
+    """人蔘皮的黃。"""
+    h, s, v = hsv(base)
+    return (h > 22) & (h < 50) & (s > 0.42) & (v > 0.55)
 
-    def mv(f):
-        p = P(f)
-        return [shift(U * p['dx'], U * p['dy']), lean(pivot, p['ln'], 120), squash(band[0], band[1], U * p['sq'])]
-    body = rg.part('body', grow(mask, pad) if pad else mask, mv)
-    heady = lambda f: U * (P(f)['dy'] + P(f)['sq'])
-    return body, heady, P
+
+def legmask(base, bx, seeds, extra=None):
+    """衣襬底下露出來的腿：框裡面人蔘皮顏色、而且連著 seeds 的那幾塊。"""
+    m = box(*bx) & rooty(base)
+    if extra is not None:
+        m &= extra
+    return grow(flood(close(m, 1), *seeds), 1)
+
+
+def actor(rg, mask, legs, band, posefn, pad=2):
+    """背景乾淨、切得出零件的那幾張。上半身（頭、手、衣服）整塊照姿勢位移，一格都不變形；
+    腿墊在下面，band=(衣襬的高度, 腳底) 之間壓短或拉長，腳不動。
+    回傳身體零件、身體這一格往下移了幾格（給葉子頭髮當推力）、取姿勢的函式。"""
+    P, D = stance(posefn)
+    rg.part('legs', legs, lambda f: [tie(band[0], band[1], *D(f))])
+    body = rg.part('body', grow(mask, pad) if pad else mask, lambda f: [shift(*D(f))])
+    return body, (lambda f: D(f)[1]), P
+
+
+def floater(rg, outline, posefn, legs=None, r=3):
+    """背景複雜、衣服和飄帶佔滿畫面的那幾張：不切零件，整個人當一整塊照姿勢位移，輪廓外的背景漸漸歸零，所以沒有接縫。
+    outline 是把整個人（含衣服、飄帶、道具）粗略圈起來的多邊形，不用很準。
+    legs=(x0, y0, x1, y1) 表示腳踩在地上：那個框裡 y0 以上跟著走、y1 以下不動，中間的腿壓短或拉長。沒給就是整個人浮著。
+    回傳身體這一格往下移了幾格、取姿勢的函式。"""
+    P, D = stance(posefn)
+    reach = max(max(abs(v) for v in D(f)) for f in range(N))
+    B = poly(outline)
+    W = np.maximum(feather(grow(B, reach + 2 * r), r), grow(B, reach).astype(np.float32))
+    rg.regions['figure'] = W
+    if legs:
+        x0, y0, x1, y1 = legs
+        L = feather(box(x0 - 2 * r, y0 - 2 * r, x1 + 2 * r, GH - 1), r)
+
+    def field(f):
+        dx, dy = D(f)
+        if not legs or (dx == 0 and dy == 0):
+            return [(W * dx, W * dy)]
+        top = y0 + dy
+        span = max(1.0, y1 - top)
+        src = np.where(YS <= top, YS - dy, np.where(YS >= y1, YS, y1 - (y1 - YS) * (y1 - y0) / span))
+        Wl = W * (1 - L * (1 - np.clip((y1 - src) / float(y1 - y0), 0, 1)))
+        return [(Wl * dx, Wl * dy)]
+    rg.soft.append(field)
+    return (lambda f: D(f)[1]), P
 
 
 def leaves(rg, base, bx, pivot, heady, length=45, k=0.8):
@@ -76,7 +118,7 @@ def leaves(rg, base, bx, pivot, heady, length=45, k=0.8):
 
 
 def sway(rg, name, mask, along, amp, wavelength, period, phase=0.0, r=3, anchor=None, gain=None):
-    """一塊布、一束頭髮或一片雲的起伏。anchor=(x, y, 長度) 表示從那一點開始越遠擺越大。"""
+    """一束頭髮、一條髮帶或一片雲的起伏。不要用在衣服上（袖子、衣襬、飄帶的花紋會被扯得很怪）。anchor=(x, y, 長度) 表示從那一點開始越遠擺越大。"""
     W = rg.region(name, mask, r)
     if anchor:
         W = W * ramp(anchor[:2], along, anchor[2])
@@ -168,9 +210,11 @@ def rig_r0(base, blink):
     wisps = (cut(base, [(36, 60), (64, 60), (64, 112), (40, 112)]) | cut(base, [(104, 58), (117, 60), (121, 74), (127, 84), (127, 94), (112, 94)])) & ~leafy(base)
 
     def P(f):
-        bounce = seq(f, 2, [1, -2, -1]) + seq(f, 10, [1, -2, -1]) + seq(f, 38, [1, -2, -1])
-        return pose(sq=bounce + seq(f, 20, [1, 2, 2, -2, -2, -1, 0, 1]), ln=keys(f, [(19, 0), (22, 0.5), (24, -0.3), (30, 0)]))
-    body, heady, _ = actor(rg, torso | leafmask(base, bx) | wisps, (104, 150), P, (85, 160))
+        bounce = sum(seq(f, a, [1, -2, -1]) for a in (2, 10, 38, 50, 58, 86))
+        rest = -breathe(f) if 64 <= f < 80 else 0
+        return pose(sq=bounce + rest + seq(f, 20, [1, 2, 2, -2, -2, -1, 0, 1]), ln=keys(f, [(19, 0), (22, 0.5), (24, -0.3), (30, 0)]))
+    legs = legmask(base, (40, 146, 112, 199), [(60, 172), (90, 172), (58, 180), (92, 180)])
+    body, heady, _ = actor(rg, torso | leafmask(base, bx) | wisps, legs, (158, 196), P)
     lift = lambda f: seq(f % N, 20, [1, 2, 2, -5, -6, -4, -1, 1])
     load_y = lambda f: heady(f) + lift(f)
     bucket0(rg, base, body, [(113, 114), (124, 112), (132, 128), (132, 140), (118, 140), (114, 126)],
@@ -188,7 +232,7 @@ def rig_r0(base, blink):
                 dot(img, 125 + k * (4 + 3 * t), 143 + int(heady(f)) - 5 * t + 1.3 * t * t, PALE, 0.7 - t * 0.12)
     rg.front.append(splash)
     if blink is not None:
-        rg.blink(blink, [14, 15])
+        rg.blink(blink, [14, 15, 70, 71])
     return rg
 
 
@@ -201,20 +245,22 @@ def rig_gr0(base, blink):
                        (46, 66), (52, 54), (62, 48)], seeds=[(88, 75)])
 
     def P(f):
-        ln = 0 if 22 <= f < 36 else 1.2 * SW[(f // 2) % 8]
-        return pose(sq=seq(f, 24, [1, -2, -1, 0.5]) + seq(f, 30, [1, -2, -1, 0.5]), ln=ln)
-    body, heady, PP = actor(rg, torso | leafmask(base, bx), (104, 152), P, (85, 162))
+        still = 22 <= f < 36 or 64 <= f < 80
+        rest = -breathe(f) if 64 <= f < 80 else 0
+        return pose(sq=rest + seq(f, 24, [1, -2, -1, 0.5]) + seq(f, 30, [1, -2, -1, 0.5]), ln=0 if still else 1.2 * SW[(f // 2) % 8])
+    legs = legmask(base, (40, 148, 112, 199), [(60, 176), (90, 176), (58, 184), (92, 184)])
+    body, heady, PP = actor(rg, torso | leafmask(base, bx), legs, (160, 196), P)
     tilt = lambda f: 2.5 * PP(f)['ln']
     bucket0(rg, base, body, [(114, 114), (126, 114), (132, 128), (132, 140), (119, 140), (115, 126)],
             lambda f: [], lambda f: -2.0 * follow(tilt, f, 0.25, 0.9, 24) + 1.2 * follow(heady, f, 0.25, 1.0, 24))
     both = lambda f: 1 + 0.3 * abs(follow(heady, f)) + 0.35 * abs(follow(tilt, f))
     leaves(rg, base, bx, (84, 42), lambda f: heady(f) + 0.6 * tilt(f))
     sway(rg, 'ribbon', box(38, 62, 60, 102), 90, 2.0, 30, 24, -0.1, anchor=(52, 62, 26), gain=both)
-    sway(rg, 'hair_l', box(38, 96, 68, 152), 90, 1.8, 40, 24, -0.2, anchor=(55, 92, 36), gain=both)
+    sway(rg, 'hair_l', box(36, 96, 50, 150), 90, 1.8, 40, 24, -0.2, r=2, anchor=(46, 92, 36), gain=both)
     sway(rg, 'hair_r', box(113, 62, 130, 120), 90, 1.5, 36, 24, -0.25, r=2, anchor=(112, 60, 36), gain=both)
     scene0(rg)
     if blink is not None:
-        rg.blink(blink, [16, 17])
+        rg.blink(blink, [16, 17, 68, 69])
     return rg
 
 
@@ -222,9 +268,8 @@ def rig_gr0(base, blink):
 SWORD = [(146, 37), (154, 38), (156, 46), (138, 84), (137, 91), (127, 92), (124, 104), (112, 104), (111, 92), (118, 84), (119, 76), (142, 44)]
 
 
-def swordsman(rg, base, torso, skirt, arm_poly, shoulder, sw, P, band, pivot, bx):
-    body, heady, _ = actor(rg, torso | leafmask(base, bx), band, P, pivot)
-    rg.part('skirt', skirt, lambda f: [wave((85, 130), 90, 1.2 + 0.5 * abs(follow(heady, f)), 36, TAU * f / 24, 28)], body)
+def swordsman(rg, base, torso, legs, band, arm_poly, shoulder, sw, P, bx):
+    body, heady, _ = actor(rg, torso | leafmask(base, bx), legs, band, P)
     arm = rg.part('arm', grow(cut(base, arm_poly, seeds=[(110, 106)]), 1), lambda f: [rot(shoulder, 0.45 * sw(f % N))], body)
     blade = cut(base, SWORD, seeds=[(140, 60)])
     rg.part('sword', grow(blade, 1) & (lum(base) < 250) & poly(SWORD) | blade, lambda f: [rot((118, 97), 0.55 * sw(f % N))], arm)
@@ -259,7 +304,7 @@ def rig_r1(base, blink):
     sw = lambda f: keys(f, [(16, 0), (24, -32), (26, -34), (27, -8), (28, 18), (29, 20), (32, 12), (40, 0)])
 
     def P(f):
-        if f < 14:
+        if f < 14 or f >= 48:
             return pose(sq=-breathe(f))
         return pose(sq=seq(f, 16, [1, 2, 1, 0, -0.5, -1, -1.5, -2, -2, -2, -2, 1, 3, 3, 2, 1, -0.5]),
                     ln=keys(f, [(19, 0), (26, -0.8), (27, 0), (28, 1.2), (31, 1.0), (38, 0)]))
@@ -267,16 +312,15 @@ def rig_r1(base, blink):
                        (118, 140), (128, 148), (126, 160), (118, 166), (100, 168), (88, 163), (78, 168), (58, 166), (40, 160), (38, 148),
                        (28, 142), (30, 130), (44, 126), (42, 116), (50, 110), (60, 104), (62, 96), (66, 90), (62, 78), (63, 62), (68, 50)], seeds=[(85, 70)])
     wisps = (cut(base, [(36, 60), (64, 60), (64, 95), (58, 112), (38, 112), (34, 90)]) | cut(base, [(104, 58), (120, 60), (120, 92), (108, 92), (106, 80)])) & ~leafy(base)
-    skirt = cut(base, [(58, 130), (112, 130), (118, 140), (128, 148), (126, 160), (118, 166), (100, 168), (88, 163), (78, 168), (58, 166),
-                       (40, 160), (38, 148), (48, 140)], seeds=[(85, 150)])
-    heady = swordsman(rg, base, torso | wisps, skirt, [(98, 93), (110, 90), (118, 92), (124, 98), (122, 106), (117, 112), (114, 128), (106, 128), (102, 112)],
-                      (100, 100), sw, P, (100, 150), (85, 166), bx)
+    legs = legmask(base, (30, 150, 126, 198), [(56, 178), (100, 178), (60, 172), (96, 172)])
+    heady = swordsman(rg, base, torso | wisps, legs, (164, 194), [(98, 93), (110, 90), (118, 92), (124, 98), (122, 106), (117, 112), (114, 128), (106, 128), (102, 112)],
+                      (100, 100), sw, P, bx)
     leaves(rg, base, bx, (82, 42), heady)
     sway(rg, 'wisp_l', box(34, 60, 62, 112), 90, 1.6, 34, 24, 0.2, anchor=(62, 60, 30), gain=kick(heady))
     sway(rg, 'wisp_r', box(110, 60, 121, 92), 90, 1.4, 30, 24, 0.5, r=2, anchor=(106, 60, 22), gain=kick(heady))
     smear(rg, {27: (-34, -8, 0.85), 28: (-8, 18, 0.55), 29: (12, 20, 0.25)}, {28: 18, 29: 19}, heady)
     if blink is not None:
-        rg.blink(blink, [10, 11])
+        rg.blink(blink, [10, 11, 66, 67])
     return rg
 
 
@@ -287,24 +331,23 @@ def rig_gr1(base, blink):
     sw = lambda f: keys(f, [(10, 0), (13, -14), (14, 10), (15, 12), (18, 0), (20, 0), (23, -20), (24, 14), (25, 16), (28, 8), (36, 0)])
 
     def P(f):
-        if f < 10:
+        if f < 10 or f >= 48:
             return pose(sq=-breathe(f))
         return pose(sq=seq(f, 11, [0.5, 1, 1, -1, -0.5]) + seq(f, 20, [0.5, 1, 2, 2, -2, 1, 1, -0.5]),
                     ln=keys(f, [(12, 0), (13, -0.4), (14, 0.6), (17, 0), (22, 0), (23, -0.6), (24, 1.0), (27, 0.6), (34, 0)]))
     torso = cut(base, [(72, 40), (98, 40), (110, 56), (118, 72), (121, 92), (126, 100), (124, 110), (120, 126), (114, 128), (120, 140), (130, 150),
                        (128, 162), (118, 168), (100, 170), (88, 164), (76, 170), (56, 168), (44, 160), (42, 148), (30, 144), (32, 134),
                        (44, 128), (36, 118), (38, 104), (34, 96), (36, 84), (46, 72), (48, 58), (58, 48)], seeds=[(88, 75)])
-    skirt = cut(base, [(56, 130), (114, 130), (120, 140), (130, 150), (128, 162), (118, 168), (100, 170), (88, 164), (76, 170), (56, 168),
-                       (44, 160), (42, 148), (50, 138)], seeds=[(85, 150)])
-    heady = swordsman(rg, base, torso, skirt, [(98, 95), (112, 92), (120, 94), (127, 100), (126, 110), (122, 126), (108, 128), (102, 112)],
-                      (100, 102), sw, P, (102, 152), (85, 168), bx)
+    legs = legmask(base, (30, 152, 126, 198), [(52, 180), (100, 180), (58, 174), (96, 174)])
+    heady = swordsman(rg, base, torso, legs, (166, 194), [(98, 95), (112, 92), (120, 94), (127, 100), (126, 110), (122, 126), (108, 128), (102, 112)],
+                      (100, 102), sw, P, bx)
     leaves(rg, base, bx, (84, 42), heady)
     sway(rg, 'ribbon', box(34, 64, 62, 100), 90, 1.8, 30, 24, 0.1, anchor=(52, 64, 26), gain=kick(heady, 0.4))
-    sway(rg, 'hair_l', box(36, 98, 66, 134), 90, 1.6, 36, 24, 0.25, anchor=(55, 94, 30), gain=kick(heady, 0.4))
+    sway(rg, 'hair_l', box(34, 98, 48, 132), 90, 1.6, 36, 24, 0.25, r=2, anchor=(44, 94, 30), gain=kick(heady, 0.4))
     sway(rg, 'hair_r', box(112, 60, 122, 102), 90, 1.3, 30, 24, 0.5, r=2, anchor=(108, 60, 26), gain=kick(heady))
     smear(rg, {14: (-14, 10, 0.6), 24: (-20, 14, 0.85), 25: (8, 16, 0.4)}, {15: 12, 25: 16, 26: 16}, heady)
     if blink is not None:
-        rg.blink(blink, [40, 41])
+        rg.blink(blink, [40, 41, 74, 75])
     return rg
 
 
@@ -329,9 +372,6 @@ def core_fx(rg, c, pos, sparks=3, radius=12, catch=None, trail=None):
     rg.front.append(fx)
 
 
-SLEEVES2 = [('sleeve_l', (8, 104, 62, 166), 60, 0.0), ('sleeve_r', (118, 96, 166, 152), 110, 0.3)]
-
-
 def rig_r2(base, blink):
     """金丹男：手往下一沉、人蹲一下，往上一送把金丹拋高，頭跟著抬起來看；落回掌心時整個人一頓，迸出一圈火花。"""
     rg = Rig(base)
@@ -342,20 +382,19 @@ def rig_r2(base, blink):
     core = grow(flood(disc(c, 11) & (s > 0.42), c), 1)
 
     def P(f):
-        if f < 16:
+        if f < 16 or f >= 48:
             return pose(sq=-breathe(f))
         return pose(sq=seq(f, 20, [1, 2, 2, -2, -1, -.5, -.5, -.5, -.5, -.5, -.5, -.5, 2, 1, -1]), ln=keys(f, [(23, 0), (25, 0.6), (30, 0.6), (33, 0)]))
-    mask = cut(base, [(66, 36), (102, 36), (114, 60), (118, 74), (124, 62), (152, 62), (154, 80), (167, 104), (167, 152), (4, 152), (4, 120),
+    mask = cut(base, [(66, 36), (102, 36), (114, 60), (118, 74), (124, 62), (152, 62), (154, 80), (167, 104), (167, 156), (4, 156), (4, 120),
                       (28, 98), (34, 90), (34, 56), (58, 56)], seeds=[(88, 70)]) | leafmask(base, bx)
-    body, heady, _ = actor(rg, mask & ~core, (98, 148), P, (85, 165))
+    legs = legmask(base, (44, 146, 112, 190), [(62, 168), (90, 168), (60, 174), (94, 174)])
+    body, heady, _ = actor(rg, mask & ~core, legs, (156, 186), P)
     rg.part('core', core, lambda f: [shift(0, toss.get(f % N, 0))], body)
     leaves(rg, base, bx, (82, 38), heady)
-    for name, b, along, ph in SLEEVES2:
-        sway(rg, name, box(*b), along, 1.6, 44, 24, ph, gain=kick(heady, 0.4))
     sway(rg, 'wisp_l', box(34, 58, 68, 96), 90, 1.5, 34, 24, 0.2, anchor=(68, 58, 30), gain=kick(heady))
     core_fx(rg, c, lambda f: (0, toss.get(f % N, 0) + heady(f)), catch=32, trail=3)
     if blink is not None:
-        rg.blink(blink, [12, 13])
+        rg.blink(blink, [12, 13, 68, 69])
     return rg
 
 
@@ -369,17 +408,15 @@ def rig_gr2(base, blink):
     core = grow(flood(disc(c, 11) & (s > 0.42), c), 1)
 
     def P(f):
-        return pose(sq=(-breathe(f) if f < 32 else 0) + seq(f, 34, [1, 2, -2, -1, 1]), ln=0.6 * math.cos(TAU * f / 24.0))
-    mask = cut(base, [(60, 34), (104, 34), (116, 60), (120, 76), (126, 64), (154, 64), (156, 82), (167, 104), (167, 152), (4, 152), (4, 120),
+        return pose(sq=(-breathe(f) if (f < 32 or f >= 48) else 0) + seq(f, 34, [1, 2, -2, -1, 1]), ln=0.6 * math.cos(TAU * f / 24.0))
+    mask = cut(base, [(60, 34), (104, 34), (116, 60), (120, 76), (126, 64), (154, 64), (156, 82), (167, 104), (167, 160), (4, 160), (4, 120),
                       (24, 100), (26, 80), (40, 52), (52, 38)], seeds=[(88, 72)]) | leafmask(base, bx)
-    body, heady, _ = actor(rg, mask & ~core, (98, 148), P, (85, 165))
+    legs = legmask(base, (44, 150, 114, 190), [(62, 172), (92, 172), (60, 178), (96, 178)])
+    body, heady, _ = actor(rg, mask & ~core, legs, (160, 186), P)
     rg.part('core', core, lambda f: [shift(*orbit(f))], body)
     leaves(rg, base, bx, (82, 38), heady)
     sway(rg, 'ribbon', box(44, 56, 68, 96), 90, 2.0, 30, 24, 0.0, anchor=(58, 56, 28), gain=kick(heady, 0.4))
-    sway(rg, 'hair_l', box(24, 84, 70, 152), 70, 2.0, 46, 24, 0.2, gain=kick(heady, 0.4))
     sway(rg, 'hair_r', box(114, 60, 126, 100), 90, 1.3, 30, 24, 0.5, r=2, anchor=(110, 58, 26))
-    for name, b, along, ph in SLEEVES2:
-        sway(rg, name, box(*b), along, 1.5, 44, 24, ph + 0.1, gain=kick(heady, 0.4))
     core_fx(rg, c, lambda f: (orbit(f)[0], orbit(f)[1] + heady(f)), sparks=2, radius=13, trail=5)
 
     def pulse(img, f):
@@ -391,7 +428,7 @@ def rig_gr2(base, blink):
                 dot(img, c[0] + r * math.cos(t), c[1] - 2 + heady(f) + r * math.sin(t), PALE if (k // 10) % 2 else GOLD, 0.95 - g * 0.09)
     rg.front.append(pulse)
     if blink is not None:
-        rg.blink(blink, [20, 21])
+        rg.blink(blink, [20, 21, 72, 73])
     return rg
 
 
@@ -407,6 +444,12 @@ def staff_mask(base):
     return grow(flood(staff, (134, 150), (140, 60)) | cut(base, [(128, 98), (144, 98), (144, 112), (128, 112)]), 1)
 
 
+OUT3 = [(78, 0), (98, 0), (132, 12), (134, 34), (164, 36), (166, 100), (168, 120), (168, 160), (150, 170), (150, 196), (112, 200), (56, 200),
+        (52, 172), (20, 168), (0, 150), (0, 118), (18, 100), (22, 84), (30, 76), (28, 58), (50, 50), (34, 40), (36, 12)]
+OUT3G = [(78, 0), (98, 0), (128, 12), (130, 34), (164, 36), (166, 100), (168, 118), (168, 162), (150, 172), (150, 196), (112, 200), (56, 200),
+         (52, 174), (20, 170), (0, 154), (0, 112), (22, 98), (28, 84), (26, 60), (40, 44), (32, 36), (34, 12)]
+
+
 def rig_r3(base, blink):
     """元嬰男：慢慢呼吸。把手杖提起來、人跟著拉長，往地上一頓，整個人壓扁、畫面震一下，腳邊盪開兩圈光紋，流蘇和鬍鬚被震得甩起來。"""
     rg = Rig(base)
@@ -414,19 +457,16 @@ def rig_r3(base, blink):
     staff = staff_mask(base)
 
     def P(f):
-        if f < 18:
+        if f < 18 or f >= 48:
             return pose(sq=-breathe(f, 12, 4))
         return pose(sq=seq(f, 21, [-0.5, -1, -1.5, -2, -2, -2, 2, 3, 2, 1, -1]))
-    mask = poly([(70, 20), (102, 20), (112, 50), (116, 80), (124, 96), (128, 110), (128, 152), (8, 152), (6, 128), (26, 100), (30, 84), (36, 56), (60, 52)]) | leafmask(base, bx)
-    body, heady, _ = actor(rg, mask & ~staff, (100, 150), P, (85, 165))
+    heady, _ = floater(rg, OUT3, P)
     lift = lambda f: keys(f % N, [(20, 0), (25, -7), (26, -7), (27, 0)])
     rg.part('staff', staff, lambda f: [shift({27: 1, 28: -1}.get(f % N, 0), lift(f))])
     Wt = rg.region('tassel', box(121, 58, 139, 100), 2)
     rg.soft.append(lambda f: [f_bend(Wt, (131, 58), 2.0 * cyc(f, 24) + 1.6 * follow(lift, f, 0.25, 1.1, 24), 40)])
-    sway(rg, 'beard', box(86, 86, 104, 114), 90, 1.2, 24, 24, 0.2, anchor=(95, 84, 22), gain=kick(heady, 0.5))
     leaves(rg, base, bx, (88, 22), heady, 50, 0.6)
-    sway(rg, 'hem_l', box(22, 118, 70, 166), 70, 1.4, 46, 24, 0.1, gain=kick(heady, 0.4))
-    clouds(rg, [(0, 166, 52, 209), (146, 166, 167, 209)])
+    clouds(rg, [(0, 182, 46, 209), (152, 182, 167, 209)])
     rg.front.append(lambda img, f: glow(img, 86, 38 + heady(f), 15, .12 + .30 * (.5 + .5 * cyc(f, 24, -0.25)), PALE))
 
     def ripple(img, f):
@@ -459,16 +499,12 @@ def rig_gr3(base, blink):
     def P(f):
         idle_ = -breathe(f, 12, 4) if (f < 16 or f >= 24) else 0
         return pose(sq=idle_ + seq(f, hit - 1, [1, -2, -1, 1]))
-    mask = poly([(70, 18), (102, 18), (112, 50), (118, 80), (124, 96), (128, 110), (128, 152), (8, 152), (6, 128), (24, 100), (26, 70), (40, 44), (62, 42)]) | leafmask(base, bx)
-    body, heady, _ = actor(rg, mask & ~staff, (100, 150), P, (85, 165))
-    rg.part('staff', staff)
+    heady, _ = floater(rg, OUT3G, P)
     Wt = rg.region('tassel', box(120, 56, 140, 100), 2)
     rg.soft.append(lambda f: [f_bend(Wt, (131, 58), 3.0 * cyc(f, 24), 40)])
-    sway(rg, 'hairpin', box(40, 46, 66, 98), 90, 1.5, 30, 24, 0.0, r=2, anchor=(58, 46, 30), gain=kick(heady, 0.5))
+    sway(rg, 'hairpin', box(40, 46, 60, 90), 90, 1.5, 30, 24, 0.0, r=2, anchor=(54, 46, 30), gain=kick(heady, 0.5))
     leaves(rg, base, bx, (86, 22), heady, 50, 0.6)
-    sway(rg, 'hem_l', box(14, 110, 70, 168), 70, 1.5, 46, 24, 0.1, gain=kick(heady, 0.4))
-    sway(rg, 'ribbon_r', box(134, 116, 166, 168), 60, 1.6, 40, 24, 0.6)
-    clouds(rg, [(0, 172, 56, 209), (146, 172, 167, 209)])
+    clouds(rg, [(0, 184, 46, 209), (152, 184, 167, 209)])
 
     def gather(img, f):
         hot = max(0.0, 1 - abs(f - hit - 2) / 5.0)
@@ -518,6 +554,12 @@ def night(rg, base, stars, meteors):
     rg.front.append(fx)
 
 
+OUT4 = [(70, 0), (96, 0), (120, 14), (118, 40), (108, 46), (168, 50), (168, 158), (120, 160), (104, 170), (100, 190), (64, 190), (56, 170),
+        (24, 160), (0, 150), (0, 48), (60, 48), (28, 36), (30, 12)]
+OUT4G = [(72, 0), (96, 0), (118, 14), (116, 40), (108, 44), (168, 50), (168, 160), (120, 162), (106, 170), (102, 188), (64, 188), (56, 170),
+         (24, 165), (0, 150), (0, 48), (56, 44), (34, 36), (36, 12)]
+
+
 def rig_r4(base, blink):
     """化神男：整個人在夜空裡慢慢浮上浮下。深吸一口氣、身體慢慢拉長，停住，一口吐出來、身體一沉，星光從身邊散開。流星由慢到快劃過去。"""
     rg = Rig(base)
@@ -525,16 +567,7 @@ def rig_r4(base, blink):
 
     def P(f):
         return pose(dy=1.3 * math.sin(TAU * f / 48.0), sq=seq(f, 18, [-0.4, -0.8, -1.2, -1.6, -2, -2, -2, -2, -2, -2, -2, 1, 2, 1]))
-    mask = poly([(74, 36), (104, 36), (112, 56), (112, 74), (128, 80), (134, 76), (150, 78), (150, 92), (136, 100), (134, 128), (124, 142), (112, 146),
-                 (112, 170), (98, 186), (70, 186), (64, 160), (52, 146), (40, 132), (36, 100), (28, 92), (28, 78), (42, 76), (48, 82), (62, 74),
-                 (40, 60), (44, 50), (66, 52)]) | leafmask(base, bx)
-    body, heady, _ = actor(rg, mask, (92, 134), P, (88, 186), pad=0)
-    sway(rg, 'ribbon_ul', box(6, 48, 62, 84), 0, 2.2, 46, 24, 0.0)
-    sway(rg, 'ribbon_ur', box(112, 54, 166, 86), 0, 2.2, 46, 24, 0.35)
-    sway(rg, 'ribbon_l', box(4, 96, 36, 146), 90, 2.2, 44, 24, 0.15)
-    sway(rg, 'ribbon_r', box(136, 96, 166, 152), 90, 2.2, 44, 24, 0.5)
-    Wg = rg.region('legs', box(62, 138, 114, 184), 3)
-    rg.soft.append(lambda f: [f_bend(Wg, (88, 136), 3.0 * cyc(f, 48, 0.2) + 0.5 * follow(heady, f), 46)])
+    heady, _ = floater(rg, OUT4, P)
     leaves(rg, base, bx, (86, 30), heady, 45, 0.6)
     night(rg, base, [(26, 38), (48, 24), (120, 22), (142, 36), (152, 62), (20, 70), (114, 46), (60, 44), (136, 20), (30, 56)],
           [(4, 162, 22, -5.0, 3.4, 9)])
@@ -559,16 +592,7 @@ def rig_gr4(base, blink):
 
     def P(f):
         return pose(dy=1.3 * math.sin(TAU * (f / 48.0 + 0.5)), sq=seq(f, hit - 2, [1, 2, -2, -2, -1, 1]))
-    mask = poly([(72, 30), (104, 30), (114, 52), (114, 72), (128, 78), (136, 74), (150, 76), (150, 90), (140, 100), (150, 120), (150, 156), (124, 160),
-                 (114, 150), (114, 172), (100, 186), (72, 186), (64, 166), (40, 168), (18, 150), (18, 110), (30, 92), (40, 86), (40, 74), (52, 74),
-                 (56, 60), (52, 44), (60, 34)]) | leafmask(base, bx)
-    body, heady, _ = actor(rg, mask, (92, 134), P, (90, 186), pad=0)
-    sway(rg, 'ribbon_ul', box(6, 50, 50, 84), 0, 2.0, 46, 24, 0.1)
-    sway(rg, 'ribbon_ur', box(120, 54, 166, 72), 0, 2.0, 46, 24, 0.45)
-    sway(rg, 'hair_l', box(18, 88, 72, 166), 80, 2.2, 50, 24, 0.0, gain=kick(heady, 0.4))
-    sway(rg, 'hair_r', box(108, 96, 152, 156), 100, 2.0, 48, 24, 0.3, gain=kick(heady, 0.4))
-    Wg = rg.region('legs', box(68, 138, 114, 184), 3)
-    rg.soft.append(lambda f: [f_bend(Wg, (90, 136), 2.6 * cyc(f, 48, 0.6) + 0.5 * follow(heady, f), 44)])
+    heady, _ = floater(rg, OUT4G, P)
     leaves(rg, base, bx, (86, 30), heady, 45, 0.6)
     night(rg, base, [(26, 40), (50, 26), (122, 24), (150, 60), (20, 72), (60, 44), (30, 58)], [])
     palms = ((50, 82), (139, 80))
@@ -596,11 +620,10 @@ def rig_gr4(base, blink):
 
 
 # ---------- 大乘 ----------
-BODY5 = [(70, 30), (104, 30), (114, 56), (116, 76), (130, 84), (140, 82), (160, 84), (162, 96), (150, 104), (152, 140), (140, 160), (114, 164),
-         (112, 180), (100, 194), (72, 194), (62, 170), (40, 162), (26, 140), (34, 104), (26, 96), (28, 84), (48, 82), (56, 86), (60, 76),
-         (38, 60), (44, 50), (64, 52)]
-BODY5G = [(66, 28), (106, 28), (116, 56), (118, 76), (132, 84), (142, 80), (160, 84), (160, 98), (150, 106), (152, 140), (140, 162), (114, 166),
-          (112, 182), (100, 194), (72, 194), (62, 172), (40, 164), (24, 142), (30, 106), (22, 96), (24, 84), (46, 82), (40, 60), (46, 44), (60, 34)]
+OUT5 = [(70, 0), (100, 0), (126, 14), (126, 44), (110, 50), (168, 50), (168, 150), (140, 165), (112, 170), (106, 196), (58, 196), (52, 170),
+        (20, 160), (0, 145), (0, 55), (56, 50), (44, 44), (44, 14)]
+OUT5G = [(70, 0), (100, 0), (122, 14), (122, 44), (112, 50), (168, 50), (168, 150), (140, 168), (112, 172), (106, 194), (58, 194), (52, 172),
+         (20, 165), (0, 150), (0, 60), (40, 48), (40, 14)]
 
 
 def rig_r5(base, blink):
@@ -613,13 +636,9 @@ def rig_r5(base, blink):
 
     def P(f):
         return pose(dy=1.0 * math.sin(TAU * f / 48.0), sq=seq(f, hit - 2, [1, 2, -2, -2, -1, -1, -1, -1, 0.5]))
-    body, heady, _ = actor(rg, poly(BODY5) | leafmask(base, bx), (98, 148), P, (88, 194), pad=0)
-    sway(rg, 'ribbon_l', box(4, 52, 24, 152), 90, 2.2, 50, 24, 0.0)
-    sway(rg, 'ribbon_r', box(152, 50, 166, 150), 90, 2.2, 50, 24, 0.4)
-    Wg = rg.region('legs', box(62, 152, 114, 192), 3)
-    rg.soft.append(lambda f: [f_bend(Wg, (88, 150), 2.0 * cyc(f, 48, 0.3) + 0.5 * follow(heady, f), 40)])
+    heady, _ = floater(rg, OUT5, P)
     leaves(rg, base, bx, (88, 38), heady, 45, 0.6)
-    clouds(rg, [(0, 172, 58, 198), (116, 172, 167, 198)])
+    clouds(rg, [(0, 184, 50, 202), (122, 184, 167, 202)])
 
     def halo(img, f):
         tmp = img.copy()
@@ -638,14 +657,15 @@ def rig_r5(base, blink):
                 t = math.radians(k)
                 for dr, col, a in ((0, AMBER, 0.9), (-1, GOLD, 0.9), (-2, WHITE, 0.6)):
                     dot(tmp, c[0] + (r + dr) * math.cos(t), c[1] + (r + dr) * math.sin(t), col, a * (1 - g / 12.0))
-        img[:] = img * (1 - light[..., None]) + tmp * light[..., None]
-        glow(img, c[0], c[1], 74, .04 + .10 * (.5 + .5 * cyc(f, 24)) + (.22 * max(0.0, 1 - abs(g - 1) / 4.0)), PALE, only=light)
+        lt = rg.warp(light)          # 光只畫在背景上；人移動了，背景的範圍要跟著算
+        img[:] = img * (1 - lt[..., None]) + tmp * lt[..., None]
+        glow(img, c[0], c[1], 74, .04 + .10 * (.5 + .5 * cyc(f, 24)) + (.22 * max(0.0, 1 - abs(g - 1) / 4.0)), PALE, only=lt)
         if 0 <= g < 4:
             plus(img, 87, 36 + heady(f), WHITE, 1.0 if g < 3 else 0.5)
     rg.front.append(halo)
     motes(rg, [(18, 176), (40, 150), (62, 190), (110, 186), (132, 150), (152, 178)])
     if blink is not None:
-        rg.blink(blink, [10, 11])
+        rg.blink(blink, [10, 11, 64, 65])
     return rg
 
 
@@ -657,23 +677,17 @@ def rig_gr5(base, blink):
 
     def P(f):
         return pose(dy=1.0 * math.sin(TAU * (f / 48.0 + 0.25)), sq=seq(f, 26, [1, -2, -1, 1]), ln=0 if 24 <= f < 32 else 0.8 * SW[(f // 3) % 8])
-    body, heady, PP = actor(rg, poly(BODY5G) | leafmask(base, bx), (98, 148), P, (88, 194), pad=0)
+    heady, PP = floater(rg, OUT5G, P)
     tilt = lambda f: 2.0 * PP(f)['ln']
-    both = lambda f: 1 + 0.3 * abs(follow(heady, f)) + 0.4 * abs(follow(tilt, f))
-    sway(rg, 'hair_l', box(8, 62, 70, 152), 80, 2.2, 52, 24, 0.0, gain=both)
-    sway(rg, 'hair_r', box(116, 62, 150, 150), 100, 2.0, 50, 24, 0.35, gain=both)
-    sway(rg, 'ribbon_ur', box(134, 50, 166, 84), 0, 2.0, 46, 24, 0.2)
-    Wg = rg.region('legs', box(62, 152, 114, 192), 3)
-    rg.soft.append(lambda f: [f_bend(Wg, (88, 150), 2.0 * cyc(f, 48, 0.7) + 0.5 * follow(heady, f), 40)])
     leaves(rg, base, bx, (88, 40), lambda f: heady(f) + 0.6 * tilt(f), 45, 0.6)
-    clouds(rg, [(0, 172, 58, 198), (116, 172, 167, 198)])
+    clouds(rg, [(0, 184, 50, 202), (122, 184, 167, 202)])
     rnd = random.Random(5)
     petals = [(rnd.uniform(8, 160), rnd.uniform(0, GH), rnd.uniform(0, 1), rnd.choice((3, 4, 5))) for _ in range(11)]
 
     def fall(img, f):
-        glow(img, 88, 52, 66, .05 + .14 * (.5 + .5 * cyc(f, 24, -0.25)), PALE, only=light)
+        glow(img, 88, 52, 66, .05 + .14 * (.5 + .5 * cyc(f, 24, -0.25)), PALE, only=rg.warp(light))
         for i, (x0, y0, ph, amp) in enumerate(petals):
-            y = (y0 + f * GH / float(N)) % GH
+            y = (y0 + 2 * f * GH / float(N)) % GH
             x = x0 + amp * math.sin(TAU * (f / 24.0 + ph))
             flip = (f + i * 3) % 8
             if flip < 3:
@@ -684,7 +698,7 @@ def rig_gr5(base, blink):
                 dot(img, x, y, AMBER); dot(img, x - 1, y, GOLD); dot(img, x + 1, y + 1, AMBER, 0.8); dot(img, x, y + 1, GOLD)
     rg.front.append(fall)
     if blink is not None:
-        rg.blink(blink, [14, 15])
+        rg.blink(blink, [14, 15, 70, 71])
     return rg
 
 
@@ -705,6 +719,12 @@ def storm(rg, rocks, embers):
 EMBERS = [(30, 198), (56, 205), (118, 202), (144, 192), (92, 207), (70, 198)]
 
 
+OUT6 = [(70, 2), (100, 2), (126, 20), (124, 56), (112, 62), (120, 78), (146, 80), (168, 96), (168, 150), (140, 158), (120, 165), (118, 186), (44, 186),
+        (42, 165), (15, 160), (0, 140), (0, 55), (50, 60), (30, 52), (32, 22)]
+OUT6G = [(70, 2), (98, 2), (122, 20), (122, 52), (112, 58), (120, 78), (146, 80), (168, 96), (168, 150), (140, 160), (120, 168), (118, 186), (48, 186),
+         (44, 168), (15, 165), (0, 150), (0, 50), (46, 46), (38, 40), (40, 18)]
+
+
 def rig_r6(base, blink):
     """渡劫男：喘著氣撐著。天暗下來、人越蹲越低，一道大雷沿著畫裡的閃電劈下來，整張閃白、震一下、人被壓到最扁；頂住之後一口氣挺回來。"""
     rg = Rig(base)
@@ -717,15 +737,11 @@ def rig_r6(base, blink):
         if f < 18 or f >= 36:
             return pose(sq=breathe(f, 6, 2))
         return pose(sq=seq(f, 18, [1, 1, 1, 2, 2, 3, 3, 2, 1, -1, -2, -2, -1, -1]))
-    mask = poly([(64, 42), (104, 42), (112, 60), (110, 80), (124, 92), (128, 84), (142, 86), (142, 104), (132, 112), (134, 152), (40, 152), (38, 112),
-                 (46, 100), (48, 86), (60, 84), (56, 62)]) | leafmask(base, bx)
-    body, heady, _ = actor(rg, mask, (100, 150), P, (85, 170), pad=0)
+    heady, _ = floater(rg, OUT6, P, legs=(44, 150, 118, 184))
     gust = kick(heady, 0.25)
-    sway(rg, 'cloth_l', box(4, 76, 36, 150), 0, 2.2, 40, 12, 0.0, gain=gust)
-    sway(rg, 'cloth_r', box(136, 96, 166, 150), 0, 2.2, 40, 12, 0.4, gain=gust)
-    sway(rg, 'wisp_l', box(10, 52, 54, 82), 0, 1.8, 36, 12, 0.1, gain=gust)
+    sway(rg, 'wisp_l', box(10, 50, 48, 76), 0, 1.8, 36, 12, 0.1, gain=gust)
     leaves(rg, base, bx, (86, 42), heady)
-    storm(rg, [(14, 152, 31, 175), (150, 156, 167, 198), (16, 132, 28, 146)], EMBERS)
+    storm(rg, [(8, 164, 26, 180), (152, 162, 167, 198)], EMBERS)
 
     def strike(img, f):
         g = f - hit
@@ -740,7 +756,7 @@ def rig_r6(base, blink):
     rg.post.append(flash({hit: .55, hit + 1: .16, hit + 2: .36, hit + 3: .10}))
     rg.post.append(shake({hit: 2, hit + 1: -2, hit + 2: 1}))
     if blink is not None:
-        rg.blink(blink, [8, 9])
+        rg.blink(blink, [8, 9, 62, 63])
     return rg
 
 
@@ -755,17 +771,14 @@ def rig_gr6(base, blink):
     def P(f):
         idle_ = breathe(f, 6, 2) if (f < 10 or 18 <= f < 31 or f >= 42) else 0
         return pose(sq=idle_ + seq(f, hits[0] - 1, [1, 2, 2, 1, -1]) + seq(f, hits[1] - 1, [1, 3, 3, 2, 1, -1, -1]))
-    mask = poly([(60, 38), (106, 38), (114, 60), (112, 80), (126, 92), (130, 84), (142, 86), (142, 104), (134, 112), (136, 154), (36, 154), (34, 112),
-                 (30, 96), (40, 60), (50, 44)]) | leafmask(base, bx)
-    body, heady, _ = actor(rg, mask, (100, 150), P, (85, 172), pad=0)
+    heady, _ = floater(rg, OUT6G, P, legs=(46, 153, 118, 184))
     gust = kick(heady, 0.25)
-    sway(rg, 'hair_l', box(4, 52, 60, 150), 10, 2.4, 44, 12, 0.0, gain=gust)
-    sway(rg, 'cloth_r', box(138, 98, 166, 150), 0, 2.0, 40, 12, 0.4, gain=gust)
+    sway(rg, 'hair_l', box(2, 48, 40, 94), 10, 2.2, 44, 12, 0.0, gain=gust)
     leaves(rg, base, bx, (86, 40), heady)
-    storm(rg, [(12, 140, 30, 176), (150, 140, 167, 192)], EMBERS)
+    storm(rg, [(8, 164, 26, 180), (152, 162, 167, 196)], EMBERS)
     rnd = random.Random(11)
     arcs = []
-    for k in range(12):
+    for k in range(N // 4):
         ang, rad = rnd.uniform(0, TAU), rnd.uniform(24, 44)
         x, y = 88 + rad * math.cos(ang), 112 + rad * 1.2 * math.sin(ang)
         pts = [(x, y)]
@@ -796,7 +809,7 @@ def rig_gr6(base, blink):
     rg.post.append(flash({hits[0]: .30, hits[0] + 2: .16, hits[1]: .46, hits[1] + 1: .12, hits[1] + 2: .28}))
     rg.post.append(shake({hits[0]: 1, hits[1]: 2, hits[1] + 1: -2}))
     if blink is not None:
-        rg.blink(blink, [22, 23])
+        rg.blink(blink, [22, 23, 76, 77])
     return rg
 
 
@@ -817,23 +830,25 @@ def main():
         pal_lab = px.rgb2lab(pal.astype(np.float32))
         rg = RIGS[name](base, blink)
         frames = rg.frames()
-        strip = np.zeros((GH, GW * N), dtype=np.uint8)
+        sheet = np.zeros((GH * (N // COLS), GW * COLS), dtype=np.uint8)
+        cells = []
         for i, fr in enumerate(frames):
-            strip[:, i * GW:(i + 1) * GW] = px.nearest(px.rgb2lab(np.clip(fr, 0, 255).reshape(-1, 3)), pal_lab).reshape(GH, GW)
-        im = Image.fromarray(strip, mode='P')
+            cells.append(px.nearest(px.rgb2lab(np.clip(fr, 0, 255).reshape(-1, 3)), pal_lab).reshape(GH, GW))
+            r, c = divmod(i, COLS)
+            sheet[r * GH:(r + 1) * GH, c * GW:(c + 1) * GW] = cells[-1]
+        im = Image.fromarray(sheet, mode='P')
         im.putpalette(pal.reshape(-1).tolist())
         out = os.path.join(folder, '%s_anim%d.png' % (name, N))
         im.save(out, optimize=True)
         print(name, 'frames', N, os.path.getsize(out), 'bytes')
         if dbg:
             rg.debug(os.path.join(dbg, 'dbg_%s.png' % name))
-            rgb = im.convert('RGB')
             a = STRIP[name]
-            sheet = Image.new('RGB', (14 * (GW + 2), GH), (30, 30, 30))
+            st = Image.new('RGB', (14 * (GW + 2), GH), (30, 30, 30))
             for i in range(14):
-                f = (a + i) % N
-                sheet.paste(rgb.crop((f * GW, 0, (f + 1) * GW, GH)), (i * (GW + 2), 0))
-            sheet.save(os.path.join(dbg, 'st_%s.png' % name))
+                st.paste(Image.fromarray(pal[cells[(a + i) % N]]), (i * (GW + 2), 0))
+            st.save(os.path.join(dbg, 'st_%s.png' % name))
+            np.save(os.path.join(dbg, 'cells_%s.npy' % name), np.stack(cells))
 
 
 if __name__ == '__main__':

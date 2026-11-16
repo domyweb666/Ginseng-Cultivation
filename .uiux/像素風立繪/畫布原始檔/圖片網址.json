@@ -1,44 +1,86 @@
 {
  "r0": {
-  "strip": "/_blob/89ee52810dc7f86a6bcf59b5fa3d9f53"
+  "sheet": "/_blob/26a86ed223dcf5b8d21e1ece60089fa5",
+  "frames": 96,
+  "cols": 12,
+  "rows": 8
  },
  "r1": {
-  "strip": "/_blob/80110bf1a09ed7bd39e7f8454f7f984e"
+  "sheet": "/_blob/11fb9db98a227efab3719215c1299de6",
+  "frames": 96,
+  "cols": 12,
+  "rows": 8
  },
  "r2": {
-  "strip": "/_blob/11de902cf23135a2e9c5e2f86ab4d0f2"
+  "sheet": "/_blob/17661a67205ade7253e338118db6da41",
+  "frames": 96,
+  "cols": 12,
+  "rows": 8
  },
  "r3": {
-  "strip": "/_blob/48468dff5b626db5f69bf917fb5fab95"
+  "sheet": "/_blob/aba79ec4cd217ad022f3f99e653b0cdc",
+  "frames": 96,
+  "cols": 12,
+  "rows": 8
  },
  "r4": {
-  "strip": "/_blob/3212ae82894a1109d366eb913ccfc682"
+  "sheet": "/_blob/8c2be04be0868a5ae39b7c344233ad5d",
+  "frames": 96,
+  "cols": 12,
+  "rows": 8
  },
  "r5": {
-  "strip": "/_blob/db5f7fa2af85ab22771b7604a1c1d036"
+  "sheet": "/_blob/d5a34911878466c3c6a8490df7bfed89",
+  "frames": 96,
+  "cols": 12,
+  "rows": 8
  },
  "r6": {
-  "strip": "/_blob/9112fda329491f4d0ca4aa210b000e3d"
+  "sheet": "/_blob/cfdf5afb179db0e0c6a456c773bb77fe",
+  "frames": 96,
+  "cols": 12,
+  "rows": 8
  },
  "gr0": {
-  "strip": "/_blob/4cb19be9c8cecea95b954b802bb52d15"
+  "sheet": "/_blob/3a559489212d2317eb4a8db376028f0f",
+  "frames": 96,
+  "cols": 12,
+  "rows": 8
  },
  "gr1": {
-  "strip": "/_blob/5583938114a9654cd15e10747a3ed14b"
+  "sheet": "/_blob/2c19e0ddd222ca6b112d4d10f380fadd",
+  "frames": 96,
+  "cols": 12,
+  "rows": 8
  },
  "gr2": {
-  "strip": "/_blob/31a14383e1d61847d330950777dccae4"
+  "sheet": "/_blob/9e5349c1edecb0e6577743f6fb9e1405",
+  "frames": 96,
+  "cols": 12,
+  "rows": 8
  },
  "gr3": {
-  "strip": "/_blob/b0d2bcd7851d3ba01224371c933de8cb"
+  "sheet": "/_blob/d5a7dde67d8d703b9d934fb12b2e59af",
+  "frames": 96,
+  "cols": 12,
+  "rows": 8
  },
  "gr4": {
-  "strip": "/_blob/a99b48e564d4884f6dc9eb5531bbc111"
+  "sheet": "/_blob/26966b76880c31cc56a37b43c506f742",
+  "frames": 96,
+  "cols": 12,
+  "rows": 8
  },
  "gr5": {
-  "strip": "/_blob/5ccad71b65b75cf959a922cd7027ef1c"
+  "sheet": "/_blob/9d863946a2b31258fb6b18ab0f785b49",
+  "frames": 96,
+  "cols": 12,
+  "rows": 8
  },
  "gr6": {
-  "strip": "/_blob/6a11414a23a73bb8fb1addbaf4be614b"
+  "sheet": "/_blob/c817b48d1d97446e77d3a995984864fc",
+  "frames": 96,
+  "cols": 12,
+  "rows": 8
  }
 }

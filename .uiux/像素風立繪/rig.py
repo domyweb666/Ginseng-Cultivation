@@ -11,7 +11,8 @@ from PIL import Image, ImageDraw
 import pixelate2 as px
 
 GW, GH = px.GW, px.GH
-N = 48                       # 每條動畫的格數，一格 0.1 秒，一輪 4.8 秒
+N = 96                       # 每條動畫的格數，一格 0.1 秒，一輪 9.6 秒
+COLS = 12                    # 成品是一張格子圖，一列 12 格、共 8 列（太寬的長條圖瀏覽器和手機都吃不消）
 YS, XS = np.mgrid[0:GH, 0:GW].astype(np.float32)
 
 GOLD = np.array([246, 207, 90], dtype=np.float32)
@@ -182,6 +183,18 @@ def squash(y0, y1, dy):
     return f
 
 
+def tie(y0, y1, dx, dy):
+    """腿：y0 以上跟著身體整塊移 (dx, dy)，y1 以下（腳）不動，中間均勻壓短或拉長。
+    衣服不經過這裡，會被擠壓的只有腿。"""
+    def f(X, Y):
+        top = y0 + dy
+        span = max(1.0, y1 - top)
+        s = np.where(Y <= top, Y - dy, np.where(Y >= y1, Y, y1 - (y1 - Y) * (y1 - y0) / span))
+        w = np.clip((y1 - s) / float(y1 - y0), 0, 1)
+        return X - dx * w, s
+    return f
+
+
 def lean(pivot, deg, length):
     """腳不動，越往上斜得越多。重心移動、出招時身體跟著帶。"""
     def f(X, Y):
@@ -276,8 +289,20 @@ def breath(f, period=24, up=(4, 14)):
 
 # ---------- 姿勢（照像素 B-roll 的 motion.js：預備、出手、回彈，一拍一拍地演）----------
 # 姿勢是 {dx, dy, sq, ln}：dx、dy 是整個人的位移，sq 正的是壓扁（頭往下沉）、負的是拉長，ln 是身體傾斜幾度。
-# 單位不是格，是「一份」，畫的時候再乘上 U 格。壓扁是把身體中段壓短，頭和臉不變形。
+# 單位不是格，是「一份」，畫的時候再乘上 U 格。
+# 壓扁和拉長只動腿：頭、手、衣服是一整塊照姿勢位移，一格都不變形（衣服的花紋一被擠壓就很怪）。
 U = 3
+LEAN = 1.8                   # 傾斜 1 度，上半身橫移幾格
+
+
+def stance(posefn):
+    """把姿勢換成上半身這一格要移幾格（整數）。回傳 (取姿勢的函式, 取位移的函式)。"""
+    P = lambda f: posefn(f % N)
+
+    def D(f):
+        p = P(f)
+        return int(math.floor(LEAN * p['ln'] + U * p['dx'] + 0.5)), int(math.floor(U * (p['dy'] + p['sq']) + 0.5))
+    return P, D
 
 
 def pose(dx=0.0, dy=0.0, sq=0.0, ln=0.0):
@@ -365,6 +390,11 @@ class Rig:
         for p in self.parts:
             union |= p.mask
         self.bg = inpaint(self.base, union)
+        self.bg_alt = self.bg
+        if self._blink:
+            diff = (np.abs(self._blink[0] - self.base).sum(-1) > 0) & ~union
+            self.bg_alt = self.bg.copy()
+            self.bg_alt[diff] = self._blink[0][diff]
         for i, p in enumerate(self.parts):
             above = np.zeros((GH, GW), dtype=bool)
             for q in self.parts[i + 1:]:
@@ -394,10 +424,11 @@ class Rig:
             warp = lambda a: a[wy, wx]
         else:
             warp = lambda a: a
-        out = warp(self.bg).copy()
+        self.warp = warp            # 特效要知道背景這一格被推到哪裡時用
+        closed = bool(self._blink) and (f % N) in self._blink[1]
+        out = warp(self.bg_alt if closed else self.bg).copy()
         for fx in self.back:
             fx(out, f)
-        closed = bool(self._blink) and (f % N) in self._blink[1]
         for p in self.parts:
             mask, tex = warp(p.mask), warp(p.alt if closed else p.tex)
             X, Y = XS, YS
