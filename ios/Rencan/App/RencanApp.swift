@@ -55,15 +55,7 @@ struct RencanApp: App {
 
     var body: some Scene {
         WindowGroup {
-            #if DEBUG
-                if MascotGalleryView.isRequested {
-                    MascotGalleryView()
-                } else {
-                    mainContent
-                }
-            #else
-                mainContent
-            #endif
+            mainContent
         }
     }
 

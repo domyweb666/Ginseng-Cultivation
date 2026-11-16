@@ -3,7 +3,7 @@
 //   - 不管成敗，finally 一定刪這次開的機器；另設閒置 3 分鐘、最長 12 分鐘自動關。
 //   - 結束前列出帳號下帶 project=rencan 標籤、還活著的機器，有就刪掉並印出來。
 // 用法：node .vibe/tools/limrun_walk.mjs <rencan-sim.zip> <截圖輸出資料夾> [只走哪幾段]
-//   第三個參數不給就走 demo,best,fresh,mascot 四段；給「widget」只走小工具那段（要用 work/widget 的模擬器版）。
+//   第三個參數不給就走 demo,best,fresh,empty 四段；給「widget」只走小工具那段（要用 work/widget 的模擬器版）。
 // 金鑰：環境變數 LIM_API_KEY，沒有就讀 ~/.lim/config.yaml 的 api-key。模擬器裡只有合成資料。
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
@@ -11,7 +11,7 @@ import { join } from "node:path";
 import Limrun, { Ios } from "@limrun/api";
 
 const [zipPath, outDir, onlyArg] = process.argv.slice(2);
-const parts = (onlyArg ?? "demo,best,fresh,mascot").split(",");
+const parts = (onlyArg ?? "demo,best,fresh,empty").split(",");
 if (!zipPath || !outDir) {
   console.error("用法：node limrun_walk.mjs <rencan-sim.zip> <截圖輸出資料夾>");
   process.exit(2);
@@ -382,15 +382,8 @@ async function walkFresh() {
   }
 }
 
-/// 小人蔘：展示畫面（六個動作三種高度），以及沒資料時分析頁兩段的空狀態。
-/// 舊版本沒有展示畫面時會照常進 app，截到的就是第一次打開那頁，不算壞。
-async function walkMascot() {
-  await launch(null, ["-rencanMascotGallery"]);
-  await dump("小人蔘展示畫面");
-  await shot("小人蔘-展示畫面");
-  await scrollDown();
-  await shot("小人蔘-展示畫面往下");
-
+/// 沒資料時分析頁兩段的空狀態。
+async function walkEmpty() {
   await launch("profile");
   if (await tap("分析")) {
     await sleep(900);
@@ -581,7 +574,7 @@ try {
   if (parts.includes("demo")) await walkDemo();
   if (parts.includes("best")) await walkLiftBest();
   if (parts.includes("fresh")) await walkFresh();
-  if (parts.includes("mascot")) await walkMascot();
+  if (parts.includes("empty")) await walkEmpty();
   if (parts.includes("widget")) await walkWidget();
   if (parts.includes("snapshot")) await walkSnapshot();
 } catch (error) {

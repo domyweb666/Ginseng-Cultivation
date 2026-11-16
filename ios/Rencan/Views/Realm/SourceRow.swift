@@ -3,10 +3,6 @@ import SwiftUI
 
 /// 來源列自己的版面常數與門檻。
 private enum Metrics {
-    /// 打瞌睡、抓頭的小人蔘（PRD S29：來源列旁邊用最小的那一級）
-    static let mascotHeight: CGFloat = 56
-    /// 讀取中的小人蔘只閃一下，縮到跟「手動輸入」一樣高，這一列才不會跟著變高再縮回去
-    static let readingMascotHeight: CGFloat = 44
     /// 上次量測超過幾天算太久沒量（片 K3）
     static let staleAfterDays = 30
 }
@@ -34,22 +30,10 @@ enum HealthLinkText {
     static func stale(days: Int) -> String {
         "\(days) 天沒量了，量一次看看境界有沒有動。"
     }
-
-    /// 健康 app 正在讀是思考、讀不出來是抓頭（片 K4）；其他時候沒有小人蔘。
-    static func mascot(for status: HealthLinkStatus) -> MascotAction? {
-        switch status {
-        case .reading:
-            return .think
-        case .failed:
-            return .oops
-        case .idle, .needsGuide:
-            return nil
-        }
-    }
 }
 
 /// 體組成來源列（照畫布 Main）：這筆數字哪來的、哪天量的，右邊是手動輸入。
-/// 左邊平常是愛心圖示；健康 app 正在讀、讀不出來、或超過 30 天沒量時換成小人蔘，
+/// 左邊是愛心圖示；健康 app 讀不出來、或超過 30 天沒量時，
 /// 要講的話接在數字下面那一行，不多加一列（片 K3、K4）。
 /// 健康 app 讀不到時下面多一行「去設定打開讀取」（片 E2）。
 struct SourceRow: View {
@@ -85,21 +69,12 @@ struct SourceRow: View {
         )
     }
 
-    @ViewBuilder private var leading: some View {
-        if let action = mascotAction {
-            let isReading = status == .reading
-            MascotView(
-                action: action,
-                height: isReading ? Metrics.readingMascotHeight : Metrics.mascotHeight
-            )
-            .frame(width: RencanLayout.sourceIconSize)
-        } else {
-            Image(systemName: "heart")
-                .foregroundStyle(Color.rencan.accent)
-                .frame(width: RencanLayout.sourceIconSize, height: RencanLayout.sourceIconSize)
-                .background(Color.rencan.soft, in: Circle())
-                .accessibilityHidden(true)
-        }
+    private var leading: some View {
+        Image(systemName: "heart")
+            .foregroundStyle(Color.rencan.accent)
+            .frame(width: RencanLayout.sourceIconSize, height: RencanLayout.sourceIconSize)
+            .background(Color.rencan.soft, in: Circle())
+            .accessibilityHidden(true)
     }
 
     private var info: some View {
@@ -156,12 +131,7 @@ struct SourceRow: View {
         elapsedDays > Metrics.staleAfterDays
     }
 
-    /// 健康 app 的狀況比「太久沒量」優先：讀取中思考、讀不出來抓頭，再來才是打瞌睡。
-    private var mascotAction: MascotAction? {
-        if let action = HealthLinkText.mascot(for: status) { return action }
-        return isStale ? .sleep : nil
-    }
-
+    /// 健康 app 讀不出來那句比「太久沒量」優先。
     private var note: String? {
         if status == .failed { return HealthLinkText.failed }
         return isStale ? HealthLinkText.stale(days: elapsedDays) : nil

@@ -22,8 +22,6 @@ private enum Metrics {
     static let chipHorizontalPadding: CGFloat = 12
     /// 說明出現後停多久才跳系統的通知權限視窗：要來得及看完那一句
     static let explainSeconds: Double = 1.2
-    /// 說明旁邊拜託的小人蔘（片 K4）高度：一閃而過的位置用最小那一級
-    static let mascotHeight: CGFloat = 56
 }
 
 /// 設定頁的「提醒」區（片 I1，照畫布 Settings）：每月量測提醒的開關、提醒日。
@@ -100,20 +98,16 @@ struct SettingsReminderSection: View {
         )
     }
 
-    /// K4 的位置：開關下方先出現小人蔘（拜託）加這句話，停一下才跳系統的通知權限視窗。
+    /// 開關下方先出現這句話，停一下才跳系統的通知權限視窗。
     private var explainRow: some View {
-        HStack(spacing: RencanLayout.groupSpacing) {
-            // VoiceOver 不讀角色，只讀右邊這句話。
-            MascotView(action: .please, height: Metrics.mascotHeight)
-            Text("等一下手機會問要不要允許通知，按「允許」才提醒得到你。")
-                .font(RencanType.footnote)
-                .foregroundStyle(Color.rencan.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-                .accessibilityIdentifier("reminder-explain")
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.bottom, RencanLayout.groupSpacing)
-        .transition(.opacity)
+        Text("等一下手機會問要不要允許通知，按「允許」才提醒得到你。")
+            .font(RencanType.footnote)
+            .foregroundStyle(Color.rencan.textSecondary)
+            .fixedSize(horizontal: false, vertical: true)
+            .accessibilityIdentifier("reminder-explain")
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.bottom, RencanLayout.groupSpacing)
+            .transition(.opacity)
     }
 
     /// 提醒日：右邊一顆膠囊按鈕，點了跳出 1 到 28 日的選單。提醒沒開也可以先選好日子。

@@ -7,7 +7,7 @@ import SwiftUI
 //                          （存 UserSettings.healthReadEnabled，寫法照 setHealthWrite）
 //   SettingsView.swift     「身體」區後面排一行 `SettingsHealthSection(digest: digest)`
 // 已經有、這裡直接用的：HealthKitService（RencanApp 注入）、HealthImport.merge（RencanCore）、
-// StoreService.importHealthMeasurements／setHealthWrite、AppFlow.showError、MascotView、
+// StoreService.importHealthMeasurements／setHealthWrite、AppFlow.showError、
 // SectionTitle、RowDivider。
 
 /// 這一區自己的版面常數（數值照畫布 Settings，跟 SettingsView 裡同名的一樣）。
@@ -16,8 +16,6 @@ private enum Metrics {
     static let titleInset: CGFloat = 4
     /// 卡片的左右內距，卡片下面那幾行說明也縮這麼多
     static let cardInset: CGFloat = 16
-    /// 重建時那一列右邊的小人蔘。比列高（52）小一點，這一列才不會跟著變高
-    static let mascotHeight: CGFloat = 44
 }
 
 /// 設定頁的「健康 app」區（片 E2、E3、E4，照畫布 Settings）：
@@ -113,7 +111,7 @@ struct SettingsHealthSection: View {
     }
 
     /// 從健康 app 重建量測紀錄（片 E4）。按了先講會做什麼，確認才讀。讀取關著時不能按。
-    /// 讀的這段時間右邊是思考的小人蔘（片 K4），讀完換回箭頭。
+    /// 讀的這段時間字換成「重建中」那句、右邊的箭頭先收起來，讀完換回來。
     private var rebuildRow: some View {
         let isUsable = isReadEnabled && !isRebuilding
         return Button {
@@ -126,9 +124,7 @@ struct SettingsHealthSection: View {
                         isUsable ? Color.rencan.textPrimary : Color.rencan.textSecondary
                     )
                 Spacer()
-                if isRebuilding {
-                    MascotView(action: .think, height: Metrics.mascotHeight)
-                } else {
+                if !isRebuilding {
                     Image(systemName: "chevron.right")
                         .font(RencanType.footnote.weight(.semibold))
                         .foregroundStyle(Color.rencan.textTertiary)

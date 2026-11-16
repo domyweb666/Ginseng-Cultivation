@@ -1,12 +1,6 @@
 import RencanCore
 import SwiftUI
 
-/// 這一頁自己的版面常數。
-private enum Metrics {
-    /// 空狀態立繪旁邊的小人蔘：健康 app 正在讀、讀不出來時才出現，用最小的那一級
-    static let mascotHeight: CGFloat = 56
-}
-
 /// 境界頁（中頁，照畫布 Main 與 RealmEmpty）：境界碑、體組成來源列、三格天數、今天的修煉，
 /// 底部固定一顆「記一筆修煉」。記一筆與手動輸入都是彈出表單，掛在 PagesView。
 struct RealmView: View {
@@ -51,7 +45,7 @@ struct RealmView: View {
     }
 
     /// 還沒量過：雜役服立繪、一句說明、手動輸入的入口。健康 app 讀不到時照畫布 RealmEmpty
-    /// 多一顆「去設定打開讀取」；正在讀、讀不出來時小人蔘站在立繪旁邊（片 K4），版面不變。
+    /// 多一顆「去設定打開讀取」。
     private var emptyStele: some View {
         VStack(spacing: RencanLayout.groupSpacing) {
             Image(RencanPortrait.name(realmIndex: 0, sex: digest.sex ?? .male))
@@ -64,11 +58,6 @@ struct RealmView: View {
                 .background(Color.rencan.tint)
                 .clipShape(RoundedRectangle(cornerRadius: RencanLayout.portraitCornerRadius))
                 .accessibilityLabel("雜役服人蔘立繪")
-                .overlay(alignment: .bottomTrailing) {
-                    if let action = HealthLinkText.mascot(for: healthStatus) {
-                        PortraitSideMascot(action: action, height: Metrics.mascotHeight)
-                    }
-                }
             Text("還沒量過體組成")
                 .font(RencanType.title3)
             Text(HealthLinkText.emptyHint(for: healthStatus))

@@ -1,14 +1,6 @@
 import RencanCore
 import SwiftUI
 
-/// 這一頁自己的版面常數。
-private enum Metrics {
-    /// 立繪旁邊的小人蔘（PRD S29：問身高那頁用大的那一級）
-    static let mascotHeight: CGFloat = 96
-    /// 小人蔘與立繪之間的縫
-    static let mascotGap: CGFloat = 8
-}
-
 /// 第一次打開：只問身高與性別（照畫布 Onboard）。沒有教學頁、沒有輪播（產品定稿「引導越少越好」）。
 /// 性別沒選不能開始，也不預設成男（.vibe/女性版規則.md 第五節）。
 /// 健康 app 可用時，這一頁一出現就問一次讀取授權（一次五種），抓得到身高就帶進身高欄、
@@ -20,10 +12,8 @@ struct FirstLaunchView: View {
     @State private var heightCm = FirstLaunchView.startingHeightCm
     @State private var sex: Sex?
     @State private var errorMessage: String?
-    /// 正在問健康 app。這段時間小人蔘從揮手換成思考（片 K4）。
+    /// 正在問健康 app。這段時間「從健康 app 帶入」那顆不能再按。
     @State private var isReadingHealth = false
-    /// 健康 app 讀不出來。小人蔘換成抓頭，紅字講原因，手填照常能用。
-    @State private var didHealthFail = false
     /// 從健康 app 帶了什麼進來、還缺什麼的那句話。
     @State private var healthNote: String?
 
@@ -62,12 +52,6 @@ struct FirstLaunchView: View {
         }
     }
 
-    /// 小人蔘平常揮手（片 K3）；正在問健康 app 是思考、讀不出來是抓頭（片 K4）。
-    private var mascotAction: MascotAction {
-        if isReadingHealth { return .think }
-        return didHealthFail ? .oops : .wave
-    }
-
     private var intro: some View {
         VStack(spacing: RencanLayout.itemSpacing) {
             Image(RencanPortrait.name(realmIndex: 0, sex: sex ?? .male))
@@ -80,9 +64,6 @@ struct FirstLaunchView: View {
                 .background(Color.rencan.tint)
                 .clipShape(RoundedRectangle(cornerRadius: RencanLayout.cardCornerRadius))
                 .accessibilityHidden(true)
-                .overlay(alignment: .bottomTrailing) {
-                    PortraitSideMascot(action: mascotAction, height: Metrics.mascotHeight)
-                }
             Text("人蔘修煉")
                 .font(RencanType.pageTitle)
                 .foregroundStyle(Color.rencan.strong)
@@ -192,7 +173,6 @@ struct FirstLaunchView: View {
             try await health.requestReadAuthorization()
             let foundHeight = try await health.latestHeightCm()
             let foundSex = try health.biologicalSex()
-            didHealthFail = false
             errorMessage = nil
             if let foundHeight {
                 heightCm = foundHeight.rounded()
@@ -208,7 +188,6 @@ struct FirstLaunchView: View {
                 start(foundSex)
             }
         } catch {
-            didHealthFail = true
             healthNote = nil
             errorMessage = (error as? HealthError)?.message ?? RencanError.message(for: error)
         }
@@ -228,20 +207,6 @@ enum FirstLaunchText {
         case (false, false):
             return isAskedByUser ? "健康 app 裡沒讀到身高和性別，請自己填。" : nil
         }
-    }
-}
-
-/// 站在立繪右下角外面的小人蔘：掛在立繪的 overlay 上，立繪照舊置中，版面不會被擠。
-/// 第一次打開那頁與境界頁的空狀態共用。
-struct PortraitSideMascot: View {
-    let action: MascotAction
-    let height: CGFloat
-
-    var body: some View {
-        MascotView(action: action, height: height)
-            .alignmentGuide(.trailing) { dimensions in
-                dimensions[.leading] - Metrics.mascotGap
-            }
     }
 }
 

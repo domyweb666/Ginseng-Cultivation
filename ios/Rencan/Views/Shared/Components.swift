@@ -127,6 +127,8 @@ struct RoundStepperButton: View {
                 .frame(width: RencanLayout.stepperSize, height: RencanLayout.stepperSize)
                 .background(Color.rencan.surfaceMuted, in: Circle())
         }
+        // 自己畫了圓底：不設 plain 的話，手機開「按鈕形狀」時系統會在外面再墊一圈米色。
+        .buttonStyle(.plain)
         .accessibilityLabel(label)
     }
 }

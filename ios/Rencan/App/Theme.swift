@@ -36,18 +36,7 @@ struct RencanPalette {
     let bright = Color("Bright")
     let onBright = Color("OnBright")
 
-    // 下面是角色與粒子自己的顏色，深淺色同一個值，不跟主題換（.vibe/tools/domy_colors.mjs 的 fixed）。
-    /// 小人蔘：鬚根、主體的框、環紋、白臉外圈
-    let mascotRim = Color("MascotRim")
-    /// 小人蔘：梗與葉
-    let mascotLeaf = Color("MascotLeaf")
-    let mascotVein = Color("MascotVein")
-    let mascotBerry = Color("MascotBerry")
-    /// 小人蔘：白臉、紅果的亮點、主體的反光
-    let mascotWhite = Color("MascotWhite")
-    let mascotSweat = Color("MascotSweat")
-    /// 小人蔘：主體漸層的亮處
-    let mascotGlow = Color("MascotGlow")
+    // 粒子自己的顏色，深淺色同一個值，不跟主題換（.vibe/tools/domy_colors.mjs 的 fixed）。
     /// 慶祝粒子的翠綠（網頁版粒子是金 2/3、翠 1/3）
     let sparkJade = Color("SparkJade")
 }
