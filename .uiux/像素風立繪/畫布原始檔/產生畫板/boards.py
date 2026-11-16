@@ -93,7 +93,7 @@ page = io.open('idle_page.html', encoding='utf-8').read()
 page = re.sub(CSS_RE, lambda m: CSS, page, flags=re.S)
 old = '每條 48 格、一格 0.1 秒，4.8 秒一輪。平常只有呼吸、葉子、鬚和衣角在動，隔一陣子做一次招牌動作。卡片套上這次挑的七個底色。'
 assert old in page
-page = page.replace(old, '照你選的：待機是「慢慢呼吸」（整個人升一格、停兩秒多、再回來），播放是一格 0.15 秒，一輪 14.4 秒做一次招牌動作。'
+page = page.replace(old, '定版。待機是「慢慢呼吸」（整個人升一格、停兩秒多、再回來），播放是一格 0.15 秒，一輪 14.4 秒做一次招牌動作。'
                          '平常另外有眨眼、葉子被風帶一下、道具自己的小動作和特效。背景、角色、特效分三層，背景不動。')
 idle_tpl = page
 page = page.replace('G 款第二版', 'G 款第六版')
@@ -146,7 +146,7 @@ PW, PH = 56 * 2 + 8 * 252 + 7 * 16, 1250
 prow = row.replace('__SEX__', '比較').replace('__LIST__', 'cards')
 ppage = (idle_tpl.replace('G 款第二版：14 張各自的待機動作', '煉氣男拆成零件（試做）')
          .replace(old, '照著同一張像素圖，把煉氣男拆成八層：背景、腿、手臂、頭、身體、水桶、兩片葉子。被擋住的地方（脖子、衣襬底下的腿、袖口裡的手臂）是從旁邊的格子接著補的。'
-                       '左邊是現在整塊移動的版本，右邊是零件版，多了三個動作：頭會歪一下、頭比身體晚一點跟上、手臂繞肩膀擺。你覺得可以，我再照這樣拆另外 13 張。')
+                       '左邊是現在整塊移動的版本，右邊是零件版，多了三個動作：頭會歪一下、頭比身體晚一點跟上、手臂繞肩膀擺。2026-11-16 決定先不採用，14 張定版用整塊移動的第六版；這張留著當紀錄。')
          .replace('__W__', str(PW)).replace('__H__', str(PH))
          .replace('__MEN__', prow)
          .replace('__WOMEN__', '<div style="font-family: \'LXGW WenKai TC\', \'Kaiti TC\', serif; font-size: 28px; line-height: 1.3; color: #7A5916">拆出來的八層（由下往上疊）</div>\n'
@@ -226,11 +226,11 @@ io.open(p, 'w', encoding='utf-8', newline='\n').write(t)
 # ---- 畫板索引 ----
 cj = root + '/project/canvas.json'
 c = json.load(io.open(cj, encoding='utf-8'))
-c['boards']['IdleCards.dc.html'].update({'w': W, 'h': H, 'title': 'G 款第六版：14 張各自的待機動作（慢慢呼吸、中速，定案的待機方式）'})
+c['boards']['IdleCards.dc.html'].update({'w': W, 'h': H, 'title': 'G 款第六版：14 張各自的待機動作（定版）'})
 c['boards']['RealmDark.dc.html']['title'] = '七個境界的深色卡（底色定案）'
 c['boards']['IdleStyles.dc.html'] = {'x': 5670, 'y': 5460, 'w': SW_, 'h': SH_, 'title': '待機時身體要不要動、播多快（已選：乙、中速）'}
 c['boards']['IdleStyles.dc.html']['title'] = '待機時身體要不要動、播多快（已選：乙、中速）'
-c['boards']['PartsDemo.dc.html'] = {'x': 2800, 'y': 7140, 'w': PW, 'h': PH, 'title': '煉氣男拆成零件（試做，請看）'}
+c['boards']['PartsDemo.dc.html'] = {'x': 2800, 'y': 7140, 'w': PW, 'h': PH, 'title': '煉氣男拆成零件（試做，先不採用）'}
 if 'PartsDemo.dc.html' not in c['order']:
     c['order'].insert(c['order'].index('IdleCards.dc.html') + 1, 'PartsDemo.dc.html')
 if 'IdleStyles.dc.html' not in c['order']:
