@@ -17,6 +17,7 @@ final class DemoRealmUITests: RencanUITestCase {
         launch(["-rencanSeed", "demo"])
         seeStele(timeout: 30)
         requireVisible(anyElements(containing: "FFMI 20.32"), "境界碑上的 FFMI 20.32")
+        require(element(id: "realm-sect"), "境界頁最上面的宗門小卡")
         shot("境界頁")
         scrollToSee(anyElements(containing: "100 公斤 × 5 下 × 3 組"), "今天的坐馬樁那一筆")
         shot("境界頁-今天的修煉")

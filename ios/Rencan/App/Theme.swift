@@ -142,8 +142,13 @@ enum RencanLayout {
     static let shadowRadius: CGFloat = 9
     static let shadowY: CGFloat = 4
     static let shadowOpacity: Double = 0.06
-    /// 境界頁的小提示與復原列離分頁列多遠（讓出「記一筆修煉」：按鈕 52、上下各 8）
-    static let bannerBottomInset: CGFloat = 68
+    /// 境界頁的小提示與復原列離分頁列多遠（讓出「記一筆修煉」：按鈕 52、上面 8、下面 12）
+    static let bannerBottomInset: CGFloat = 72
+    /// 浮動膠囊按鈕（境界頁的「記一筆修煉」）：左右內距與陰影
+    static let floatingButtonPadding: CGFloat = 28
+    static let floatingShadowRadius: CGFloat = 12
+    static let floatingShadowY: CGFloat = 6
+    static let floatingShadowOpacity: Double = 0.22
     /// 慶祝畫面淡入淡出的秒數
     static let fadeSeconds: Double = 0.25
     /// 列的最小高度（設定列、清單列）

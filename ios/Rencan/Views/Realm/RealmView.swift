@@ -1,8 +1,15 @@
 import RencanCore
 import SwiftUI
 
-/// 境界頁（中頁，照畫布 Main 與 RealmEmpty）：境界碑、體組成來源列、三格天數、今天的修煉，
-/// 底部固定一顆「記一筆修煉」。記一筆與手動輸入都是彈出表單，掛在 PagesView。
+private enum Metrics {
+    /// 宗門小卡排成一行時，進度條最少要有這麼寬；放不下就把進度條換到第二行。
+    static let sectBarMinimumWidth: CGFloat = 48
+    /// 宗門小卡下一步那句話最多幾行
+    static let sectNextLineLimit = 2
+}
+
+/// 境界頁（中頁，照畫布 Main 與 RealmEmpty）：宗門小卡、境界碑、體組成來源列、三格天數、今天的修煉，
+/// 底部浮著一顆「記一筆修煉」。記一筆與手動輸入都是彈出表單，掛在 PagesView。
 struct RealmView: View {
     @Environment(AppFlow.self) private var flow
     let digest: Digest
@@ -16,6 +23,7 @@ struct RealmView: View {
         ScrollView {
             VStack(spacing: RencanLayout.groupSpacing) {
                 header
+                sectLine
                 if let stele = digest.stele, let sex = digest.sex {
                     SteleView(stele: stele, sex: sex)
                     SourceRow(
@@ -42,6 +50,51 @@ struct RealmView: View {
             .foregroundStyle(Color.rencan.strong)
             .accessibilityAddTraits(.isHeader)
             .frame(maxWidth: .infinity, minHeight: RencanLayout.tapTarget)
+    }
+
+    /// 宗門身分的小卡，放在境界碑上面（2026-11-17 多米選的）：身分、晉升進度、下一步。
+    /// 一行放得下就排一行；下一步那句話太長、或字體放大時，進度條換到第二行。
+    /// 文字與百分比都是 Formulas.sectOf 算好的（digest.sect），這裡只排版。
+    private var sectLine: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: RencanLayout.groupSpacing) {
+                sectTitle
+                    .fixedSize()
+                ProgressBar(percent: digest.sect.progressPercent)
+                    .frame(minWidth: Metrics.sectBarMinimumWidth)
+                sectNext
+                    .lineLimit(1)
+                    .fixedSize()
+            }
+            VStack(spacing: RencanLayout.itemSpacing) {
+                HStack(alignment: .firstTextBaseline, spacing: RencanLayout.groupSpacing) {
+                    sectTitle
+                        .layoutPriority(1)
+                    Spacer(minLength: 0)
+                    sectNext
+                        .lineLimit(Metrics.sectNextLineLimit)
+                        .multilineTextAlignment(.trailing)
+                }
+                ProgressBar(percent: digest.sect.progressPercent)
+            }
+        }
+        .rencanCard(verticalPadding: RencanLayout.panelPadding)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("宗門身分：\(digest.sect.title)。\(digest.sect.next)")
+        .accessibilityIdentifier("realm-sect")
+    }
+
+    private var sectTitle: some View {
+        Text(digest.sect.title)
+            .font(RencanType.term)
+            .foregroundStyle(Color.rencan.strong)
+            .lineLimit(1)
+    }
+
+    private var sectNext: some View {
+        Text(digest.sect.next)
+            .font(RencanType.footnote)
+            .foregroundStyle(Color.rencan.textSecondary)
     }
 
     /// 還沒量過：雜役服立繪、一句說明、手動輸入的入口。健康 app 讀不到時照畫布 RealmEmpty
@@ -97,16 +150,16 @@ struct RealmView: View {
         }
     }
 
-    /// 核心動作的入口，固定在底部、頁點上方。
+    /// 核心動作的入口：一顆膠囊浮在分頁列上方，跟分頁列隔開，兩邊看得到後面的內容
+    ///（2026-11-17 多米選的；原本是整條寬的按鈕墊一塊底色，看起來黏在分頁列上）。
     private var logButton: some View {
         Button {
             flow.sheet = .liftForm
         } label: {
             Label("記一筆修煉", systemImage: "plus")
         }
-        .buttonStyle(RencanPrimaryButtonStyle())
-        .padding(.horizontal, RencanLayout.screenMargin)
+        .buttonStyle(RencanFloatingButtonStyle())
         .padding(.top, RencanLayout.itemSpacing)
-        .background(Color.rencan.canvas)
+        .padding(.bottom, RencanLayout.groupSpacing)
     }
 }
