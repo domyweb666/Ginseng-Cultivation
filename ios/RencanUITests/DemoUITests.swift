@@ -69,8 +69,9 @@ final class DemoGongUITests: RencanUITestCase {
     }
 
     /// 點拔山式那張卡（120 公斤 × 5 下 → 1RM 140 公斤），看單一功法頁，再按「關閉」回來。
+    /// 十二門照腿推拉排之後拔山式是第九張，要先往下捲才看得到。
     private func openMoveDetail() {
-        let card = requireVisible(idQuery("move-card-dead"), "拔山式的功法卡")
+        let card = scrollToSee(idQuery("move-card-dead"), "拔山式的功法卡", maxDrags: 8)
         let cardText = card.label
         XCTAssertTrue(cardText.contains("1RM 140 公斤"), "拔山式卡不是 1RM 140 公斤：\(cardText)")
         card.tap()

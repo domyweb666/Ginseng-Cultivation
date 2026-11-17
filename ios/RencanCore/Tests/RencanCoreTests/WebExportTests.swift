@@ -96,7 +96,8 @@ final class WebExportTests: XCTestCase {
     }
 
     func test不認得的功法整份拒絕() {
-        let bad = liftRecord(replacing: #""move":"squat""#, with: #""move":"curl""#)
+        // 2026-11-18 起 curl 是正式功法（槓鈴彎舉），改拿一個沒有的代號
+        let bad = liftRecord(replacing: #""move":"squat""#, with: #""move":"lunge""#)
         assertRejected(exportFile(lift: bad), .lift(1), .unknownMove)
     }
 
