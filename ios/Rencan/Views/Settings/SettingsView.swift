@@ -58,6 +58,7 @@ struct SettingsView: View {
             Spacer()
         }
         .frame(minHeight: RencanLayout.tapTarget)
+        .padding(.top, RencanLayout.pageTitleTopInset)
     }
 
     /// 「身體」區：身高與性別同一張卡，改了馬上存，境界跟著重算。

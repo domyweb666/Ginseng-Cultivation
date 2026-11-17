@@ -4,8 +4,6 @@ import SwiftUI
 private enum Metrics {
     /// 宗門小卡排成一行時，進度條最少要有這麼寬；放不下就把進度條換到第二行。
     static let sectBarMinimumWidth: CGFloat = 48
-    /// 宗門小卡下一步那句話最多幾行
-    static let sectNextLineLimit = 2
 }
 
 /// 境界頁（中頁，照畫布 Main 與 RealmEmpty）：宗門小卡、境界碑、體組成來源列、三格天數、今天的修煉，
@@ -53,7 +51,8 @@ struct RealmView: View {
     }
 
     /// 宗門身分的小卡，放在境界碑上面（2026-11-17 多米選的）：身分、晉升進度、下一步。
-    /// 一行放得下就排一行；下一步那句話太長、或字體放大時，進度條換到第二行。
+    /// 下一步用短句（digest.sect.shortNext），由寬到窄試三種排法，句子永遠不會在右邊被拆成兩行
+    /// （2026-11-18 多米看真機說被拆了）：一行排完 → 進度條換到第二行 → 句子也換到標題下面。
     /// 文字與百分比都是 Formulas.sectOf 算好的（digest.sect），這裡只排版。
     private var sectLine: some View {
         ViewThatFits(in: .horizontal) {
@@ -63,18 +62,22 @@ struct RealmView: View {
                 ProgressBar(percent: digest.sect.progressPercent)
                     .frame(minWidth: Metrics.sectBarMinimumWidth)
                 sectNext
-                    .lineLimit(1)
                     .fixedSize()
             }
             VStack(spacing: RencanLayout.itemSpacing) {
                 HStack(alignment: .firstTextBaseline, spacing: RencanLayout.groupSpacing) {
                     sectTitle
-                        .layoutPriority(1)
+                        .fixedSize()
                     Spacer(minLength: 0)
                     sectNext
-                        .lineLimit(Metrics.sectNextLineLimit)
-                        .multilineTextAlignment(.trailing)
+                        .fixedSize()
                 }
+                ProgressBar(percent: digest.sect.progressPercent)
+            }
+            VStack(alignment: .leading, spacing: RencanLayout.itemSpacing) {
+                sectTitle
+                sectNext
+                    .fixedSize(horizontal: false, vertical: true)
                 ProgressBar(percent: digest.sect.progressPercent)
             }
         }
@@ -92,7 +95,7 @@ struct RealmView: View {
     }
 
     private var sectNext: some View {
-        Text(digest.sect.next)
+        Text(digest.sect.shortNext)
             .font(RencanType.footnote)
             .foregroundStyle(Color.rencan.textSecondary)
     }

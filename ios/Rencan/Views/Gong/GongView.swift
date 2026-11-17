@@ -9,7 +9,7 @@ private enum Metrics {
     static let titleInset: CGFloat = 4
 }
 
-/// 分析頁的功法段（照畫布 AnalysisGong）：三格統計、六張功法卡排兩欄、最近修煉、等級怎麼算。
+/// 分析頁的功法段（照畫布 AnalysisGong）：三格統計、功法雷達、六張功法卡排兩欄、最近修煉、等級怎麼算。
 /// 放在 AnalysisView 的 ScrollView 裡，所以自己不捲動。數字全部來自 Digest，這裡只排版。
 /// 一筆修煉都沒有時，三格是 0、六張卡寫「還沒有紀錄」，「最近修煉」那格換成一句說明。
 struct GongView: View {
@@ -20,9 +20,27 @@ struct GongView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: RencanLayout.sectionSpacing) {
             GongStats(digest: digest)
+            radar
             moveCards
             RecentLiftsList(lifts: lifts, today: digest.today)
             GongRulesCard(sex: digest.sex)
+        }
+    }
+
+    /// 雷達圖放在統計下面、功法卡上面：先看全貌，再往下看每一門（2026-11-18 多米要的）。
+    private var radar: some View {
+        VStack(alignment: .leading, spacing: RencanLayout.itemSpacing) {
+            SectionTitle(text: "功法雷達")
+                .padding(.horizontal, Metrics.titleInset)
+            VStack(spacing: RencanLayout.itemSpacing) {
+                MoveRadar(cards: digest.moveCards)
+                if digest.moveCards.allSatisfy({ $0.score == 0 }) {
+                    Text("記了修煉、也量過體重，圖才長得出來")
+                        .font(RencanType.footnote)
+                        .foregroundStyle(Color.rencan.textSecondary)
+                }
+            }
+            .rencanCard()
         }
     }
 

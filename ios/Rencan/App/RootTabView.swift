@@ -180,8 +180,10 @@ struct RootTabView: View {
     }
 }
 
-/// 三頁用系統原生的底部分頁列換，預設停在境界。iOS 26 上會自動長成浮在底部的玻璃膠囊；
-/// 2026-11-16 多米要的，取代原本的左右滑加自己畫的頁點（換頁只能點分頁列，不能再滑）。
+/// 三頁可以左右滑，也可以點底部的分頁列，預設停在境界。
+/// 2026-11-16 多米要原生分頁列，那時左右滑被拿掉；2026-11-18 他又要能滑。系統分頁列跟左右滑不能並存，
+/// 所以改回翻頁式的 TabView，分頁列自己畫（RencanTabBar），樣子照原生的浮動膠囊，
+/// 代價是沒有 iOS 26 的液態玻璃折射，改用系統的半透明材質。
 /// 表單、慶祝掛在這一層，三頁共用；小提示與復原掛在目前那一頁上，才不會蓋住分頁列。
 struct PagesView: View {
     @Environment(AppFlow.self) private var flow
@@ -192,23 +194,12 @@ struct PagesView: View {
 
     var body: some View {
         @Bindable var flow = flow
-        TabView(selection: $flow.page) {
-            SettingsView(digest: digest)
-                .tabPage(.settings, current: flow.page)
-                .tabItem { Label("設定", systemImage: "gearshape") }
-                .tag(RencanPage.settings)
-            RealmView(
-                digest: digest, lifts: lifts, latestSource: latestSource,
-                healthStatus: healthStatus
-            )
-            .tabPage(.realm, current: flow.page)
-            .tabItem { Label("境界", systemImage: "mountain.2") }
-            .tag(RencanPage.realm)
-            AnalysisView(digest: digest, lifts: lifts)
-                .tabPage(.analysis, current: flow.page)
-                .tabItem { Label("分析", systemImage: "chart.xyaxis.line") }
-                .tag(RencanPage.analysis)
+        // 分頁列要沉進底部 Home 條的區域一點才像原生的位置，沉多少得看這支手機底部留多少，
+        // 所以在這裡量一次，分頁列的位置跟每頁要讓出的高度都從同一個數字算。
+        GeometryReader { proxy in
+            pages(safeAreaBottom: proxy.safeAreaInsets.bottom)
         }
+        .ignoresSafeArea(.keyboard)
         .sheet(item: $flow.sheet) { sheet in
             sheetContent(sheet)
                 .presentationDragIndicator(.visible)
@@ -220,6 +211,32 @@ struct PagesView: View {
             }
         }
         .animation(.easeOut(duration: RencanLayout.fadeSeconds), value: flow.celebration)
+    }
+
+    /// 三頁翻頁加浮在上面的分頁列。
+    private func pages(safeAreaBottom: CGFloat) -> some View {
+        @Bindable var flow = flow
+        let clearance = RencanTabBar.clearance(safeAreaBottom: safeAreaBottom)
+        return TabView(selection: $flow.page) {
+            SettingsView(digest: digest)
+                .tabPage(.settings, current: flow.page, clearance: clearance)
+                .tag(RencanPage.settings)
+            RealmView(
+                digest: digest, lifts: lifts, latestSource: latestSource,
+                healthStatus: healthStatus
+            )
+            .tabPage(.realm, current: flow.page, clearance: clearance)
+            .tag(RencanPage.realm)
+            AnalysisView(digest: digest, lifts: lifts)
+                .tabPage(.analysis, current: flow.page, clearance: clearance)
+                .tag(RencanPage.analysis)
+        }
+        .tabViewStyle(.page(indexDisplayMode: .never))
+        .overlay(alignment: .bottom) {
+            RencanTabBar(page: $flow.page)
+                .padding(.bottom, RencanTabBar.bottomGap(safeAreaBottom: safeAreaBottom))
+                .ignoresSafeArea(.container, edges: .bottom)
+        }
     }
 
     @ViewBuilder
@@ -238,10 +255,10 @@ struct PagesView: View {
 }
 
 extension View {
-    /// 分頁列裡的一頁：自己鋪暖米白底（原生分頁列每頁會墊一層系統白底，蓋住外層的底色），
+    /// 翻頁裡的一頁：自己鋪暖米白底，底部讓出分頁列的高度（內容還是捲得到分頁列後面）。
     /// 小提示與復原列只掛在目前那一頁，同一時間只有一份（兩份會各自倒數）。
     /// 境界頁底下有「記一筆修煉」，要再往上讓出那顆按鈕。
-    func tabPage(_ page: RencanPage, current: RencanPage) -> some View {
+    func tabPage(_ page: RencanPage, current: RencanPage, clearance: CGFloat) -> some View {
         background(Color.rencan.canvas.ignoresSafeArea())
             .overlay(alignment: .bottom) {
                 if page == current {
@@ -252,6 +269,9 @@ extension View {
                                 ? RencanLayout.bannerBottomInset : RencanLayout.itemSpacing
                         )
                 }
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                Color.clear.frame(height: clearance)
             }
     }
 }

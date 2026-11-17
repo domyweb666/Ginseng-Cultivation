@@ -141,6 +141,31 @@ final class SectTests: XCTestCase {
         XCTAssertEqual(status.next, "突破至金丹，升長老")
     }
 
+    // MARK: 境界頁小卡的短句（2026-11-18 多米說小卡右邊的字被拆成兩行）
+
+    func test短句只差天數() {
+        XCTAssertEqual(Formulas.sectOf(trainDays: 0, realmIndex: -1).shortNext, "再 8 天升外門")
+    }
+
+    func test短句天數和境界都差() {
+        let status = Formulas.sectOf(trainDays: 24, realmIndex: -1)
+        XCTAssertEqual(status.shortNext, "再 26 天＋築基升真傳")
+    }
+
+    func test短句只差境界() {
+        let status = Formulas.sectOf(trainDays: 300, realmIndex: 2)
+        XCTAssertEqual(status.shortNext, "突破元嬰升太上")
+    }
+
+    func test短句客卿() {
+        let status = Formulas.sectOf(trainDays: 10, realmIndex: 2)
+        XCTAssertEqual(status.shortNext, "再 40 天轉正式真傳")
+    }
+
+    func test短句已是最高位() {
+        XCTAssertEqual(Formulas.sectOf(trainDays: 300, realmIndex: 3).shortNext, "已是最高位")
+    }
+
     // MARK: 進度條
 
     func test修煉5天離外門的進度是百分之62點5() {

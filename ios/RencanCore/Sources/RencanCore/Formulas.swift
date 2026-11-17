@@ -200,6 +200,22 @@ public enum Formulas {
         return level
     }
 
+    /// 功法雷達圖的分數：0 到 5，整數部分是等級，小數部分是往下一階走了幾成。
+    /// 例：男性深蹲入門 0.75、小成 1.0，比值 0.875 是 1.5 分。未入門從 0 起算，化境封頂 5 分。
+    /// 雷達圖只看等級會一格一格跳，加上小數才看得出「快到了」（2026-11-18 多米要的雷達圖）。
+    public static func moveScore(move: Move, ratio: Double, sex: Sex) -> Double {
+        let thresholds = move.thresholds(for: sex)
+        guard ratio.isFinite, ratio > 0 else { return 0 }
+        var lower = 0.0
+        for (index, upper) in thresholds.enumerated() {
+            if ratio < upper {
+                return Double(index) + (ratio - lower) / (upper - lower)
+            }
+            lower = upper
+        }
+        return Double(thresholds.count)
+    }
+
     /// 某一天的體重：那天（含）以前最近的一筆量測；都在那天之後就用最新的一筆。
     public static func bwAt(date: String, measurements: [MeasurementEntry]) -> Double? {
         let sorted = byDate(measurements)

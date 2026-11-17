@@ -49,6 +49,7 @@ struct AnalysisView: View {
             Spacer(minLength: 0)
         }
         .frame(minHeight: RencanLayout.tapTarget)
+        .padding(.top, RencanLayout.pageTitleTopInset)
     }
 
     private var segmentPicker: some View {

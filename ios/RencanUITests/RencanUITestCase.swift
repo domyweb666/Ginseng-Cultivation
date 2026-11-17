@@ -192,13 +192,19 @@ extension RencanUITestCase {
         requireVisible(query, "按鈕「\(label)」", timeout: timeout, file: file, line: line).tap()
     }
 
+    /// 底部分頁列的三格。2026-11-18 起分頁列是 app 自己畫的（RencanTabBar），
+    /// 不在 tabBars 裡，靠識別碼 tab-設定、tab-境界、tab-分析 找。
+    var tabButtons: XCUIElementQuery {
+        app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "tab-"))
+    }
+
     /// 點底部分頁列的那一格（設定、境界、分析），等它變成選中。
     /// 不用 tapVisibleButton：分析頁的分段也有一顆「境界」，同名會點錯。
     func openTab(
         _ label: String, timeout: TimeInterval = 15, file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        let query = app.tabBars.buttons.matching(named(label))
+        let query = app.buttons.matching(identifier: "tab-\(label)")
         let tab = requireVisible(
             query, "分頁列的「\(label)」", timeout: timeout, file: file, line: line
         )

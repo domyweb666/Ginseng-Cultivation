@@ -110,6 +110,8 @@ enum RencanType {
     static let subheadline = Font.system(.subheadline)
     static let footnote = Font.system(.footnote)
     static let caption = Font.system(.caption).weight(.medium)
+    /// 底部分頁列的圖示
+    static let tabIcon = Font.system(.title3)
 
     private static func display(_ size: CGFloat, relativeTo style: Font.TextStyle) -> Font {
         .custom(displayFontName, size: size, relativeTo: style)
@@ -133,6 +135,9 @@ enum RencanLayout {
     static let portraitCornerRadius: CGFloat = 16
     /// 圖示按鈕的點擊範圍，照 iOS 的 44pt 下限。
     static let tapTarget: CGFloat = 44
+    /// 設定、分析的大標題上面留這麼多，標題才會落在 iOS 原生大標題的位置（上面先讓出一條標題列）。
+    /// 2026-11-18 多米說兩頁標題太貼頂，要像系統設定那樣。
+    static let pageTitleTopInset: CGFloat = 44
     static let buttonHeight: CGFloat = 52
     /// 立繪是 168×210 格的像素圖。框的寬高只能是它的整數倍，一格才會對到整數個點，
     /// 不然在部分機型上線條會粗細不一。小位置一格一個點，大的一格兩個點。

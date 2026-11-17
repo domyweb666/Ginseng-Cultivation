@@ -11,6 +11,9 @@ public struct SectStatus: Equatable {
     public let title: String
     public let note: String
     public let next: String
+    /// 境界頁宗門小卡用的短句（例如「再 8 天升外門」），一行要放得下標題旁邊。
+    /// 階級名只取前兩個字，跟分析頁宗門卡的六階縮寫一樣。完整句子留給分析頁與旁白。
+    public let shortNext: String
     public let progressPercent: Double
 }
 
@@ -27,6 +30,8 @@ extension Formulas {
     /// 進度條最少畫這麼多，才看得到一點點。
     private static let minimumPercent: Double = 3
     private static let fullPercent: Double = 100
+    /// 短句裡的階級名只留前幾個字（外門弟子→外門、太上長老→太上）。
+    private static let shortRankNameLength = 2
 
     /// 宗門身分：同時看修煉天數與曾到達的最高大境界。金丹以上但天數不夠先當客卿，
     /// 天數超過 100 天但境界沒跟上是執事（照現在的階級表，只會出現內門執事）。
@@ -63,6 +68,7 @@ extension Formulas {
             rankIndex: rankIndex, title: title,
             note: "實力已達\(realmName)，以客卿身分入宗",
             next: "再修煉 \(target.requiredDays - trainDays) 天，轉為正式\(target.name)",
+            shortNext: "再 \(target.requiredDays - trainDays) 天轉正式\(shortName(target))",
             progressPercent: max(minimumPercent, min(fullPercent, percent))
         )
     }
@@ -74,20 +80,25 @@ extension Formulas {
         guard rankIndex + 1 < Tables.ranks.count else {
             return SectStatus(
                 rankIndex: rankIndex, title: rank.name, note: rank.note, next: "已是宗門最高位",
-                progressPercent: fullPercent
+                shortNext: "已是最高位", progressPercent: fullPercent
             )
         }
         let nextRank = Tables.ranks[rankIndex + 1]
         var needs: [String] = []
+        var shortNeeds: [String] = []
         var percent = fullPercent
         if trainDays < nextRank.requiredDays {
             needs.append("再修煉 \(nextRank.requiredDays - trainDays) 天")
+            shortNeeds.append("再 \(nextRank.requiredDays - trainDays) 天")
             let span = Double(nextRank.requiredDays - rank.requiredDays)
             let raw = Double(trainDays - rank.requiredDays) / span * fullPercent
             percent = max(minimumPercent, min(fullPercent, raw))
         }
         if realmIndex < nextRank.requiredRealmIndex {
-            needs.append("突破至\(Tables.realms[nextRank.requiredRealmIndex].name)")
+            let realmName = Tables.realms[nextRank.requiredRealmIndex].name
+            needs.append("突破至\(realmName)")
+            // 只差境界時寫「突破築基」，跟天數一起時寫「＋築基」。
+            shortNeeds.append(shortNeeds.isEmpty ? "突破\(realmName)" : "＋\(realmName)")
         }
         var title = rank.name
         var note = rank.note
@@ -99,7 +110,12 @@ extension Formulas {
         }
         return SectStatus(
             rankIndex: rankIndex, title: title, note: note,
-            next: needs.joined(separator: "、") + "，升\(nextRank.name)", progressPercent: percent
+            next: needs.joined(separator: "、") + "，升\(nextRank.name)",
+            shortNext: shortNeeds.joined() + "升\(shortName(nextRank))", progressPercent: percent
         )
+    }
+
+    private static func shortName(_ rank: Rank) -> String {
+        String(rank.name.prefix(shortRankNameLength))
     }
 }

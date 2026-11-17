@@ -157,4 +157,57 @@ final class LiftTests: XCTestCase {
         XCTAssertEqual(try Formulas.weekCount(lifts: fiveLifts(), today: "2026-03-15"), 2)
         XCTAssertEqual(try Formulas.weekCount(lifts: fiveLifts(), today: "2026-03-08"), 3)
     }
+
+    // MARK: 雷達圖分數（網頁版沒有這個，答案是照門檻手算的）
+
+    private func tableMove(_ key: MoveKey) throws -> Move {
+        try XCTUnwrap(Tables.moves.first { $0.key == key })
+    }
+
+    func test雷達分數在兩個門檻中間是幾點五() throws {
+        // 男性深蹲：入門 0.75、小成 1.0，中間 0.875 是 1.5 分
+        let squat = try tableMove(.squat)
+        XCTAssertEqual(
+            Formulas.moveScore(move: squat, ratio: 0.875, sex: .male), 1.5, accuracy: 1e-9
+        )
+        // 大成 1.5、圓滿 2.0，中間 1.75 是 4.5 分
+        XCTAssertEqual(
+            Formulas.moveScore(move: squat, ratio: 1.75, sex: .male), 4.5, accuracy: 1e-9
+        )
+    }
+
+    func test雷達分數未入門從零起算() throws {
+        let squat = try tableMove(.squat)
+        XCTAssertEqual(
+            Formulas.moveScore(move: squat, ratio: 0.375, sex: .male), 0.5, accuracy: 1e-9
+        )
+        XCTAssertEqual(Formulas.moveScore(move: squat, ratio: 0, sex: .male), 0)
+    }
+
+    func test雷達分數到化境封頂五分() throws {
+        let squat = try tableMove(.squat)
+        XCTAssertEqual(Formulas.moveScore(move: squat, ratio: 2.0, sex: .male), 5)
+        XCTAssertEqual(Formulas.moveScore(move: squat, ratio: 3.2, sex: .male), 5)
+    }
+
+    func test雷達分數女性用女性門檻() throws {
+        // 女性臥推：入門 0.3，0.15 是 0.5 分；剛好 0.45（小成）是 2 分
+        let bench = try tableMove(.bench)
+        XCTAssertEqual(
+            Formulas.moveScore(move: bench, ratio: 0.15, sex: .female), 0.5, accuracy: 1e-9
+        )
+        XCTAssertEqual(
+            Formulas.moveScore(move: bench, ratio: 0.45, sex: .female), 2, accuracy: 1e-9
+        )
+    }
+
+    func test雷達分數的整數部分就是等級() throws {
+        for move in Tables.moves {
+            for ratio in stride(from: 0.05, through: 3.0, by: 0.05) {
+                let score = Formulas.moveScore(move: move, ratio: ratio, sex: .male)
+                let level = Formulas.moveLevel(move: move, ratio: ratio, sex: .male)
+                XCTAssertEqual(Int(score.rounded(.down)), level, "\(move.name) 比值 \(ratio)")
+            }
+        }
+    }
 }

@@ -49,6 +49,8 @@ public struct MoveCard: Equatable {
     public let kgToNextLevel: Int?
     /// 每一筆的估計 1RM，照日期排，畫走勢線用。
     public let history: [Double]
+    /// 雷達圖的分數，0 到 5（Formulas.moveScore）；沒有紀錄或沒有體重可算是 0。
+    public let score: Double
 
     public var levelName: String { Tables.levelNames[level] }
     public var nextLevelName: String? {
@@ -212,8 +214,10 @@ public struct Digest: Equatable {
         }
         var level = 0
         var needed: Int?
+        var score = 0.0
         if let best, let sex {
             level = Formulas.moveLevel(move: move, ratio: best.ratio, sex: sex)
+            score = Formulas.moveScore(move: move, ratio: best.ratio, sex: sex)
             needed = kgToNextLevel(
                 move: move, level: level, estimatedKg: best.estimatedOneRepMaxKg,
                 bodyweightKg: best.bodyweightKg, sex: sex
@@ -221,7 +225,7 @@ public struct Digest: Equatable {
         }
         return MoveCard(
             move: move, best: best, hasRecords: !own.isEmpty, level: level, kgToNextLevel: needed,
-            history: ordered.map(\.estimatedOneRepMaxKg)
+            history: ordered.map(\.estimatedOneRepMaxKg), score: score
         )
     }
 
