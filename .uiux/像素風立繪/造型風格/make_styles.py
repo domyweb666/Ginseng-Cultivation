@@ -5,8 +5,8 @@ import numpy as np
 from PIL import Image, ImageFilter
 
 SRC = Path(sys.argv[1])          # 統一色盤資料夾
-WATER = Path(sys.argv[2])        # img 資料夾（水彩原圖）
-OUT = Path(sys.argv[3])
+OUT = Path(sys.argv[2])
+# 水彩典藏 2026-11-18 多米決定拿掉（水彩圖做不了動畫），所以不再讀水彩原圖
 AIMASK = Path(__file__).parent / "aimask"
 OUT.mkdir(parents=True, exist_ok=True)
 
@@ -132,48 +132,27 @@ STYLES = {
 }
 
 
-def watercolor(code, size=(168, 210)):
-    found = [WATER / f"{code}{ext}" for ext in (".webp", ".png") if (WATER / f"{code}{ext}").exists()]
-    if not found:
-        raise FileNotFoundError(WATER / code)
-    im = Image.open(found[0]).convert("RGB")      # 男生原圖是 webp、女生是 png
-    w, h = im.size
-    tw = int(h * 4 / 5)
-    if tw <= w:
-        left = (w - tw) // 2
-        im = im.crop((left, 0, left + tw, h))
-    else:
-        th = int(w * 5 / 4)
-        im = im.crop((0, 0, w, th))
-    return im.resize(size, Image.LANCZOS)
-
-
 def save(arr, path):
     Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8)).save(path)
 
 
-# 一、金丹男、金丹女各九種
+# 一、金丹男、金丹女各八種（原版加七種付費）
 for code in ("r2", "gr2"):
     rgb, mask = load(code)
     save(rgb, OUT / f"{code}_original.png")
     for name, fn in STYLES.items():
         save(fn(rgb, mask), OUT / f"{code}_{name}.png")
-    watercolor(code, (336, 420)).save(OUT / f"{code}_watercolor.png")
 
 # 二、每種風格七境界一排，男 sheet_{風格}.png、女 sheet_{風格}_f.png，1 倍、間隔 12
 GAP = 12
 for prefix, suffix in (("r", ""), ("gr", "_f")):
     codes = [f"{prefix}{i}" for i in range(7)]
-    for name in ["original", "watercolor", *STYLES]:
+    for name in ["original", *STYLES]:
         sheet = Image.new("RGBA", (168 * 7 + GAP * 6, 210), (0, 0, 0, 0))
         for i, c in enumerate(codes):
-            if name == "watercolor":
-                tile = watercolor(c)
-            else:
-                rgb, mask = load(c)
-                arr = rgb if name == "original" else STYLES[name](rgb, mask)
-                tile = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8))
-            sheet.paste(tile, (i * (168 + GAP), 0))
+            rgb, mask = load(c)
+            arr = rgb if name == "original" else STYLES[name](rgb, mask)
+            sheet.paste(Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8)), (i * (168 + GAP), 0))
         sheet.save(OUT / f"sheet_{name}{suffix}.png")
 
 # 三、動畫相容性檢查：鎏金套在動畫格子圖上（換色系風格整張套即可）
