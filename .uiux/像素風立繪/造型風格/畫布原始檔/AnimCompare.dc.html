@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<title>待機動畫新舊對照</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&amp;family=Noto+Serif+TC:wght@600;900&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#A8322A}a:hover{color:#7E2219}
+.sheet{width:336px;height:420px;border-radius:8px;background-size:4032px 3360px;background-repeat:no-repeat;image-rendering:pixelated;flex-shrink:0}
+.o-r0{background-image:url(/_blob/9df0782b0d3f7ff18f3571c4424128a1)}.n-r0{background-image:url(/_blob/ab3c3bf3424b5a13fcaca9056163c373)}
+.o-r1{background-image:url(/_blob/60302aa6541fa9a6a179b83ae7cca022)}.n-r1{background-image:url(/_blob/460136b04fa174d4b540547bbf8da804)}
+.o-r2{background-image:url(/_blob/952570d2d67970beeb5568b096e22ebb)}.n-r2{background-image:url(/_blob/2caff7e79751fbb9bb545a0d1313a931)}
+.o-r3{background-image:url(/_blob/643d0dced6220354ce695ed4d5e2873b)}.n-r3{background-image:url(/_blob/a8d07b2f7eca178a902893ab755028af)}
+.o-r4{background-image:url(/_blob/e95b3f15ac71ed52d30d808224acf698)}.n-r4{background-image:url(/_blob/bc85e4a7370fc465bb98187e0b033db9)}
+.o-r5{background-image:url(/_blob/b8ace2b40dd804159a8d9b4339b15dfc)}.n-r5{background-image:url(/_blob/b8883dbe4824d41e629dc81eb87b45dd)}
+.o-r6{background-image:url(/_blob/2a15bcab26ab46fc6c5d1524e8a33ab2)}.n-r6{background-image:url(/_blob/ab9d57b9447671001de62c50dc1d143e)}
+.o-gr0{background-image:url(/_blob/1bf69a2fabf7512d58ba5b2605be6385)}.n-gr0{background-image:url(/_blob/c92c189c0747427e64384d824184fc17)}
+.o-gr1{background-image:url(/_blob/e057cd71a86e8896bad058ded1ceab7c)}.n-gr1{background-image:url(/_blob/59a065d7a8a3bc6e9b60644c40c185a3)}
+.o-gr2{background-image:url(/_blob/d83f72ae57d34f8edf90d13cc1769574)}.n-gr2{background-image:url(/_blob/e5d46cab89bdc9fcfa3c691c87adfff3)}
+.o-gr3{background-image:url(/_blob/415945ea43069840ed386c83f03e6d71)}.n-gr3{background-image:url(/_blob/ffc064126babd3daeee44f1ed35225d8)}
+.o-gr4{background-image:url(/_blob/f16d50bd432d4c941052ff6cfff3cc71)}.n-gr4{background-image:url(/_blob/7f8d6497d2e64aaef4e968344484dfb4)}
+.o-gr5{background-image:url(/_blob/e2fb611c58b5e80bc6d74c12505abaed)}.n-gr5{background-image:url(/_blob/e1a06d947acad2dbe6b44134feaf45c1)}
+.o-gr6{background-image:url(/_blob/d17bf4f6c73d090d06904d827bedc8c4)}.n-gr6{background-image:url(/_blob/3f8619f9a321ea58489b39bf5d7fce36)}
+</style>
+</helmet>
+<div style="width: 1680px; height: 3500px; box-sizing: border-box; padding: 56px 48px 40px; background: #F3EEE4; color: #2A2320; font-family: 'Noto Sans TC', sans-serif; display: flex; flex-direction: column; gap: 28px;">
+<div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 32px;">
+<div style="display: flex; flex-direction: column; gap: 10px;">
+<div style="font-size: 15px; font-weight: 500; letter-spacing: 0.12em; color: #A8322A;">待機動畫・第六版換去背</div>
+<h1 style="margin: 0; font-family: 'Noto Serif TC', serif; font-weight: 900; font-size: 48px; line-height: 1.15;">動作不變，只換角色的切法</h1>
+<p style="margin: 0; max-width: 980px; font-size: 17px; line-height: 1.7; color: #5C5047;">左邊是 app 裡現在的動畫，右邊是改用 AI 去背重出的。動作、速度、招牌動作都跟定版一樣，一格 0.15 秒、一輪 96 格。差別在角色邊緣：舊版有幾塊天空跟著角色動、幾塊衣服留在原地。</p>
+</div>
+<div style="display: flex; align-items: center; gap: 16px; flex-shrink: 0;">
+<span style="font-size: 15px; color: #5C5047; min-width: 120px; text-align: right;">第 {{frameNo}} / 96 格</span>
+<button type="button" onClick="{{toggle}}" style="min-height: 48px; min-width: 120px; padding: 0 20px; border: none; border-radius: 999px; background: #2A2320; color: #FFF4D2; font-family: 'Noto Sans TC', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer;">{{toggleLabel}}</button>
+<button type="button" onClick="{{step}}" style="min-height: 48px; padding: 0 20px; border: 1px solid #CFC5B8; border-radius: 999px; background: #FBF8F2; color: #2A2320; font-family: 'Noto Sans TC', sans-serif; font-size: 16px; font-weight: 500; cursor: pointer;">下一格</button>
+</div>
+</div>
+
+<div style="display: flex; gap: 24px; font-size: 16px; font-weight: 700; color: #5C5047;">
+<div style="width: 96px; flex-shrink: 0;"></div>
+<div style="width: 336px; text-align: center;">男・舊（現在 app）</div>
+<div style="width: 336px; text-align: center; color: #A8322A;">男・新去背</div>
+<div style="width: 24px; flex-shrink: 0;"></div>
+<div style="width: 336px; text-align: center;">女・舊（現在 app）</div>
+<div style="width: 336px; text-align: center; color: #A8322A;">女・新去背</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 32px;">
+<sc-for list="{{rows}}" as="row" hint-placeholder-count="7">
+<div style="display: flex; gap: 24px; align-items: center;">
+<div style="width: 96px; flex-shrink: 0; font-family: 'Noto Serif TC', serif; font-size: 30px; font-weight: 900;">{{row.realm}}</div>
+<div class="sheet o-{{row.m}}" role="img" aria-label="{{row.realm}}男舊版動畫" style="background-position: {{pos}};"></div>
+<div class="sheet n-{{row.m}}" role="img" aria-label="{{row.realm}}男新版動畫" style="background-position: {{pos}}; outline: 2px solid #A8322A; outline-offset: 3px;"></div>
+<div style="width: 24px; flex-shrink: 0;"></div>
+<div class="sheet o-{{row.f}}" role="img" aria-label="{{row.realm}}女舊版動畫" style="background-position: {{pos}};"></div>
+<div class="sheet n-{{row.f}}" role="img" aria-label="{{row.realm}}女新版動畫" style="background-position: {{pos}}; outline: 2px solid #A8322A; outline-offset: 3px;"></div>
+</div>
+</sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1680,"height":3500}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { frame: 0, playing: true };
+  }
+  componentDidMount() {
+    this.timer = setInterval(() => {
+      if (this.state.playing) this.setState({ frame: (this.state.frame + 1) % 96 });
+    }, 150);
+  }
+  componentWillUnmount() {
+    clearInterval(this.timer);
+  }
+  renderVals() {
+    const f = this.state.frame;
+    const col = f % 12;
+    const rowIdx = Math.floor(f / 12);
+    const realms = ['煉氣', '築基', '金丹', '元嬰', '化神', '大乘', '渡劫'];
+    return {
+      pos: '-' + (col * 336) + 'px -' + (rowIdx * 420) + 'px',
+      frameNo: f + 1,
+      toggleLabel: this.state.playing ? '暫停' : '播放',
+      toggle: () => this.setState({ playing: !this.state.playing }),
+      step: () => this.setState({ playing: false, frame: (this.state.frame + 1) % 96 }),
+      rows: realms.map((realm, i) => ({ realm: realm, m: 'r' + i, f: 'gr' + i }))
+    };
+  }
+}
+</script>
+</body>
+</html>
