@@ -1,6 +1,6 @@
 import XCTest
 
-/// 三頁外框：打開停在境界頁；底部原生分頁列三格（境界、分析、設定）都換得了頁。
+/// 三頁外框：打開停在境界頁；底部原生分頁列三格（設定、境界、分析）都換得了頁。
 /// 帶 `-rencanSeed profile`（已填身高與性別），不然會停在第一次打開那頁。
 final class ShellUITests: RencanUITestCase {
     func test分頁列換頁() {
@@ -8,8 +8,8 @@ final class ShellUITests: RencanUITestCase {
         seeText("還沒量過體組成", timeout: 30)
         let tabs = app.tabBars.buttons
         XCTAssertEqual(
-            tabs.allElementsBoundByIndex.map(\.label), ["境界", "分析", "設定"],
-            "分頁列由左到右應該是境界、分析、設定"
+            tabs.allElementsBoundByIndex.map(\.label), ["設定", "境界", "分析"],
+            "分頁列由左到右應該是設定、境界、分析"
         )
         XCTAssertTrue(tabs.matching(named("境界")).firstMatch.isSelected, "打開時選中的不是境界")
         shot("境界頁")

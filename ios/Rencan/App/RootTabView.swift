@@ -2,12 +2,12 @@ import RencanCore
 import SwiftData
 import SwiftUI
 
-/// 三頁哪一頁。順序就是底部分頁列由左到右：境界、分析、設定（照 iOS 習慣設定放最右）。
+/// 三頁哪一頁。順序就是底部分頁列由左到右：設定、境界、分析（境界在中間，2026-11-17 多米定的）。
 /// 深連結（通知、小工具、Siri）只准帶這三個值（標準清單 I2）。
 enum RencanPage: Int, CaseIterable {
+    case settings
     case realm
     case analysis
-    case settings
 }
 
 /// 健康 app 這條線現在怎麼樣。境界頁的來源列與空狀態照這個決定顯示什麼（片 E2）。
@@ -193,6 +193,10 @@ struct PagesView: View {
     var body: some View {
         @Bindable var flow = flow
         TabView(selection: $flow.page) {
+            SettingsView(digest: digest)
+                .tabPage(.settings, current: flow.page)
+                .tabItem { Label("設定", systemImage: "gearshape") }
+                .tag(RencanPage.settings)
             RealmView(
                 digest: digest, lifts: lifts, latestSource: latestSource,
                 healthStatus: healthStatus
@@ -204,10 +208,6 @@ struct PagesView: View {
                 .tabPage(.analysis, current: flow.page)
                 .tabItem { Label("分析", systemImage: "chart.xyaxis.line") }
                 .tag(RencanPage.analysis)
-            SettingsView(digest: digest)
-                .tabPage(.settings, current: flow.page)
-                .tabItem { Label("設定", systemImage: "gearshape") }
-                .tag(RencanPage.settings)
         }
         .sheet(item: $flow.sheet) { sheet in
             sheetContent(sheet)

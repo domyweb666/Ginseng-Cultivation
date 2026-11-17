@@ -192,7 +192,7 @@ extension RencanUITestCase {
         requireVisible(query, "按鈕「\(label)」", timeout: timeout, file: file, line: line).tap()
     }
 
-    /// 點底部分頁列的那一格（境界、分析、設定），等它變成選中。
+    /// 點底部分頁列的那一格（設定、境界、分析），等它變成選中。
     /// 不用 tapVisibleButton：分析頁的分段也有一顆「境界」，同名會點錯。
     func openTab(
         _ label: String, timeout: TimeInterval = 15, file: StaticString = #filePath,

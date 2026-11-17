@@ -36,6 +36,8 @@ struct SteleView: View {
     @State private var isLowPower = ProcessInfo.processInfo.isLowPowerModeEnabled
     /// 動畫從哪一刻起算
     @State private var animationStart = Date()
+    /// 深色卡排完版有多寬。立繪上面露出的底色要跟左右一樣寬，左右多寬要量了才知道。
+    @State private var heroWidth: CGFloat = 0
 
     var body: some View {
         VStack(spacing: RencanLayout.groupSpacing) {
@@ -52,8 +54,16 @@ struct SteleView: View {
             portrait
             caption
         }
-        .padding(Metrics.framePadding)
+        .padding([.horizontal, .bottom], Metrics.framePadding)
+        .padding(.top, topInset)
         .frame(minWidth: Metrics.minimumWidth, maxWidth: .infinity)
+        .background {
+            GeometryReader { proxy in
+                Color.clear
+                    .onAppear { heroWidth = proxy.size.width }
+                    .onChange(of: proxy.size.width) { _, width in heroWidth = width }
+            }
+        }
         .background(
             Color.rencan.realmBase(standing.realmIndex),
             in: RoundedRectangle(cornerRadius: RencanLayout.heroCornerRadius)
@@ -67,6 +77,12 @@ struct SteleView: View {
         // 不把整頁撐寬。
         .frame(maxWidth: .infinity)
         .accessibilityIdentifier("stele")
+    }
+
+    /// 立繪上面露出多少底色：跟左右一樣寬（2026-11-17 多米要的，原本上面固定 7、左右隨手機變寬）。
+    /// 立繪寬度固定，卡片越寬左右露得越多。還沒量到寬度時先用最窄的那一圈。
+    private var topInset: CGFloat {
+        max(Metrics.framePadding, (heroWidth - RencanLayout.largePortraitSize.width) / 2)
     }
 
     /// 立繪要不要動。減少動態效果、低耗電、app 不在前景、跑自動測試時都放靜態圖。
