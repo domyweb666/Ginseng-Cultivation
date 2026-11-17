@@ -234,8 +234,7 @@ struct PagesView: View {
         .tabViewStyle(.page(indexDisplayMode: .never))
         .overlay(alignment: .bottom) {
             RencanTabBar(page: $flow.page)
-                .padding(.bottom, RencanTabBar.bottomGap(safeAreaBottom: safeAreaBottom))
-                .ignoresSafeArea(.container, edges: .bottom)
+                .offset(y: RencanTabBar.sink(safeAreaBottom: safeAreaBottom))
         }
     }
 

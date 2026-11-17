@@ -69,14 +69,15 @@ struct RencanTabBar: View {
     private static let topGap: CGFloat = 8
     private static let barHeight = itemHeight + barPadding * 2
 
-    /// 分頁列底邊離螢幕底多遠。
-    static func bottomGap(safeAreaBottom: CGFloat) -> CGFloat {
-        max(safeAreaBottom - sinkIntoSafeArea, minimumBottomGap)
+    /// 分頁列從底部留白的上緣往下移多少（負的是往上）。翻頁的 TabView 裡 ignoresSafeArea 不生效
+    /// （2026-11-18 檢查線截圖：分頁列停在留白上面，蓋到「記一筆修煉」），所以用位移。
+    static func sink(safeAreaBottom: CGFloat) -> CGFloat {
+        min(sinkIntoSafeArea, safeAreaBottom - minimumBottomGap)
     }
 
     /// 每一頁的底部要讓出多高（從底部留白的上緣算起）。
     static func clearance(safeAreaBottom: CGFloat) -> CGFloat {
-        max(bottomGap(safeAreaBottom: safeAreaBottom) + barHeight + topGap - safeAreaBottom, 0)
+        barHeight + topGap - sink(safeAreaBottom: safeAreaBottom)
     }
 
     var body: some View {
@@ -119,7 +120,6 @@ struct RencanTabBar: View {
             .contentShape(Capsule())
         }
         .buttonStyle(.plain)
-        .accessibilityElement(children: .ignore)
         .accessibilityLabel(title)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
         .accessibilityIdentifier("tab-\(title)")
