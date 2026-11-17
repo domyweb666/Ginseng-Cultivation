@@ -17,8 +17,9 @@ private enum Metrics {
     /// 紅印章
     static let sealSize: CGFloat = 34
     static let sealCornerRadius: CGFloat = 6
-    /// 印章上的字，一境一個（煉氣到渡劫）
-    static let sealGlyphs = ["壹", "貳", "參", "肆", "伍", "陸", "柒"]
+    /// 印章上的字，一境一個（煉氣到渡劫），刻的是境界的代表字。
+    /// 2026-11-18 多米選的：原本刻壹到柒（第幾境），他看真機覺得看不懂。
+    static let sealGlyphs = ["氣", "基", "丹", "嬰", "神", "乘", "劫"]
     /// 深色卡最窄多寬：立繪加左右各一圈邊。立繪不能縮，縮了像素的格子就不齊。
     static let minimumWidth = RencanLayout.largePortraitSize.width + framePadding * 2
 }
