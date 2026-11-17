@@ -1,6 +1,8 @@
 import Foundation
 
 // 跟網頁版 index.html L203–230 一字不改的表：REALMS、STAGES、MOVES、LV、RANKS。
+// 例外：RANKS 的境界門檻與後四階的說明句（2026-11-17 多米定的，只改 app、網頁版不動）。
+// 網頁版是內門築基、真傳金丹、長老元嬰、太上長老化神；這裡各降一階，內門不看境界。
 //
 // 網頁版縮寫對照（規矩檔第 3 節：搬過來一律改成完整名）：
 //   REALMS：n → name、lo → lowerFFMI、hi → upperFFMI、d → summary
@@ -143,19 +145,19 @@ public enum Tables {
         note: "名字已寫進宗門名冊"
     )
     private static let rank2 = Rank(
-        name: "內門弟子", requiredDays: 24, requiredRealmIndex: 1,
-        note: "根基已成，修煉成了習慣"
+        name: "內門弟子", requiredDays: 24, requiredRealmIndex: -1,
+        note: "修煉成了習慣，正式入了內門"
     )
     private static let rank3 = Rank(
-        name: "真傳弟子", requiredDays: 50, requiredRealmIndex: 2,
-        note: "結成金丹，宗門重點栽培"
+        name: "真傳弟子", requiredDays: 50, requiredRealmIndex: 1,
+        note: "築基有成，宗門重點栽培"
     )
     private static let rank4 = Rank(
-        name: "長老", requiredDays: 150, requiredRealmIndex: 3,
-        note: "元嬰已成，坐鎮一方"
+        name: "長老", requiredDays: 150, requiredRealmIndex: 2,
+        note: "結成金丹，坐鎮一方"
     )
     private static let rank5 = Rank(
-        name: "太上長老", requiredDays: 300, requiredRealmIndex: 4,
-        note: "化神之境，宗門底蘊"
+        name: "太上長老", requiredDays: 300, requiredRealmIndex: 3,
+        note: "元嬰已成，宗門底蘊"
     )
 }

@@ -1,6 +1,8 @@
 import Foundation
 
 // 網頁版 index.html L234–249 的 sectOf，一行對一行搬過來（名稱對照見 Formulas.swift 檔頭）。
+// 2026-11-17 起跟網頁版有一處不同：六階的境界門檻各降一階（表在 Tables.swift），
+// 客卿與客卿長老的門檻照舊是金丹、元嬰，所以改成寫在這裡，不從階級表查。
 // 從 Formulas.swift 拆出來只因為 SwiftLint 一個檔最多 400 行；它仍是 Formulas 的一部分。
 
 /// 宗門身分。
@@ -17,14 +19,17 @@ extension Formulas {
     private static let innerDiscipleRankIndex = 2
     private static let trueDiscipleRankIndex = 3
     private static let elderRankIndex = 4
+    /// 境界到這裡、天數還不夠的人先當客卿（金丹）、客卿長老（元嬰）。
+    private static let guestRealmIndex = 2
+    private static let guestElderRealmIndex = 3
     /// 修煉滿這麼多天、境界沒跟上，升執事。
     private static let stewardMinimumDays = 100
     /// 進度條最少畫這麼多，才看得到一點點。
     private static let minimumPercent: Double = 3
     private static let fullPercent: Double = 100
 
-    /// 宗門身分：同時看修煉天數與曾到達的最高大境界。實力夠但天數不夠先當客卿，
-    /// 天數超過 100 天但境界沒跟上是執事。
+    /// 宗門身分：同時看修煉天數與曾到達的最高大境界。金丹以上但天數不夠先當客卿，
+    /// 天數超過 100 天但境界沒跟上是執事（照現在的階級表，只會出現內門執事）。
     public static func sectOf(trainDays: Int, realmIndex rawRealmIndex: Int) -> SectStatus {
         // 序號夾在表的範圍裡，離譜的輸入才不會查表查出界。
         let highestRealmIndex = Tables.realms.count - 1
@@ -33,25 +38,19 @@ extension Formulas {
             trainDays >= rank.requiredDays && realmIndex >= rank.requiredRealmIndex
         }
         let rankIndex = reached ?? 0
-        if isGuest(of: elderRankIndex, rankIndex: rankIndex, realmIndex: realmIndex) {
+        if realmIndex >= guestElderRealmIndex && rankIndex < elderRankIndex {
             return guestStatus(
                 title: "客卿長老", targetRankIndex: elderRankIndex, rankIndex: rankIndex,
                 trainDays: trainDays, realmIndex: realmIndex
             )
         }
-        if isGuest(of: trueDiscipleRankIndex, rankIndex: rankIndex, realmIndex: realmIndex) {
+        if realmIndex >= guestRealmIndex && rankIndex < trueDiscipleRankIndex {
             return guestStatus(
                 title: "客卿", targetRankIndex: trueDiscipleRankIndex, rankIndex: rankIndex,
                 trainDays: trainDays, realmIndex: realmIndex
             )
         }
         return regularStatus(rankIndex: rankIndex, trainDays: trainDays, realmIndex: realmIndex)
-    }
-
-    /// 境界已經夠格當某一階（長老、真傳），但天數還沒到。
-    private static func isGuest(of targetRankIndex: Int, rankIndex: Int, realmIndex: Int) -> Bool {
-        let requiredRealmIndex = Tables.ranks[targetRankIndex].requiredRealmIndex
-        return realmIndex >= requiredRealmIndex && rankIndex < targetRankIndex
     }
 
     private static func guestStatus(

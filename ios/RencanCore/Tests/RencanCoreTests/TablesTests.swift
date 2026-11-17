@@ -89,7 +89,8 @@ final class TablesTests: XCTestCase {
         XCTAssertEqual(Tables.ranks.map(\.requiredDays), [0, 8, 24, 50, 150, 300])
     }
 
-    func test六個宗門身分要的境界照網頁版() {
-        XCTAssertEqual(Tables.ranks.map(\.requiredRealmIndex), [-1, -1, 1, 2, 3, 4])
+    /// 網頁版是 [-1, -1, 1, 2, 3, 4]；2026-11-17 多米定的，app 這邊各降一階。
+    func test六個宗門身分要的境界比網頁版各降一階() {
+        XCTAssertEqual(Tables.ranks.map(\.requiredRealmIndex), [-1, -1, -1, 1, 2, 3])
     }
 }

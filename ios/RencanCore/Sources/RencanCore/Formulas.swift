@@ -14,6 +14,8 @@ import Foundation
 //   6. sectOf 把境界序號夾在 -1 到 6 之間，離譜的輸入不會查表查出界（網頁版沒夾）。
 //   7. 跟性別有關的函式都要傳 sex（片 B5，.vibe/女性版規則.md）；男性的算法跟網頁版一樣。
 //      不帶 sex 的版本在 WebParity.swift，只給測試對網頁版用。
+//   8. 宗門六階的境界門檻比網頁版各降一階（2026-11-17 多米定的，只改 app），
+//      所以 sectOf 的結果跟網頁版不一樣；客卿、執事的規則照舊。細節在 Sect.swift 檔頭。
 
 /// realmOf 的結果：在哪個大境界、哪一期、下一期與這一期的 FFMI 門檻。
 public struct RealmStanding: Equatable {

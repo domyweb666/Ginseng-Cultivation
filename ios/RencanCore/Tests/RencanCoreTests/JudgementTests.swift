@@ -27,6 +27,13 @@ private func squatDays(_ count: Int) -> [LiftEntry] {
     }
 }
 
+/// 接在一月後面，二月份連續幾天的深蹲（一月只有 31 天，要湊 50 天時用）。
+private func februarySquatDays(_ count: Int) -> [LiftEntry] {
+    (1...count).map { day in
+        lift(.squat, kg: 60, on: day < 10 ? "2026-02-0\(day)" : "2026-02-\(day)")
+    }
+}
+
 /// 白話表第一張：記一筆修煉，由上往下五選一。
 final class LiftJudgementTests: XCTestCase {
     private let body = [weighing(70, bodyFat: 18, on: "2025-12-01")]
@@ -170,9 +177,11 @@ final class MeasurementJudgementTests: XCTestCase {
     }
 
     func test踏入仙途同時宗門身分升了會多帶一句() throws {
-        let result = try judge(foundationLate, before: [], lifts: squatDays(28))
+        // 修煉滿 50 天還沒量過是內門弟子，第一次量到築基就升真傳（真傳要築基）。
+        let lifts = squatDays(31) + februarySquatDays(19)
+        let result = try judge(foundationLate, before: [], lifts: lifts)
         XCTAssertEqual(result.outcome, .enteredPath)
-        XCTAssertEqual(result.promotedSectTitle, "內門弟子")
+        XCTAssertEqual(result.promotedSectTitle, "真傳弟子")
     }
 
     func test第3列期別比歷來最高還高是境界突破() throws {

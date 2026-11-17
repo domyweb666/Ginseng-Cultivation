@@ -6,12 +6,12 @@ import Foundation
 // 每一組的 export 是網頁版存檔的格式（meas、lift、cfg），expected 是網頁版原版程式算出來的答案。
 // 這裡的型別只給測試讀檔用；正式的匯入格式與檢查在 Sources 的 WebExport.swift（片 B4）。
 // 網頁版的欄位名太短（bf、bw、t），用 CodingKeys 對到完整名。
+// 檔案裡還有宗門身分的答案（sectGrid、各組的 sect），2026-11-17 起不讀：app 的宗門規則跟網頁版不一樣了。
 
 struct GoldenFile: Decodable {
     let today: String
     let groups: [GoldenGroup]
     let ladder: [GoldenLadderStep]
-    let sectGrid: [GoldenSect]
     let durations: [GoldenDuration]
     let dayGaps: [GoldenDayGap]
 }
@@ -94,7 +94,6 @@ struct GoldenExpected: Decodable {
     let realmMax: Int
     let trainDays: Int
     let weekCount: Int
-    let sect: GoldenSect
     let lifts: [GoldenLiftAnswer]
     let best: [GoldenLiftAnswer]
 }
@@ -119,17 +118,6 @@ struct GoldenBreakthrough: Decodable {
     let label: String
     let first: Bool
     let days: Int
-}
-
-/// 宗門身分的答案。sectGrid 裡的每一格多帶天數與境界序號，各組的 sect 沒有這兩欄。
-struct GoldenSect: Decodable {
-    let days: Int?
-    let realmIndex: Int?
-    let rankIndex: Int
-    let title: String
-    let note: String
-    let next: String
-    let percent: Double
 }
 
 /// 一筆修煉的答案。best 裡的每一筆多帶功法代號。
