@@ -42,7 +42,7 @@ struct MoveDetailView: View {
         .background(Color.rencan.canvas.ignoresSafeArea())
     }
 
-    /// 六門功法 Digest 都會給一張卡，這裡照代號找出這一門。
+    /// 每門功法 Digest 都會給一張卡，這裡照代號找出這一門。
     private var card: MoveCard? {
         digest.moveCards.first { $0.move.key == key }
     }

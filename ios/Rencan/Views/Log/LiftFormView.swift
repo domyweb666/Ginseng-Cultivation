@@ -1,7 +1,7 @@
 import RencanCore
 import SwiftUI
 
-/// 記一筆修煉的彈出表單（照畫布 LogSheet）：功法 3×2 格子、重量、次數、組數、日期，
+/// 記一筆修煉的彈出表單（照畫布 LogSheet）：功法分腿、推、拉三排各四格，重量、次數、組數、日期，
 /// 下面即時預覽這一組算出來的等級。欄位先帶上次那門功法的數字。
 /// 存檔失敗時紅字留在表單裡，內容不清掉，絕不說「已記下」（PRD S24）。
 struct LiftFormView: View {
@@ -22,7 +22,14 @@ struct LiftFormView: View {
     private static let defaultKg: Double = 20
     private static let defaultReps = 5
     private static let defaultSets = 3
-    private static let columns = Array(repeating: GridItem(.flexible()), count: 3)
+    /// 一排四門（2026-11-18 擴成十二門，分腿、推、拉三排）。
+    private static let columns = Array(
+        repeating: GridItem(.flexible(), spacing: RencanLayout.itemSpacing), count: 4
+    )
+    /// 每排最左邊「腿／推／拉」那個字的寬
+    private static let groupLabelWidth: CGFloat = 18
+    /// 功法格子裡的字離左右邊多遠；「羅馬尼亞硬舉」太長時字會縮小，不會貼邊
+    private static let moveButtonInset: CGFloat = 4
 
     var body: some View {
         VStack(spacing: 0) {
@@ -71,9 +78,18 @@ struct LiftFormView: View {
             Text("功法")
                 .font(RencanType.footnote)
                 .foregroundStyle(Color.rencan.textSecondary)
-            LazyVGrid(columns: LiftFormView.columns, spacing: RencanLayout.itemSpacing) {
-                ForEach(Tables.moves, id: \.key) { item in
-                    moveButton(item)
+            ForEach(MoveGroup.allCases, id: \.self) { group in
+                HStack(spacing: RencanLayout.itemSpacing) {
+                    Text(group.rawValue)
+                        .font(RencanType.footnote)
+                        .foregroundStyle(Color.rencan.textSecondary)
+                        .frame(width: LiftFormView.groupLabelWidth)
+                        .accessibilityHidden(true)
+                    LazyVGrid(columns: LiftFormView.columns, spacing: RencanLayout.itemSpacing) {
+                        ForEach(Tables.moves.filter { $0.group == group }, id: \.key) { item in
+                            moveButton(item)
+                        }
+                    }
                 }
             }
         }
@@ -91,6 +107,9 @@ struct LiftFormView: View {
                 Text(item.name)
                     .font(RencanType.caption)
             }
+            .lineLimit(1)
+            .minimumScaleFactor(RencanLayout.minimumTextScale)
+            .padding(.horizontal, LiftFormView.moveButtonInset)
             .foregroundStyle(isSelected ? Color.rencan.onAccent : Color.rencan.textPrimary)
             .frame(maxWidth: .infinity, minHeight: RencanLayout.moveButtonHeight)
             .background(

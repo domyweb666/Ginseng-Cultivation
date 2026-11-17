@@ -20,7 +20,7 @@ struct RencanChip: View {
     }
 }
 
-/// 區塊標題（今天的修煉、六門功法）。
+/// 區塊標題（今天的修煉、十二門功法）。
 struct SectionTitle: View {
     let text: String
 

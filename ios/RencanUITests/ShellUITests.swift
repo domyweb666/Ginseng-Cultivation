@@ -18,7 +18,7 @@ final class ShellUITests: RencanUITestCase {
         openTab("分析")
         let segments = app.segmentedControls.buttons
         requireVisible(segments.matching(named("功法")), "分析頁分段的「功法」").tap()
-        seeText("六門功法")
+        seeText("十二門功法")
         shot("分析頁功法段")
         requireVisible(segments.matching(named("境界")), "分析頁分段的「境界」").tap()
 

@@ -46,14 +46,14 @@ final class DemoRealmUITests: RencanUITestCase {
     }
 }
 
-/// 分析頁的功法段：三格統計、六張功法卡、點一張進單一功法頁、最近修煉、功法等級怎麼算。
+/// 分析頁的功法段：三格統計、十二張功法卡、點一張進單一功法頁、最近修煉、功法等級怎麼算。
 final class DemoGongUITests: RencanUITestCase {
     func test示範資料功法段與單一功法頁() {
         launch(["-rencanSeed", "demo"])
         seeStele(timeout: 30)
         openAnalysis()
         tapVisibleButton("功法")
-        seeText("六門功法")
+        seeText("十二門功法")
         shot("功法段-頂")
 
         openMoveDetail()

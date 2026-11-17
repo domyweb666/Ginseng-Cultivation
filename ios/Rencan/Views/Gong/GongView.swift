@@ -9,9 +9,9 @@ private enum Metrics {
     static let titleInset: CGFloat = 4
 }
 
-/// 分析頁的功法段（照畫布 AnalysisGong）：三格統計、功法雷達、六張功法卡排兩欄、最近修煉、等級怎麼算。
+/// 分析頁的功法段（照畫布 AnalysisGong）：三格統計、功法雷達、十二張功法卡排兩欄、最近修煉、等級怎麼算。
 /// 放在 AnalysisView 的 ScrollView 裡，所以自己不捲動。數字全部來自 Digest，這裡只排版。
-/// 一筆修煉都沒有時，三格是 0、六張卡寫「還沒有紀錄」，「最近修煉」那格換成一句說明。
+/// 一筆修煉都沒有時，三格是 0、每張卡寫「還沒有紀錄」，「最近修煉」那格換成一句說明。
 struct GongView: View {
     let digest: Digest
     /// 全部的修煉紀錄；最近修煉自己挑最新的幾筆。
@@ -46,7 +46,7 @@ struct GongView: View {
 
     private var moveCards: some View {
         VStack(alignment: .leading, spacing: RencanLayout.itemSpacing) {
-            SectionTitle(text: "六門功法")
+            SectionTitle(text: "十二門功法")
                 .padding(.horizontal, Metrics.titleInset)
             VStack(spacing: RencanLayout.groupSpacing) {
                 ForEach(rowStarts, id: \.self) { start in

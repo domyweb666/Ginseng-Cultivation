@@ -231,6 +231,35 @@ final class FemaleRulesTests: XCTestCase {
         try checkThresholds(.row, [0.3, 0.45, 0.6, 0.75, 0.9], factor: 0.6)
     }
 
+    // 2026-11-18 擴成十二門加的六門
+
+    func test女性抱鼎樁前蹲的門檻是男性的七成() throws {
+        try checkThresholds(.frontSquat, [0.385, 0.49, 0.63, 0.735, 1.015], factor: 0.7)
+    }
+
+    func test女性探海式羅馬尼亞硬舉的門檻是男性的七成() throws {
+        try checkThresholds(.romanianDeadlift, [0.525, 0.665, 0.77, 1.05, 1.33], factor: 0.7)
+    }
+
+    func test女性架橋式臀推不打折跟男性一樣() throws {
+        try checkThresholds(.hipThrust, [0.75, 1.0, 1.25, 1.5, 2.0], factor: 1)
+    }
+
+    func test女性推月掌上斜臥推的門檻是男性的六成() throws {
+        try checkThresholds(.inclineBench, [0.24, 0.36, 0.48, 0.6, 0.72], factor: 0.6)
+    }
+
+    func test女性捧丹手彎舉的門檻是男性的六成() throws {
+        try checkThresholds(.curl, [0.15, 0.21, 0.3, 0.36, 0.42], factor: 0.6)
+    }
+
+    func test女性撐柱式雙槓撐體的門檻另訂自重一下是入門() throws {
+        let dip = try move(.dip)
+        XCTAssertEqual(dip.thresholds(for: .female), [1.0, 1.1, 1.2, 1.33, 1.5])
+        XCTAssertEqual(Formulas.moveLevel(move: dip, ratio: 1.0, sex: .female), 1)
+        XCTAssertEqual(Formulas.moveLevel(move: dip, ratio: 1.0, sex: .male), 0)
+    }
+
     func test女性攀雲梯引體向上的門檻另訂不照乘() throws {
         let pull = try move(.pull)
         XCTAssertEqual(pull.thresholds(for: .female), [1.0, 1.1, 1.2, 1.33, 1.5])

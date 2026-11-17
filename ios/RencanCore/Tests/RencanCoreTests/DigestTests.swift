@@ -141,10 +141,10 @@ final class DigestMoveTests: XCTestCase {
         try XCTUnwrap(result.moveCards.first { $0.move.key == key })
     }
 
-    func test六門功法各一張卡照表的順序() throws {
+    func test十二門功法各一張卡照表的順序() throws {
         let result = try digest(body, fiveLifts())
-        let keys: [MoveKey] = [.squat, .dead, .bench, .ohp, .row, .pull]
-        XCTAssertEqual(result.moveCards.map(\.move.key), keys)
+        XCTAssertEqual(result.moveCards.map(\.move.key), Tables.moves.map(\.key))
+        XCTAssertEqual(result.moveCards.count, 12)
     }
 
     func test深蹲卡是比值最高那筆的等級與下一階還差幾公斤() throws {

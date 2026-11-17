@@ -12,7 +12,7 @@ final class AnalysisEmptyUITests: RencanUITestCase {
         shot("境界段空狀態")
 
         tapVisibleButton("功法")
-        seeText("六門功法")
+        seeText("十二門功法")
         let gongNote = scrollToSee(idQuery("gong-empty"), "功法段空狀態那句話")
         let noteText = gongNote.label
         XCTAssertTrue(noteText.contains("還沒有修煉紀錄"), "功法段空狀態的字不對：\(noteText)")

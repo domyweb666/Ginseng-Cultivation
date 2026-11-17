@@ -18,7 +18,8 @@ public struct Realm: Equatable {
     public let summary: String
 }
 
-/// 六門功法的代號，跟網頁版 JSON 的 move 欄位同字。
+/// 功法的代號，存檔與匯出入的 move 欄位用這個字。前六個跟網頁版同字；
+/// 後六個是 2026-11-18 擴成十二門時加的（網頁版已停用，只有 app 認得）。
 public enum MoveKey: String, CaseIterable {
     case squat
     case dead
@@ -26,6 +27,19 @@ public enum MoveKey: String, CaseIterable {
     case ohp
     case row
     case pull
+    case frontSquat
+    case romanianDeadlift
+    case hipThrust
+    case inclineBench
+    case dip
+    case curl
+}
+
+/// 功法分三排：腿、推、拉（2026-11-18 擴成十二門時多米定的），記一筆表單一排一組。
+public enum MoveGroup: String, CaseIterable {
+    case legs = "腿"
+    case push = "推"
+    case pull = "拉"
 }
 
 /// 一門功法：動作名、功法名、五階門檻（估計 1RM ÷ 體重）。
@@ -36,8 +50,9 @@ public struct Move: Equatable {
     public let thresholds: [Double]
     /// 女性的五階門檻（.vibe/女性版規則.md 第三節）。thresholds 是網頁版原本的男性門檻，不動。
     public let femaleThresholds: [Double]
-    /// 引體向上這種要把自身體重算進負重的動作。
+    /// 引體向上、雙槓撐體這種要把自身體重算進負重的動作。
     public let usesBodyweight: Bool
+    public let group: MoveGroup
 }
 
 /// 宗門身分的一階：要幾天修煉、要到哪個大境界。
@@ -86,7 +101,12 @@ public enum Tables {
     public static let levelNames = ["未入門", "入門", "小成", "大成", "圓滿", "化境"]
 
     public static let realms = [realm0, realm1, realm2, realm3, realm4, realm5, realm6]
-    public static let moves = [squat, dead, bench, ohp, row, pull]
+    /// 照腿、推、拉排，每排四門；記一筆表單、功法卡、雷達圖都照這個順序。
+    // 分三行寫：多行陣列 swift-format 要尾逗號、SwiftLint 不准，單行就兩邊都過。
+    public static let moves = legMoves + pushMoves + pullMoves
+    private static let legMoves = [squat, frontSquat, romanianDeadlift, hipThrust]
+    private static let pushMoves = [bench, inclineBench, ohp, dip]
+    private static let pullMoves = [dead, row, pull, curl]
     public static let ranks = [rank0, rank1, rank2, rank3, rank4, rank5]
 
     private static let realm0 = Realm(
@@ -113,27 +133,62 @@ public enum Tables {
 
     private static let squat = Move(
         key: .squat, name: "深蹲", artName: "坐馬樁", thresholds: [0.75, 1.0, 1.25, 1.5, 2.0],
-        femaleThresholds: [0.525, 0.7, 0.875, 1.05, 1.4], usesBodyweight: false
+        femaleThresholds: [0.525, 0.7, 0.875, 1.05, 1.4], usesBodyweight: false, group: .legs
     )
     private static let dead = Move(
         key: .dead, name: "硬舉", artName: "拔山式", thresholds: [1.0, 1.25, 1.5, 2.0, 2.5],
-        femaleThresholds: [0.7, 0.875, 1.05, 1.4, 1.75], usesBodyweight: false
+        femaleThresholds: [0.7, 0.875, 1.05, 1.4, 1.75], usesBodyweight: false, group: .pull
     )
     private static let bench = Move(
         key: .bench, name: "臥推", artName: "推山掌", thresholds: [0.5, 0.75, 1.0, 1.25, 1.5],
-        femaleThresholds: [0.3, 0.45, 0.6, 0.75, 0.9], usesBodyweight: false
+        femaleThresholds: [0.3, 0.45, 0.6, 0.75, 0.9], usesBodyweight: false, group: .push
     )
     private static let ohp = Move(
         key: .ohp, name: "肩推", artName: "托天式", thresholds: [0.35, 0.5, 0.65, 0.8, 1.0],
-        femaleThresholds: [0.21, 0.3, 0.39, 0.48, 0.6], usesBodyweight: false
+        femaleThresholds: [0.21, 0.3, 0.39, 0.48, 0.6], usesBodyweight: false, group: .push
     )
     private static let row = Move(
         key: .row, name: "划船", artName: "挽弓式", thresholds: [0.5, 0.75, 1.0, 1.25, 1.5],
-        femaleThresholds: [0.3, 0.45, 0.6, 0.75, 0.9], usesBodyweight: false
+        femaleThresholds: [0.3, 0.45, 0.6, 0.75, 0.9], usesBodyweight: false, group: .pull
     )
     private static let pull = Move(
         key: .pull, name: "引體向上", artName: "攀雲梯", thresholds: [1.03, 1.17, 1.33, 1.5, 1.67],
-        femaleThresholds: [1.0, 1.1, 1.2, 1.33, 1.5], usesBodyweight: true
+        femaleThresholds: [1.0, 1.1, 1.2, 1.33, 1.5], usesBodyweight: true, group: .pull
+    )
+
+    // 2026-11-18 擴成十二門加的六門。門檻怎麼來的寫在 .vibe/功法擴充草案.md：
+    // 拿相近的舊功法乘 Strength Level 兩個動作在中級的比例，四捨五入到 0.05。
+    // 女性照女性版規則，腿 ×0.7、推拉 ×0.6；臀推女性不打折（多米定的）；
+    // 雙槓撐體跟引體向上一樣另訂，照次數換：男 3、8、12、18、25 下，女 1、3、6、10、15 下。
+    private static let frontSquat = Move(
+        key: .frontSquat, name: "前蹲", artName: "抱鼎樁",
+        thresholds: [0.55, 0.7, 0.9, 1.05, 1.45],
+        femaleThresholds: [0.385, 0.49, 0.63, 0.735, 1.015], usesBodyweight: false, group: .legs
+    )
+    private static let romanianDeadlift = Move(
+        key: .romanianDeadlift, name: "羅馬尼亞硬舉", artName: "探海式",
+        thresholds: [0.75, 0.95, 1.1, 1.5, 1.9],
+        femaleThresholds: [0.525, 0.665, 0.77, 1.05, 1.33], usesBodyweight: false, group: .legs
+    )
+    private static let hipThrust = Move(
+        key: .hipThrust, name: "臀推", artName: "架橋式",
+        thresholds: [0.75, 1.0, 1.25, 1.5, 2.0],
+        femaleThresholds: [0.75, 1.0, 1.25, 1.5, 2.0], usesBodyweight: false, group: .legs
+    )
+    private static let inclineBench = Move(
+        key: .inclineBench, name: "上斜臥推", artName: "推月掌",
+        thresholds: [0.4, 0.6, 0.8, 1.0, 1.2],
+        femaleThresholds: [0.24, 0.36, 0.48, 0.6, 0.72], usesBodyweight: false, group: .push
+    )
+    private static let dip = Move(
+        key: .dip, name: "雙槓撐體", artName: "撐柱式",
+        thresholds: [1.1, 1.27, 1.4, 1.6, 1.83],
+        femaleThresholds: [1.0, 1.1, 1.2, 1.33, 1.5], usesBodyweight: true, group: .push
+    )
+    private static let curl = Move(
+        key: .curl, name: "槓鈴彎舉", artName: "捧丹手",
+        thresholds: [0.25, 0.35, 0.5, 0.6, 0.7],
+        femaleThresholds: [0.15, 0.21, 0.3, 0.36, 0.42], usesBodyweight: false, group: .pull
     )
 
     private static let rank0 = Rank(

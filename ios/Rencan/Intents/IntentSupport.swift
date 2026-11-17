@@ -47,6 +47,12 @@ enum MoveChoice: String, AppEnum {
     case ohp
     case row
     case pull
+    case frontSquat
+    case romanianDeadlift
+    case hipThrust
+    case inclineBench
+    case dip
+    case curl
 
     static let typeDisplayRepresentation: TypeDisplayRepresentation = "功法"
 
@@ -59,6 +65,18 @@ enum MoveChoice: String, AppEnum {
         .ohp: DisplayRepresentation(title: "肩推", subtitle: "托天式", synonyms: ["托天式"]),
         .row: DisplayRepresentation(title: "划船", subtitle: "挽弓式", synonyms: ["挽弓式"]),
         .pull: DisplayRepresentation(title: "引體向上", subtitle: "攀雲梯", synonyms: ["攀雲梯"]),
+        .frontSquat: DisplayRepresentation(title: "前蹲", subtitle: "抱鼎樁", synonyms: ["抱鼎樁"]),
+        .romanianDeadlift: DisplayRepresentation(
+            title: "羅馬尼亞硬舉", subtitle: "探海式", synonyms: ["探海式", "羅馬尼亞"]
+        ),
+        .hipThrust: DisplayRepresentation(title: "臀推", subtitle: "架橋式", synonyms: ["架橋式"]),
+        .inclineBench: DisplayRepresentation(
+            title: "上斜臥推", subtitle: "推月掌", synonyms: ["推月掌"]
+        ),
+        .dip: DisplayRepresentation(
+            title: "雙槓撐體", subtitle: "撐柱式", synonyms: ["撐柱式", "雙槓"]
+        ),
+        .curl: DisplayRepresentation(title: "槓鈴彎舉", subtitle: "捧丹手", synonyms: ["捧丹手", "彎舉"]),
     ]
     // swiftlint:enable trailing_comma
 
