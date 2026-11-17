@@ -176,11 +176,11 @@ p { margin: 0; }
 
   <section class="sec" id="combo">
     <div class="sec-head">
-      <h2>你要比的三組組合</h2>
+      <h2>你要比的五組組合</h2>
       <p>把兩題的選項疊在同一支手機上。代號照下面兩題的編號：宗門身分 D 是深色卡頂端加一列、F 是最上面放一行小卡；記一筆修煉 B 是浮動膠囊、C 是右下角圓鈕。</p>
     </div>
     <div class="grid" id="grid-combo"></div>
-    <p class="note">三組裡我還是選第 3 組。第 1 組的圓鈕沒有字，第 2 組的宗門身分在卡片外面，立繪也被推得最低。第 2、3 組的膠囊停著不動時會蓋到白卡「下一期」那一行，往上捲一點就看得全。</p>
+    <p class="note">後來加的第 4、5 組：圓鈕的加號換成「記」字、膠囊的字縮成「記一筆」。五組裡我選第 5 組，「記」字我覺得可以用，比加號好。第 1 組的圓鈕沒有字，第 2 組的宗門身分在卡片外面，立繪也被推得最低。第 2、3 組的膠囊停著不動時會蓋到白卡「下一期」那一行，往上捲一點就看得全。</p>
   </section>
 
   <section class="sec" id="sect">
@@ -302,9 +302,15 @@ const comboOptions = [
   { letter: "2", name: "宗門 F ＋ 記一筆 B", text: "最上面一行宗門小卡，底部一顆浮動膠囊。頁首的「境界」留著，深色卡維持原本的樣子。",
     cost: "代價：宗門身分在卡片外面。立繪是三組裡被推得最低的，比第 3 組再低 20 點，膠囊同樣蓋到白卡「下一期」那一行。",
     phone: { ...sectBy.F, ...logBy.B } },
-  { letter: "3", name: "宗門 D ＋ 記一筆 B", pick: true, text: "深色卡頂端一列身分，底部一顆浮動膠囊。宗門、立繪、境界在同一張卡，按鈕有字。",
+  { letter: "3", name: "宗門 D ＋ 記一筆 B", text: "深色卡頂端一列身分，底部一顆浮動膠囊。宗門、立繪、境界在同一張卡，按鈕有字。",
     cost: "代價：膠囊浮在白卡上面，會蓋到「下一期」那一行的中間，往上捲一點才看得全。",
-    phone: { ...sectBy.D, ...logBy.B } }
+    phone: { ...sectBy.D, ...logBy.B } },
+  { letter: "4", name: "宗門 F ＋ 圓鈕寫「記」", text: "第 2 組的宗門小卡，配右下角圓鈕，加號換成文楷的「記」字。比加號好懂，看起來也像蓋了一顆印。",
+    cost: "代價：一個字還是比「記一筆」難猜一點。圓鈕壓在白卡右上角，蓋到「還差 0.3 公斤肌肉」最後兩個字。",
+    phone: { ...sectBy.F, bottom: `<div class="btn round wk" style="bottom:92px;font-size:28px;font-weight:400">記</div>` } },
+  { letter: "5", name: "宗門 D ＋ 膠囊寫「記一筆」", pick: true, text: "第 3 組把按鈕上的字縮成「記一筆」。膠囊窄了 36 點，蓋到白卡的範圍變小。",
+    cost: "代價：表單標題和兩句說明文字現在都寫「記一筆修煉」，要一起改成「記一筆」才不會對不上。",
+    phone: { ...sectBy.D, bottom: `<div class="btn pill" style="bottom:92px">${plus}記一筆</div>` } }
 ];
 document.getElementById("grid-combo").innerHTML = comboOptions.map(figure).join("");
 document.getElementById("grid-sect").innerHTML = sectOptions.map(figure).join("");
