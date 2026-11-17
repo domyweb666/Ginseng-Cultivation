@@ -90,6 +90,9 @@ struct LiftFormView: View {
                             moveButton(item)
                         }
                     }
+                    // 放在橫排裡的格子只會拿到最小寬度，要明講撐滿，四格才會平分整排
+                    //（2026-11-18 檢查線截圖：四格擠在左半邊，字被切成「坐…」）
+                    .frame(maxWidth: .infinity)
                 }
             }
         }
