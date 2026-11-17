@@ -102,7 +102,7 @@ public enum Tables {
 
     public static let realms = [realm0, realm1, realm2, realm3, realm4, realm5, realm6]
     /// 照腿、推、拉排，每排四門；記一筆表單、功法卡、雷達圖都照這個順序。
-    // 分三行寫：多行陣列 swift-format 要尾逗號、SwiftLint 不准，單行就兩邊都過。
+    /// 分三行寫：多行陣列 swift-format 要尾逗號、SwiftLint 不准，單行就兩邊都過。
     public static let moves = legMoves + pushMoves + pullMoves
     private static let legMoves = [squat, frontSquat, romanianDeadlift, hipThrust]
     private static let pushMoves = [bench, inclineBench, ohp, dip]
