@@ -184,6 +184,17 @@ def bucket_masks(base, arm_poly):
     return arm, bk & ~arm
 
 
+CUFF_R0 = (104, 98, 127, 116)    # 煉氣男右手袖口那一圈（x0, y0, x1, y1）
+
+
+def bucket_cut(bk_m, M):
+    """從身體扣掉的水桶範圍。水桶遮罩為了切乾淨往外多長了幾格，貼著衣服那幾格其實是衣服；
+    整塊扣掉的話水桶一盪開，那裡只剩背景層的白（多米 2026-11-18 抓到衣襬旁一條白線）。
+    所以貼著衣服三格內、又在角色範圍裡的，留在身體上，被水桶擋住時由身體自己的衣服補。"""
+    behind = bk_m & M & grow(M & ~bk_m, 3)
+    return bk_m & ~behind
+
+
 def bucket_parts(rg, body, arm_m, bk_m, arm_mv, swing):
     arm = Part('arm', arm_m, arm_mv, body)
     rg.parts.append(Part('bucket', bk_m, lambda f: [rot((125, 135), swing(f))], arm))
@@ -196,14 +207,17 @@ def rig_r0(base, blink, M):
     pivot = (84, 42)
     lm = leafgreen(base, (28, 0, 138, 64), pivot)
     arm_m, bk_m = bucket_masks(base, [(113, 114), (124, 112), (132, 128), (132, 140), (118, 140), (114, 126)])
+    arm_m, bk_m = arm_m & grow(M, 1), bk_m & grow(M, 1)   # 只留角色（多一格接住深色外框）：多切到的天空、石頭不能跟著手和桶被提上去（多米 2026-11-18）
 
     def P(f):
         return pose(sq=keys(f, [(18, 0), (22, 1), (24, -0.67), (27, -0.67), (31, 0.33), (35, 0)]))
-    body, heady, _ = figure(rg, base, M, P, (40, 146, 112, 199), (158, 196), minus=lm | bk_m)
+    body, heady, _ = figure(rg, base, M, P, (40, 146, 112, 199), (158, 196), minus=lm | bucket_cut(arm_m | bk_m, M))
     lift = lambda f: keys(f % N, [(19, 0), (22, 2), (24, -6), (27, -6), (30, 1), (33, 0)])
     load_y = lambda f: heady(f) + lift(f)
     idle_swing = lambda f: 2.0 * round(1.2 * math.sin(TAU * f / 48.0))       # 平常桶自己輕輕晃
     bucket_parts(rg, body, arm_m, bk_m, lambda f: [shift(0, lift(f))], lambda f: idle_swing(f) + 1.3 * follow(load_y, f, 0.2, 1.0, 24))
+    # 袖口疊在手臂上面：提桶時手臂往上收 6 格，要像收進袖子裡，不是蓋在袖子上
+    rg.part('cuff', M & ~arm_m & ~bk_m & box(*CUFF_R0), None, body)
     leaves(rg, base, body, lm, pivot, heady)
     lantern(rg)
 
@@ -295,10 +309,11 @@ def rig_gr0(base, blink, M):
     pivot = (84, 42)
     lm = leafgreen(base, (28, 0, 138, 62), pivot)
     arm_m, bk_m = bucket_masks(base, [(114, 114), (126, 114), (132, 128), (132, 140), (119, 140), (115, 126)])
+    arm_m, bk_m = arm_m & grow(M, 1), bk_m & grow(M, 1)   # 只留角色（多一格接住深色外框）：多切到的天空、石頭不能跟著桶盪
 
     def P(f):
         return pose(ln=0 if 64 <= f < 80 else 0.6 * SW[(f // 4) % 8])
-    body, heady, PP = figure(rg, base, M, P, (40, 148, 112, 199), (160, 196), minus=lm | bk_m)
+    body, heady, PP = figure(rg, base, M, P, (40, 148, 112, 199), (160, 196), minus=lm | bucket_cut(arm_m | bk_m, M))
     tilt = lambda f: 2.5 * PP(f)['ln']
     bucket_parts(rg, body, arm_m, bk_m, lambda f: [],
                  lambda f: -4.0 * follow(tilt, f, 0.25, 0.9, 24) + 1.2 * follow(heady, f, 0.25, 1.0, 24))
@@ -385,10 +400,11 @@ def rig_gr1(base, blink, M):
 
 
 # ---------- 金丹 ----------
-def core_mask(base, c):
-    """只有金丹那一顆。下面托著它的手指顏色一樣、又連在一起，所以高度要切在金丹底下，不然手指會跟著金丹飛走。"""
+def core_mask(base, c, below=7):
+    """只有金丹那一顆。下面托著它的手指顏色一樣、又連在一起，所以高度要切在金丹底下，不然手指會跟著金丹飛走。
+    below：切在金丹中心往下幾格。金丹女的金丹底下連著一條到掌心的細光，切太低那條光會跟著金丹繞圈、像在滴（多米 2026-11-18）。"""
     h, s, v = hsv(base)
-    return grow(flood(disc(c, 9) & (s > 0.42) & (YS <= c[1] + 6), c), 1) & (YS <= c[1] + 7)
+    return grow(flood(disc(c, 9) & (s > 0.42) & (YS <= c[1] + below - 1), c), 1) & (YS <= c[1] + below)
 
 
 def core_fx(rg, c, pos, sparks=3, radius=12, catch=None, trail=None):
@@ -441,7 +457,7 @@ def rig_gr2(base, blink, M):
     c = (136, 60)
     orbit = lambda f: (int(round(5 * math.cos(TAU * f / 24.0))), int(round(3.5 * math.sin(TAU * f / 24.0) - 2)))
     lm = leafgreen(base, (22, 0, 132, 42), pivot)
-    core = core_mask(base, c)
+    core = core_mask(base, c, below=4)       # 金丹本體到第 64 列，底下那條細光留在手上
     M = M & ~(box(113, 38, 154, c[1] + 5) & ~core)     # 金丹周圍那一圈光暈是背景，不要跟著身體走；手指留在身體上
 
     def P(f):

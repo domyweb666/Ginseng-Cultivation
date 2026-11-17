@@ -27,7 +27,7 @@ env:
   # 小工具 extension 自己的 App ID 與描述檔（組塊 G）
   WIDGET_BUNDLE_ID: org.domyweb.rencan.widget
   WIDGET_PROFILE_NAME: Rencan Widget CI App Store
-  TESTFLIGHT_NOTES: "這一版三頁可以左右滑了。設定、分析的標題往下移；境界頁的宗門小卡改成短句；紅印章改刻境界的代表字。功法擴成十二門，記一筆分腿、推、拉三排；分析頁功法段多了雷達圖。其他功能跟上一版一樣。"
+  TESTFLIGHT_NOTES: "這一版只換了十四條待機動畫的去背：煉氣男女提水桶時衣服不會破圖，金丹女的金丹不再拖一條柄，元嬰女、化神女的邊緣比較乾淨。動作和速度沒變，其他功能跟上一版一樣。"
 
 jobs:
   core-tests:
