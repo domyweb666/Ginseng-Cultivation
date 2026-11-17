@@ -174,6 +174,15 @@ p { margin: 0; }
     </ul>
   </header>
 
+  <section class="sec" id="combo">
+    <div class="sec-head">
+      <h2>你要比的三組組合</h2>
+      <p>把兩題的選項疊在同一支手機上。代號照下面兩題的編號：宗門身分 D 是深色卡頂端加一列、F 是最上面放一行小卡；記一筆修煉 B 是浮動膠囊、C 是右下角圓鈕。</p>
+    </div>
+    <div class="grid" id="grid-combo"></div>
+    <p class="note">三組裡我還是選第 3 組。第 1 組的圓鈕沒有字，第 2 組的宗門身分在卡片外面，立繪也被推得最低。第 2、3 組的膠囊停著不動時會蓋到白卡「下一期」那一行，往上捲一點就看得全。</p>
+  </section>
+
   <section class="sec" id="sect">
     <div class="sec-head">
       <h2>一、宗門身分放哪裡</h2>
@@ -283,6 +292,21 @@ function figure(o) {
     <figcaption><div class="k"><span class="letter">${o.letter}</span><b>${o.name}</b>${o.pick ? '<em class="pick">我推薦</em>' : ""}</div>
     <p>${o.text}</p>${o.cost ? `<p class="cost">${o.cost}</p>` : ""}</figcaption></figure>`;
 }
+// 組合：宗門身分的擺法加上記一筆修煉的擺法，畫在同一支手機
+const sectBy = Object.fromEntries(sectOptions.map(o => [o.letter, o.phone]));
+const logBy = Object.fromEntries(logOptions.map(o => [o.letter, o.phone]));
+const comboOptions = [
+  { letter: "1", name: "宗門 D ＋ 記一筆 C", text: "深色卡頂端一列身分，右下角一顆加號。三組裡畫面最乾淨，白卡大部分看得到。",
+    cost: "代價：加號沒有字，而且壓在白卡右上角，蓋到「還差 0.3 公斤肌肉」最後兩個字。",
+    phone: { ...sectBy.D, ...logBy.C } },
+  { letter: "2", name: "宗門 F ＋ 記一筆 B", text: "最上面一行宗門小卡，底部一顆浮動膠囊。頁首的「境界」留著，深色卡維持原本的樣子。",
+    cost: "代價：宗門身分在卡片外面。立繪是三組裡被推得最低的，比第 3 組再低 20 點，膠囊同樣蓋到白卡「下一期」那一行。",
+    phone: { ...sectBy.F, ...logBy.B } },
+  { letter: "3", name: "宗門 D ＋ 記一筆 B", pick: true, text: "深色卡頂端一列身分，底部一顆浮動膠囊。宗門、立繪、境界在同一張卡，按鈕有字。",
+    cost: "代價：膠囊浮在白卡上面，會蓋到「下一期」那一行的中間，往上捲一點才看得全。",
+    phone: { ...sectBy.D, ...logBy.B } }
+];
+document.getElementById("grid-combo").innerHTML = comboOptions.map(figure).join("");
 document.getElementById("grid-sect").innerHTML = sectOptions.map(figure).join("");
 document.getElementById("grid-log").innerHTML = logOptions.map(figure).join("");
 </script>
