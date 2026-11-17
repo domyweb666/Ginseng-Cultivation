@@ -179,11 +179,23 @@ def style_neon(rgb, mask):
     return out
 
 
+def style_jade(rgb, mask):
+    """翠玉：整隻像綠玉雕的，深紅褐絨布底，頭上紅果換成金色像鑲金。"""
+    from scipy import ndimage
+    mask = ndimage.binary_fill_holes(mask)
+    l = lum(rgb)
+    char = posterize_map(l ** 0.85, hexs("#0D2A1F", "#1C4D36", "#2E7A55", "#4FA67A", "#8FD1A8", "#DDF5E4"))
+    bg = posterize_map(l, hexs("#1A1014", "#2A1920", "#3A222B", "#4B2C36"))
+    out = np.where(mask[..., None], char, bg)
+    out[reds(rgb) & mask] = hexs("#C9A24A")[0]
+    return out
+
+
 STYLES = {
     "ink": style_ink, "gold": style_gold, "moon": style_moon, "puppet": style_puppet,
     "handheld": style_handheld, "sticker": style_sticker, "chunky": style_chunky,
-    # 2026-11-18 多米從五個候選挑了這三種，總共原版加十種
-    "celadon": style_celadon, "sunset": style_sunset, "neon": style_neon,
+    # 2026-11-18 多米從五個候選挑了這三種，再加翠玉湊滿選造型頁十二格（原版加十一種）
+    "celadon": style_celadon, "sunset": style_sunset, "neon": style_neon, "jade": style_jade,
 }
 
 
