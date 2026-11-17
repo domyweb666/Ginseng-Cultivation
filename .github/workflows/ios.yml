@@ -27,7 +27,7 @@ env:
   # 小工具 extension 自己的 App ID 與描述檔（組塊 G）
   WIDGET_BUNDLE_ID: org.domyweb.rencan.widget
   WIDGET_PROFILE_NAME: Rencan Widget CI App Store
-  TESTFLIGHT_NOTES: "這一版多了小工具：主畫面小的、中的，鎖定畫面圓形的。驗收照 docs/一次驗收清單.md 第九段。其他功能跟上一版一樣。"
+  TESTFLIGHT_NOTES: "這一版改了境界頁：最上面多一行宗門身分，「記一筆修煉」變成浮在分頁列上方的膠囊，立繪上面的留白跟左右一樣寬。分頁順序改成設定、境界、分析。宗門晉升的境界門檻各降一階：真傳要築基、長老要金丹、太上長老要元嬰。其他功能跟上一版一樣。"
 
 jobs:
   core-tests:
