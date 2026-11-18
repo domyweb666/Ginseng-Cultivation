@@ -38,11 +38,6 @@ struct GongView: View {
                 Text("由內到外：" + Tables.levelNames.dropFirst().joined(separator: "・"))
                     .font(RencanType.caption)
                     .foregroundStyle(Color.rencan.textSecondary)
-                if digest.moveCards.allSatisfy({ $0.score == 0 }) {
-                    Text("記了修煉、也量過體重，圖才長得出來")
-                        .font(RencanType.footnote)
-                        .foregroundStyle(Color.rencan.textSecondary)
-                }
             }
             .rencanCard()
         }
