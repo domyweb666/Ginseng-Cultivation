@@ -1,6 +1,6 @@
 # 在 App Store Connect 建內購商品（付費立繪造型，組塊 M）。只能手動按「Run workflow」。
 # 商品資料在 ios/ci/iap_products.json，程式在 ios/ci/iap_products.mjs。
-# mode=check 只讀不改；mode=create 才會建或更新。產品 ID 建了不能改、刪了不能再用，
+# mode=check 只讀不改；mode=create 才會建或更新；mode=screenshots 傳 ios/ci/iap_review_screenshots/ 的審核截圖。產品 ID 建了不能改、刪了不能再用，
 # 改 json 之前先跟多米確認。
 name: 內購商品
 
@@ -8,11 +8,11 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "check 只查不改；create 建或更新"
+        description: "check 只查不改；create 建或更新；screenshots 傳審核截圖"
         required: true
         default: check
         type: choice
-        options: [check, create]
+        options: [check, create, screenshots]
 
 permissions:
   contents: read
