@@ -60,6 +60,10 @@ final class AppFlow {
             toast = Toast(text: health.message)
             return
         }
+        if let purchase = error as? PurchaseError {
+            toast = Toast(text: purchase.message)
+            return
+        }
         toast = Toast(text: RencanError.message(for: error))
     }
 }

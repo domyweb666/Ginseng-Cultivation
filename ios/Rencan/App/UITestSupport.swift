@@ -12,8 +12,26 @@ import SwiftData
 ///   -rencanSeed unstable   身高 174、男，金丹但體脂 24%（根基不穩）
 ///   -rencanPlayPortrait    境界碑的立繪照播動畫（測試模式預設不播）
 ///   -rencanHoldCelebration 全螢幕慶祝不自己關，等測試點掉（XCUITest 用；Limrun 走流程不帶）
+///   -rencanOwn ink,celadon 假商店裡先算已經買了這幾種造型；all 是全套（PurchaseService）
 @MainActor
 enum UITestSupport {
+    /// 假商店的價格字串。真的價格由 Apple 給，這兩個只出現在 UI 測試的截圖裡。
+    static let testSinglePrice = "NT$120"
+    static let testBundlePrice = "NT$480"
+
+    /// -rencanOwn 後面那串造型代碼。測試模式以外一律是空的。
+    static var ownedStyleCodes: [String] {
+        #if DEBUG
+            let arguments = ProcessInfo.processInfo.arguments
+            guard isUITest, let index = arguments.firstIndex(of: "-rencanOwn"),
+                arguments.indices.contains(index + 1)
+            else { return [] }
+            return arguments[index + 1].split(separator: ",").map(String.init)
+        #else
+            return []
+        #endif
+    }
+
     static var isUITest: Bool {
         #if DEBUG
             return ProcessInfo.processInfo.arguments.contains("-rencanUITest")

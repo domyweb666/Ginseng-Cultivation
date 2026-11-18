@@ -14,6 +14,7 @@ private enum Metrics {
 /// 自己不包 ScrollView、不加左右邊距，由 SettingsView 排進去。
 struct SettingsStyleSection: View {
     @Environment(AppFlow.self) private var flow
+    @Environment(PurchaseService.self) private var purchases
     @Query private var settingsRows: [UserSettings]
 
     var body: some View {
@@ -36,8 +37,9 @@ struct SettingsStyleSection: View {
         }
     }
 
+    /// 存的造型沒買（或退款了）就寫原版，跟境界碑上看到的一樣。
     private var style: PortraitStyle {
-        settingsRows.first?.portraitStyle ?? .original
+        purchases.effective(settingsRows.first?.portraitStyle ?? .original)
     }
 
     /// 左邊「目前的造型」、右邊造型名加小箭頭。箭頭只是裝飾，VoiceOver 不讀。
