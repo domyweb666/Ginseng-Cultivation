@@ -228,7 +228,9 @@ struct MeasurementFormView: View {
             writeBackIfEnabled(draft)
             flow.sheet = nil
             flow.page = .realm
-            if let celebration = Celebration.make(for: judgement, sex: sex) {
+            if let celebration = Celebration.make(
+                for: judgement, sex: sex, style: settingsRows.first?.portraitStyle ?? .original
+            ) {
                 flow.celebration = celebration
                 HapticsService.success()
             } else {

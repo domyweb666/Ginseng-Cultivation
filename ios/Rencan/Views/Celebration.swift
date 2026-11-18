@@ -72,7 +72,9 @@ extension Celebration {
     }
 
     /// 量一次體組成之後要不要放煙火。根基不穩與結算回 nil，改用小提示。
-    static func make(for judgement: MeasurementJudgement, sex: Sex) -> Celebration? {
+    static func make(
+        for judgement: MeasurementJudgement, sex: Sex, style: PortraitStyle
+    ) -> Celebration? {
         let standing = judgement.standing
         let ffmi = "FFMI \(Formulas.fmt(judgement.ffmi, digits: 2))"
         var lines: [String] = []
@@ -98,7 +100,9 @@ extension Celebration {
         }
         return Celebration(
             heading: heading,
-            portrait: RencanPortrait.name(realmIndex: standing.realmIndex, sex: sex),
+            portrait: RencanPortrait.name(
+                realmIndex: standing.realmIndex, sex: sex, style: style
+            ),
             title: standing.realm.name, stage: Tables.stages[standing.stageIndex], lines: lines,
             particleCount: particleCount
         )

@@ -33,6 +33,8 @@ struct SteleView: View {
     @Environment(\.scenePhase) private var scenePhase
     let stele: SteleDigest
     let sex: Sex
+    /// 設定裡選的立繪造型（組塊 M1）
+    let style: PortraitStyle
     /// 手機有沒有開低耗電模式。app 回到前景時重看一次。
     @State private var isLowPower = ProcessInfo.processInfo.isLowPowerModeEnabled
     /// 動畫從哪一刻起算
@@ -87,8 +89,9 @@ struct SteleView: View {
     }
 
     /// 立繪要不要動。減少動態效果、低耗電、app 不在前景、跑自動測試時都放靜態圖。
+    /// 還沒有動畫的造型（M2 之前的付費造型）也放靜態圖。
     private var isAnimating: Bool {
-        scenePhase == .active && !reduceMotion && !isLowPower
+        style.hasAnimation && scenePhase == .active && !reduceMotion && !isLowPower
             && !UITestSupport.holdsPortraitStill
     }
 
@@ -110,7 +113,7 @@ struct SteleView: View {
     }
 
     private var stillPortrait: some View {
-        Image(RencanPortrait.name(realmIndex: standing.realmIndex, sex: sex))
+        Image(RencanPortrait.name(realmIndex: standing.realmIndex, sex: sex, style: style))
             .interpolation(.none)
             .resizable()
             .scaledToFill()

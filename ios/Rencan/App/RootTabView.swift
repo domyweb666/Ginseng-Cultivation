@@ -153,7 +153,9 @@ struct RootTabView: View {
         let summary = try digest(settings).get()
         let judgement = try store.saveMeasurement(draft, replacing: false, digest: summary)
         flow.page = .realm
-        if let celebration = Celebration.make(for: judgement, sex: sex) {
+        if let celebration = Celebration.make(
+            for: judgement, sex: sex, style: settings.portraitStyle
+        ) {
             flow.celebration = celebration
         } else {
             flow.showToast(Celebration.toast(for: judgement, sex: sex))
@@ -223,7 +225,8 @@ struct PagesView: View {
                 .tag(RencanPage.settings)
             RealmView(
                 digest: digest, lifts: lifts, latestSource: latestSource,
-                healthStatus: healthStatus
+                healthStatus: healthStatus,
+                portraitStyle: settingsRows.first?.portraitStyle ?? .original
             )
             .tabPage(.realm, current: flow.page, clearance: clearance)
             .tag(RencanPage.realm)
@@ -249,6 +252,8 @@ struct PagesView: View {
             EditRecordView(record: record, digest: digest)
         case .moveDetail(let key):
             MoveDetailView(key: key, digest: digest, lifts: lifts)
+        case .portraitStyle:
+            PortraitStyleView(digest: digest)
         }
     }
 }

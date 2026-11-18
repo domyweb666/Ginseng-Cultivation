@@ -107,6 +107,13 @@ extension StoreService {
         try save()
     }
 
+    /// 換立繪造型（組塊 M1）。境界碑與慶祝畫面讀 UserSettings.portraitStyle，存了就跟著換。
+    func setPortraitStyle(_ style: PortraitStyle) throws {
+        let current = try settings()
+        current.portraitStyleCode = style.rawValue
+        try save()
+    }
+
     // MARK: 提醒（組塊 I）
 
     /// 每月提醒的開關與日子。日子不在 1 到 28 不存。

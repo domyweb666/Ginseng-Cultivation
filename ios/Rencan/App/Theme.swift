@@ -197,10 +197,12 @@ enum RencanPortrait {
     static let elder = "elder"
 
     /// 某個大境界的立繪：男 r0–r6、女 gr0–gr6（.vibe/女性版規則.md 第五節）。
-    static func name(realmIndex: Int, sex: Sex) -> String {
+    /// 換了造型就用 Assets 的 PortraitStyles 裡那張，名字是「r2-ink」這樣後面接造型代碼。
+    static func name(realmIndex: Int, sex: Sex, style: PortraitStyle = .original) -> String {
         let prefix = sex == .female ? "gr" : "r"
         let highest = Tables.realms.count - 1
-        return prefix + String(max(0, min(highest, realmIndex)))
+        let base = prefix + String(max(0, min(highest, realmIndex)))
+        return style == .original ? base : base + "-" + style.rawValue
     }
 
     /// 境界碑上會動的立繪：一張 12 欄 × 8 列的格子圖，由左到右、由上到下共 96 格。
@@ -209,8 +211,49 @@ enum RencanPortrait {
     static let animationRows = 8
     static let animationFrameSeconds: Double = 0.15
 
-    /// 某個大境界的動畫格子圖：靜態立繪的名字後面加 Anim。
+    /// 某個大境界的動畫格子圖：靜態立繪的名字後面加 Anim。只有原版有動畫（PortraitStyle.hasAnimation）。
     static func animationName(realmIndex: Int, sex: Sex) -> String {
         name(realmIndex: realmIndex, sex: sex) + "Anim"
     }
+}
+
+/// 立繪造型：原版免費，另外十一種是付費造型（.vibe/付費造型計畫.md）。
+/// 代碼（rawValue）同時是 Assets 圖名的後綴、make_styles.py 的風格名、存在 UserSettings 的值，三處要一致。
+/// 組塊 M1 先讓每種都能直接選，還沒收錢。
+enum PortraitStyle: String, CaseIterable, Identifiable {
+    case original
+    case ink
+    case gold
+    case moon
+    case puppet
+    case handheld
+    case sticker
+    case chunky
+    case celadon
+    case sunset
+    case neon
+    case jade
+
+    var id: String { rawValue }
+
+    /// 選造型頁格子下面的字
+    var displayName: String {
+        switch self {
+        case .original: return "原版"
+        case .ink: return "水墨"
+        case .gold: return "鎏金"
+        case .moon: return "月夜"
+        case .puppet: return "皮影燈籠"
+        case .handheld: return "掌機四色"
+        case .sticker: return "貼紙"
+        case .chunky: return "粗像素"
+        case .celadon: return "青花瓷"
+        case .sunset: return "赤霞夕照"
+        case .neon: return "霓虹"
+        case .jade: return "翠玉"
+        }
+    }
+
+    /// 境界碑上能不能播待機動畫。付費造型的動畫是組塊 M2，做好之前顯示靜態圖。
+    var hasAnimation: Bool { self == .original }
 }

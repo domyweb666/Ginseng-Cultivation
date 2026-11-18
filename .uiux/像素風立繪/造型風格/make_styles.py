@@ -222,7 +222,17 @@ for prefix, suffix in (("r", ""), ("gr", "_f")):
             sheet.paste(Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8)), (i * (168 + GAP), 0))
         sheet.save(OUT / f"sheet_{name}{suffix}.png")
 
-# 三、動畫相容性檢查：鎏金套在動畫格子圖上（換色系風格整張套即可）
+# 三、app 用的單張：男女十四張 × 每種付費風格，檔名 {境界代碼}-{風格}.png（2026-11-18 組塊 M1）
+APP = OUT / "app"
+APP.mkdir(exist_ok=True)
+for prefix in ("r", "gr"):
+    for i in range(7):
+        code = f"{prefix}{i}"
+        rgb, mask = load(code)
+        for name, fn in STYLES.items():
+            save(fn(rgb, mask), APP / f"{code}-{name}.png")
+
+# 四、動畫相容性檢查：鎏金套在動畫格子圖上（換色系風格整張套即可）
 anim = Image.open(SRC / "r2_anim96.png").convert("RGB")
 print("anim size", anim.size)
 print("done", sorted(p.name for p in OUT.iterdir()))
