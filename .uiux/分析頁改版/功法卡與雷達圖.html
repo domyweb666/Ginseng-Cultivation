@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>功法卡與雷達圖改版</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{
+  --canvas:#F7F4EC; --surface:#FFFFFF; --accent:#916B1B; --strong:#7A5916; --soft:#F1E6CC;
+  --text:#1D1D1F; --text2:#66666D; --text3:#A1A1A6; --sep:#E5E1D8; --muted:#EFEBE3; --page:#E9E4D8;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--text);font-family:-apple-system,"PingFang TC","Noto Sans TC",sans-serif;padding:40px 24px 80px}
+h1{font-family:"LXGW WenKai TC",serif;font-weight:400;font-size:34px;margin:0 0 8px}
+.lead{margin:0 0 40px;color:var(--text2);font-size:16px;line-height:1.7;max-width:820px}
+h2.block{font-family:"LXGW WenKai TC",serif;font-weight:400;font-size:28px;margin:48px 0 6px}
+.blocklead{margin:0 0 20px;color:var(--text2);font-size:15px;line-height:1.7;max-width:820px}
+.row{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start}
+.col{width:393px;flex-shrink:0}
+.tag{display:inline-block;font-size:13px;font-weight:700;color:#fff;background:var(--accent);border-radius:999px;padding:3px 10px;margin-bottom:6px}
+.tag.now{background:#9A9AA0}
+.colname{font-size:20px;font-weight:700;margin:0 0 4px}
+.colnote{font-size:14px;color:var(--text2);line-height:1.6;margin:0 0 12px;min-height:45px}
+.phone{background:var(--canvas);border-radius:28px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.sect{font-size:20px;font-weight:700;margin:0 4px 8px}
+.term{font-family:"LXGW WenKai TC",serif;color:var(--strong)}
+.chip{display:inline-block;background:var(--soft);color:var(--strong);font-size:13px;font-weight:500;border-radius:999px;padding:4px 10px;white-space:nowrap;line-height:1.3}
+.seg{display:flex;gap:4px}
+.seg i{flex:1;height:8px;border-radius:4px;background:var(--soft)}
+.seg i.on{background:var(--accent)}
+.cap{font-size:12px;font-weight:500;color:var(--text2)}
+.foot{font-size:13px;color:var(--text2)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card{background:var(--surface);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.num{font-size:17px;font-weight:600}
+svg.spark{display:block;width:100%;height:30px}
+/* 現在：名字跟等級擠同一排 */
+.cur-head{display:flex;gap:8px;align-items:flex-start}
+.cur-head .names{flex:0 1 auto;min-width:0}
+.cur-head .art{font-size:20px;line-height:1.25}
+.cur-head .mod{font-size:13px;color:var(--text2);line-height:1.35}
+.cur-head .chip{margin-left:auto;flex-shrink:0}
+/* A */
+.a-head{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.a-head .art{font-size:20px;line-height:1.25;white-space:nowrap}
+.a-mod{font-size:13px;color:var(--text2);white-space:nowrap;margin-top:-6px}
+/* B、C 一欄清單 */
+.list{background:var(--surface);border-radius:20px;padding:0 16px}
+.li{display:grid;grid-template-columns:96px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--sep)}
+.li:last-child{border-bottom:none}
+.li .art{font-size:19px;line-height:1.2;white-space:nowrap}
+.li .mod{font-size:12px;color:var(--text2);white-space:nowrap}
+.li .mid{display:flex;flex-direction:column;gap:5px;min-width:0}
+.li .mid .foot{font-size:12px;white-space:nowrap}
+.li .chev{color:var(--text3);font-size:15px;margin-left:2px}
+.grp{font-size:13px;font-weight:700;color:var(--text2);margin:14px 4px 6px;letter-spacing:.08em}
+.grp:first-of-type{margin-top:0}
+/* 雷達 */
+.rcard{background:var(--surface);border-radius:20px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.rcard svg{display:block;width:100%;overflow:visible}
+.legend{font-size:12px;color:var(--text2);text-align:center;line-height:1.6}
+.issues{margin:10px 0 0;padding-left:18px;font-size:14px;color:var(--text2);line-height:1.7}
+</style>
+</head>
+<body>
+
+<h1>分析頁：功法卡與雷達圖改版</h1>
+<p class="lead">每一塊最左邊是 app 現在的樣子，右邊是改法。手機寬 393 點，跟你的 iPhone 一樣。為了看得出排版，有幾門功法放了假資料（坐馬樁、推山掌、拔山式、挽弓式），真的 app 裡還是你自己的紀錄。</p>
+
+<h2 class="block">一、十二門功法卡</h2>
+<p class="blocklead">現在亂的原因：右上角的「未入門」小標把左邊擠窄，現代名稱只剩一點點寬，「羅馬尼亞硬舉」「上斜臥推」「雙槓撐體」被拆成好幾行，同一排兩張卡又被拉成一樣高，整片高高低低。</p>
+<div class="row" id="cards"></div>
+
+<h2 class="block">二、功法雷達</h2>
+<p class="blocklead">現在亂的原因：十二根軸，每根軸端兩行字（功法名加等級），二十四行字擠在一張小圖外圍，圖本身只有半徑 90 點。三個改法都是放大圖、減少字。</p>
+<div class="row" id="radars"></div>
+
+<script>
+const LEVELS=["未入門","入門","小成","大成","圓滿","化境"];
+const MOVES=[
+ ["坐馬樁","深蹲","腿"],["抱鼎樁","前蹲","腿"],["探海式","羅馬尼亞硬舉","腿"],["架橋式","臀推","腿"],
+ ["推山掌","臥推","推"],["推月掌","上斜臥推","推"],["托天式","肩推","推"],["撐柱式","雙槓撐體","推"],
+ ["拔山式","硬舉","拉"],["挽弓式","划船","拉"],["攀雲梯","引體向上","拉"],["捧丹手","槓鈴彎舉","拉"]
+];
+// 假資料：等級、1RM、倍數、狀態、走勢、雷達分數（等級加往下一階走了幾成）
+const DATA={
+ "坐馬樁":{lv:2,rm:"1RM 105 公斤",ratio:"1.46 倍體重",st:"再加 8 公斤升大成",h:[88,92,95,100,105],score:2.6},
+ "推山掌":{lv:1,rm:"1RM 70 公斤",ratio:"0.97 倍體重",st:"再加 3 公斤升小成",h:[60,63,66,70],score:1.8},
+ "拔山式":{lv:3,rm:"1RM 140 公斤",ratio:"1.94 倍體重",st:"再加 5 公斤升圓滿",h:[120,128,135,140],score:3.7},
+ "挽弓式":{lv:1,rm:"1RM 60 公斤",ratio:"0.83 倍體重",st:"再加 12 公斤升小成",h:[55,58,60],score:1.3},
+};
+const d=m=>DATA[m[0]]||{lv:0,st:"還沒有紀錄",score:0};
+const seg=lv=>'<div class="seg">'+[0,1,2,3,4].map(i=>`<i class="${i<lv?'on':''}"></i>`).join('')+'</div>';
+function spark(h){
+  const w=120,hh=30,min=Math.min(...h),max=Math.max(...h),r=max-min||1;
+  const pts=h.map((v,i)=>`${(i/(h.length-1))*w},${hh-3-((v-min)/r)*(hh-6)}`).join(' ');
+  return `<svg class="spark" viewBox="0 0 ${w} ${hh}" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="#916B1B" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`;
+}
+const numbers=x=>x.rm?`<div><div class="num">${x.rm}</div><div class="foot">${x.ratio}</div></div>${spark(x.h)}`:'';
+function col(tag,isNow,name,note,inner){
+  return `<div class="col"><span class="tag ${isNow?'now':''}">${tag}</span><p class="colname">${name}</p><p class="colnote">${note}</p><div class="phone">${inner}</div></div>`;
+}
+const SHOW=MOVES.slice(0,10);
+
+// 現在
+let now='<div class="sect">十二門功法</div><div class="grid2">'+SHOW.map(m=>{const x=d(m);return `<div class="card">
+<div class="cur-head"><div class="names" style="max-width:70px"><div class="art term">${m[0]}</div><div class="mod">${m[1]}</div></div><span class="chip">${LEVELS[x.lv]}</span></div>
+${seg(x.lv)}${numbers(x)}<div class="foot">${x.st}</div></div>`}).join('')+'</div>';
+
+// A
+let A='<div class="sect">十二門功法</div><div class="grid2">'+SHOW.map(m=>{const x=d(m);return `<div class="card">
+<div class="a-head"><span class="art term">${m[0]}</span><span class="chip">${LEVELS[x.lv]}</span></div>
+<div class="a-mod">${m[1]}</div>
+${seg(x.lv)}${numbers(x)}<div class="foot">${x.st}</div></div>`}).join('')+'</div>';
+
+// B
+const liRow=m=>{const x=d(m);return `<div class="li">
+<div><div class="art term">${m[0]}</div><div class="mod">${m[1]}</div></div>
+<div class="mid">${seg(x.lv)}${x.rm?`<div class="foot">${x.rm}</div>`:''}<div class="foot">${x.st}</div></div>
+<div><span class="chip">${LEVELS[x.lv]}</span><span class="chev">›</span></div></div>`};
+let B='<div class="sect">十二門功法</div><div class="list">'+MOVES.map(liRow).join('')+'</div>';
+
+// C
+let C='<div class="sect">十二門功法</div>'+["腿","推","拉"].map(g=>`<div class="grp">${g}</div><div class="list">${MOVES.filter(m=>m[2]===g).map(liRow).join('')}</div>`).join('');
+
+document.getElementById('cards').innerHTML=
+ col("現在",true,"兩欄，等級在右上","名字被擠成好幾行，卡片高低不一。",now)+
+ col("A",false,"兩欄，現代名稱自己一行","等級小標跟功法名排同一行，現代名稱移到下面、佔滿整張卡寬。改動最小，樣子跟現在最像。",A)+
+ col("B",false,"一欄清單","一門一行：名字、進度條、等級。十二門一眼看完，畫面高度只有現在的一半左右。點一行一樣打開那門功法的走勢。",B)+
+ col("C",false,"一欄清單，分腿、推、拉三組","跟 B 一樣，再照記一筆表單的三排分組，找功法比較快。",C);
+
+// 雷達
+function radar(o){
+  const W=313,cx=W/2,cy=o.labelR+o.pad,H=cy*2,n=MOVES.length;
+  const pt=(i,r)=>{const a=-Math.PI/2+2*Math.PI*i/n;return [cx+r*Math.cos(a),cy+r*Math.sin(a)]};
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="功法雷達">`;
+  for(let ring=1;ring<=5;ring++){
+    const p=MOVES.map((_,i)=>pt(i,o.R*ring/5).join(',')).join(' ');
+    s+=`<polygon points="${p}" fill="none" stroke="#E5E1D8" stroke-width="1"/>`;
+  }
+  MOVES.forEach((_,i)=>{const [x,y]=pt(i,o.R);s+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#E5E1D8"/>`});
+  const dp=MOVES.map((m,i)=>pt(i,o.R*d(m).score/5));
+  s+=`<polygon points="${dp.map(p=>p.join(',')).join(' ')}" fill="rgba(145,107,27,.22)" stroke="#916B1B" stroke-width="2"/>`;
+  dp.forEach(p=>s+=`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="#916B1B"/>`);
+  MOVES.forEach((m,i)=>{
+    const [x,y]=pt(i,o.labelR),x0=d(m),has=x0.lv>0;
+    const col=o.colorLevel?(has?'#7A5916':'#A1A1A6'):'#1D1D1F';
+    if(o.level){
+      s+=`<text x="${x}" y="${y-2}" text-anchor="middle" font-family="LXGW WenKai TC" font-size="${o.fs}" fill="${col}">${m[0]}</text>`;
+      s+=`<text x="${x}" y="${y+o.ls+1}" text-anchor="middle" font-size="${o.ls}" font-weight="500" fill="${has?'#7A5916':'#66666D'}">${LEVELS[x0.lv]}</text>`;
+    }else{
+      s+=`<text x="${x}" y="${y+o.fs*0.35}" text-anchor="middle" font-family="LXGW WenKai TC" font-size="${o.fs}" fill="${col}">${m[0]}</text>`;
+    }
+  });
+  return s+'</svg>';
+}
+const rc=(svg,legend)=>`<div class="sect">功法雷達</div><div class="rcard">${svg}${legend?`<div class="legend">${legend}</div>`:''}</div>`;
+const ringLegend="由內到外：入門・小成・大成・圓滿・化境";
+document.getElementById('radars').innerHTML=
+ col("現在",true,"名字加等級，兩行字","圖半徑 90，字 17 點加 12 點。",rc(radar({R:90,labelR:122,pad:22,fs:17,ls:12,level:true})))+
+ col("甲",false,"只留功法名，圖放大","軸端只寫功法名（15 點），等級看點落在第幾圈，圖下面一行寫五圈的順序。圖半徑放大到 104。",rc(radar({R:104,labelR:128,pad:14,fs:15,level:false}),ringLegend))+
+ col("乙",false,"名字加等級都留，字縮小","還是兩行字，名字 14 點、等級 11 點，圖半徑 98。資訊最多，但還是比較擠。",rc(radar({R:98,labelR:128,pad:20,fs:14,ls:11,level:true})))+
+ col("丙",false,"圖放最大，字最小、用顏色分","功法名 13 點；練過的寫深金色，沒練過的灰色。圖半徑 116，形狀看得最清楚。",rc(radar({R:116,labelR:134,pad:12,fs:13,level:false,colorLevel:true}),ringLegend));
+</script>
+</body>
+</html>
