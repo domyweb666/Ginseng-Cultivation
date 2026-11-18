@@ -7,6 +7,14 @@ private enum Metrics {
     static let columnCount = 2
     /// 區塊標題比卡片邊再縮進一點
     static let titleInset: CGFloat = 4
+    /// 雷達圖下面的刻度條：最裡圈的點多大、往外一圈大多少、點的框線、點與字之間、兩端的「內」「外」離刻度多遠
+    static let scaleDotBase: CGFloat = 5
+    static let scaleDotStep: CGFloat = 1.6
+    static let scaleDotStroke: CGFloat = 1.5
+    static let scaleLabelGap: CGFloat = 3
+    static let scaleEndGap: CGFloat = 6
+    /// 串起五個點的細線：從第一格中心畫到最後一格中心，五格平分，所以兩端各縮半格（十分之一）
+    static let scaleLineInset: CGFloat = 0.1
 }
 
 /// 分析頁的功法段（照畫布 AnalysisGong）：三格統計、功法雷達、十二張功法卡排兩欄、最近修煉、等級怎麼算。
@@ -34,13 +42,60 @@ struct GongView: View {
                 .padding(.horizontal, Metrics.titleInset)
             VStack(spacing: RencanLayout.itemSpacing) {
                 MoveRadar(cards: digest.moveCards)
-                // 軸端不寫等級了（2026-11-18 丙版），改在圖下面講一次五圈是哪五階
-                Text("由內到外：" + Tables.levelNames.dropFirst().joined(separator: "・"))
-                    .font(RencanType.caption)
-                    .foregroundStyle(Color.rencan.textSecondary)
+                levelScale
             }
             .rencanCard()
         }
+    }
+
+    /// 雷達圖下面講一次五圈是哪五階（軸端不寫等級，2026-11-18 丙版）。
+    /// 原本是一句「由內到外：入門・小成・大成・圓滿・化境」，字一大就折行、「化境」掉到第二行；
+    /// 改成一排刻度：點由小到大，左寫「內」右寫「外」（2026-11-19 多米選 1 號）。
+    private var levelScale: some View {
+        let levels = Array(Tables.levelNames.dropFirst())
+        let largestDot = Metrics.scaleDotBase + Metrics.scaleDotStep * CGFloat(levels.count - 1)
+        return HStack(alignment: .top, spacing: Metrics.scaleEndGap) {
+            scaleEnd("內")
+            HStack(spacing: 0) {
+                ForEach(levels.indices, id: \.self) { index in
+                    VStack(spacing: Metrics.scaleLabelGap) {
+                        let size = Metrics.scaleDotBase + Metrics.scaleDotStep * CGFloat(index)
+                        Circle()
+                            .strokeBorder(Color.rencan.accent, lineWidth: Metrics.scaleDotStroke)
+                            .background(Circle().fill(Color.rencan.surface))
+                            .frame(width: size, height: size)
+                            .frame(height: largestDot)
+                        Text(levels[index])
+                            .font(RencanType.caption)
+                            .foregroundStyle(Color.rencan.textSecondary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(RencanLayout.minimumTextScale)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+            }
+            .background(alignment: .top) {
+                GeometryReader { proxy in
+                    Rectangle()
+                        .fill(Color.rencan.separator)
+                        .frame(
+                            width: proxy.size.width * (1 - Metrics.scaleLineInset * 2),
+                            height: Metrics.scaleDotStroke
+                        )
+                        .position(x: proxy.size.width / 2, y: largestDot / 2)
+                }
+            }
+            scaleEnd("外")
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("五圈由內到外：" + levels.joined(separator: "、"))
+    }
+
+    /// 刻度條兩端的「內」「外」：比階名淡一點，跟點那一列靠上對齊
+    private func scaleEnd(_ text: String) -> some View {
+        Text(text)
+            .font(RencanType.caption)
+            .foregroundStyle(Color.rencan.textTertiary)
     }
 
     private var moveCards: some View {

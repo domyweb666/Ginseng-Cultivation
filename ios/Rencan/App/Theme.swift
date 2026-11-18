@@ -90,8 +90,10 @@ enum RencanType {
     static var seal: Font { .custom(displayFontName, fixedSize: 22) }
     /// 清單列裡的功法名
     static var termBody: Font { display(17, relativeTo: .body) }
-    /// 功法雷達軸端的功法名：十二根軸都要寫，字小一點圖才放得大
-    static var radarLabel: Font { display(13, relativeTo: .footnote) }
+    /// 功法雷達軸端的功法名：十二根軸都要寫，字小一點圖才放得大。
+    /// 雷達圖要用同一個數字算版面（MoveRadar 的 @ScaledMetric），所以字級另外給名字。
+    static let radarLabelSize: CGFloat = 13
+    static var radarLabel: Font { display(radarLabelSize, relativeTo: .footnote) }
     /// 宗門卡上的大身分
     static var sectTitle: Font { display(30, relativeTo: .title) }
     /// 慶祝畫面的大字與旁邊的期別
