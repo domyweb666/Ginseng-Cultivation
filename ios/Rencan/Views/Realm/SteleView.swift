@@ -22,6 +22,9 @@ private enum Metrics {
     static let sealGlyphs = ["氣", "基", "丹", "嬰", "神", "乘", "劫"]
     /// 深色卡最窄多寬：立繪加左右各一圈邊。立繪不能縮，縮了像素的格子就不齊。
     static let minimumWidth = RencanLayout.largePortraitSize.width + framePadding * 2
+    /// 立繪左下角造型名那顆標籤：離立繪邊多遠、底色多不透明（要透一點看得到後面的地面）
+    static let styleTagInset: CGFloat = 8
+    static let styleTagOpacity: Double = 0.75
 }
 
 /// 境界碑：上面一張深色卡（立繪當主角，下面一列境界與期別、FFMI 與根基、紅印章），
@@ -29,6 +32,7 @@ private enum Metrics {
 /// 深色卡的底色跟著境界換，深淺色模式長一樣。
 /// 體脂超過門檻時照樣顯示境界，但標「根基不穩」、進度條灰掉（PRD S7）。
 struct SteleView: View {
+    @Environment(AppFlow.self) private var flow
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
     let stele: SteleDigest
@@ -93,21 +97,44 @@ struct SteleView: View {
         scenePhase == .active && !reduceMotion && !isLowPower && !UITestSupport.holdsPortraitStill
     }
 
+    /// 點立繪打開選造型頁（2026-11-18 多米選的 B 版），左下角寫現在是哪個造型。
+    /// 動畫那張圖關掉了觸控，所以用 contentShape 講明整個立繪框都點得到。
     private var portrait: some View {
-        Group {
-            if isAnimating {
-                animatedPortrait
-            } else {
-                stillPortrait
+        Button {
+            flow.sheet = .portraitStyle
+        } label: {
+            Group {
+                if isAnimating {
+                    animatedPortrait
+                } else {
+                    stillPortrait
+                }
             }
+            .overlay(alignment: .bottomLeading) { styleTag }
+            .clipShape(RoundedRectangle(cornerRadius: Metrics.portraitCornerRadius))
+            .contentShape(RoundedRectangle(cornerRadius: Metrics.portraitCornerRadius))
         }
-        .clipShape(RoundedRectangle(cornerRadius: Metrics.portraitCornerRadius))
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(standing.realm.name)期人蔘立繪")
-        .accessibilityAddTraits(.isImage)
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(standing.realm.name)期人蔘立繪，造型：\(style.displayName)")
+        .accessibilityHint("打開選造型的頁面")
+        .accessibilityIdentifier("portrait-style")
         .onChange(of: scenePhase) { _, _ in
             isLowPower = ProcessInfo.processInfo.isLowPowerModeEnabled
         }
+    }
+
+    /// 寫造型名不只寫「換造型」：沒買過的人看到「原版」，才會想到還有別的版本。「›」讓人知道點得下去。
+    private var styleTag: some View {
+        Text(style.displayName + " ›")
+            .font(RencanType.footnote)
+            .foregroundStyle(Color.rencan.realmName)
+            .padding(.horizontal, RencanLayout.chipHorizontalPadding)
+            .padding(.vertical, RencanLayout.chipVerticalPadding)
+            .background(
+                Color.rencan.realmBase(standing.realmIndex).opacity(Metrics.styleTagOpacity),
+                in: Capsule()
+            )
+            .padding(Metrics.styleTagInset)
     }
 
     private var stillPortrait: some View {
