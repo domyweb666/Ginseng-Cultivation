@@ -139,20 +139,16 @@ def style_chunky(rgb, mask, palette=None):
 
 
 def style_celadon(rgb, mask):
-    """青花瓷：白瓷底、角色只剩鈷藍一色，底下一條格紋像瓷盤的邊。"""
+    """青花瓷：白瓷底、角色只剩鈷藍一色。
+    2026-11-18 多米選甲：拿掉原本底下那條棋盤格紋。它被 app 的圓角切掉兩頭、根踩在上面，
+    看起來像賽車旗不像瓷器（對照圖在 青花瓷底部對照/）。"""
     from scipy import ndimage
     # 角色內部的小縫補起來，背景色才不會從袖子裡透出來
     mask = ndimage.binary_fill_holes(mask)
     l = lum(rgb)
     char = posterize_map(l, hexs("#0E1E4E", "#1F3B86", "#3A63B8", "#7F9FD6", "#C9D7F0", "#F4F7FC"))
     bg = posterize_map(l, hexs("#DCE3EE", "#E8EDF4", "#F1F4F9", "#F8FAFC"))
-    out = np.where(mask[..., None], char, bg)
-    h, w = mask.shape
-    yy, xx = np.mgrid[0:h, 0:w]
-    band = (yy >= h - 14) & (yy < h - 4) & ~mask
-    out[band] = hexs("#C9D7F0")[0]
-    out[band & ((xx // 4 + yy // 4) % 2 == 0)] = hexs("#3A63B8")[0]
-    return out
+    return np.where(mask[..., None], char, bg)
 
 
 def style_sunset(rgb, mask):
