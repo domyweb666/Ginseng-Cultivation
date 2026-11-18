@@ -72,6 +72,12 @@ final class DemoGongUITests: RencanUITestCase {
     /// 十二門照腿推拉排之後拔山式是第九張，要先往下捲才看得到。
     private func openMoveDetail() {
         let card = scrollToSee(idQuery("move-card-dead"), "拔山式的功法卡", maxDrags: 8)
+        // 懸浮分頁列蓋在畫面底部，卡停在它底下時 isHittable 照樣是真的，點下去卻點到分頁列
+        // （2026-11-19 雷達圖改直寫變高後紅過一次）。卡的下緣要在分頁列上方才點。
+        let tabBarTop = app.buttons["tab-分析"].frame.minY
+        for _ in 0..<2 where card.frame.maxY > tabBarTop {
+            scrollDown()
+        }
         let cardText = card.label
         XCTAssertTrue(cardText.contains("1RM 140 公斤"), "拔山式卡不是 1RM 140 公斤：\(cardText)")
         card.tap()
