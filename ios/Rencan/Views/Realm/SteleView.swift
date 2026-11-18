@@ -89,10 +89,8 @@ struct SteleView: View {
     }
 
     /// 立繪要不要動。減少動態效果、低耗電、app 不在前景、跑自動測試時都放靜態圖。
-    /// 還沒有動畫的造型（M2 之前的付費造型）也放靜態圖。
     private var isAnimating: Bool {
-        style.hasAnimation && scenePhase == .active && !reduceMotion && !isLowPower
-            && !UITestSupport.holdsPortraitStill
+        scenePhase == .active && !reduceMotion && !isLowPower && !UITestSupport.holdsPortraitStill
     }
 
     private var portrait: some View {
@@ -133,7 +131,10 @@ struct SteleView: View {
         return TimelineView(.periodic(from: animationStart, by: seconds)) { context in
             let elapsed = context.date.timeIntervalSince(animationStart) / seconds
             let frame = Int(max(0, elapsed.rounded())) % (columns * rows)
-            Image(RencanPortrait.animationName(realmIndex: standing.realmIndex, sex: sex))
+            let name = RencanPortrait.animationName(
+                realmIndex: standing.realmIndex, sex: sex, style: style
+            )
+            Image(name)
                 .interpolation(.none)
                 .resizable()
                 .frame(width: size.width * CGFloat(columns), height: size.height * CGFloat(rows))

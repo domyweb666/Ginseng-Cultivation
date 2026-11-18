@@ -149,6 +149,25 @@ final class PortraitMotionUITests: RencanUITestCase {
     }
 }
 
+/// 付費造型也會動（組塊 M2）：先算買了青花瓷、設成青花瓷，境界碑隔三秒拍兩張要不一樣。
+final class StyledPortraitMotionUITests: RencanUITestCase {
+    func test青花瓷的立繪也會動() {
+        launch([
+            "-rencanSeed", "demo", "-rencanOwn", "celadon", "-rencanStyle", "celadon",
+            "-rencanPlayPortrait",
+        ])
+        require(
+            anyElements(containing: "金丹期人蔘立繪").firstMatch, "境界碑的立繪", timeout: 30
+        )
+        let first = XCUIScreen.main.screenshot().pngRepresentation
+        shot("青花瓷動畫-第一張")
+        Thread.sleep(forTimeInterval: 3)
+        let second = XCUIScreen.main.screenshot().pngRepresentation
+        shot("青花瓷動畫-三秒後")
+        XCTAssertNotEqual(first, second, "隔了三秒，青花瓷的立繪沒有換格")
+    }
+}
+
 /// `-rencanSeed female`：身高 160、女，一筆量測（60 公斤、體脂 23%、去脂 46 公斤）。
 /// 看女性立繪、27% 的體脂門檻，天梯上換算過的範圍。
 final class FemaleUITests: RencanUITestCase {

@@ -13,6 +13,7 @@ import SwiftData
 ///   -rencanPlayPortrait    境界碑的立繪照播動畫（測試模式預設不播）
 ///   -rencanHoldCelebration 全螢幕慶祝不自己關，等測試點掉（XCUITest 用；Limrun 走流程不帶）
 ///   -rencanOwn ink,celadon 假商店裡先算已經買了這幾種造型；all 是全套（PurchaseService）
+///   -rencanStyle celadon   示範資料塞好後把立繪造型設成這一種（要搭配 -rencanOwn 才看得到）
 @MainActor
 enum UITestSupport {
     /// 假商店的價格字串。真的價格由 Apple 給，這兩個只出現在 UI 測試的截圖裡。
@@ -66,6 +67,7 @@ enum UITestSupport {
             guard isUITest, let index = arguments.firstIndex(of: "-rencanSeed") else { return }
             guard arguments.indices.contains(index + 1) else { return }
             try seed(arguments[index + 1], into: services)
+            try applyStyleIfAsked(arguments, to: services)
         #endif
     }
 
@@ -98,6 +100,17 @@ enum UITestSupport {
                 context.insert(realmMeasurement(realmIndex: realmIndex, bodyFat: 12))
             }
             try context.save()
+        }
+
+        /// -rencanStyle 帶的造型代碼認得就設上去；認不得照原版，不報錯（跟 UserSettings 一樣）。
+        private static func applyStyleIfAsked(
+            _ arguments: [String], to services: AppServices
+        ) throws {
+            guard let index = arguments.firstIndex(of: "-rencanStyle"),
+                arguments.indices.contains(index + 1),
+                let style = PortraitStyle(rawValue: arguments[index + 1])
+            else { return }
+            try services.store.setPortraitStyle(style)
         }
 
         private static let seedHeightCm: Double = 174

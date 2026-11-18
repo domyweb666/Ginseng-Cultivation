@@ -211,9 +211,10 @@ enum RencanPortrait {
     static let animationRows = 8
     static let animationFrameSeconds: Double = 0.15
 
-    /// 某個大境界的動畫格子圖：靜態立繪的名字後面加 Anim。只有原版有動畫（PortraitStyle.hasAnimation）。
-    static func animationName(realmIndex: Int, sex: Sex) -> String {
-        name(realmIndex: realmIndex, sex: sex) + "Anim"
+    /// 某個大境界的動畫格子圖：靜態立繪的名字後面加 Anim（原版 r2Anim、造型 r2-inkAnim）。
+    /// 十一種付費造型的動畫是組塊 M2 由 make_style_anims.py 從原版動畫逐格換色做的。
+    static func animationName(realmIndex: Int, sex: Sex, style: PortraitStyle) -> String {
+        name(realmIndex: realmIndex, sex: sex, style: style) + "Anim"
     }
 }
 
@@ -253,7 +254,4 @@ enum PortraitStyle: String, CaseIterable, Identifiable {
         case .jade: return "翠玉"
         }
     }
-
-    /// 境界碑上能不能播待機動畫。付費造型的動畫是組塊 M2，做好之前顯示靜態圖。
-    var hasAnimation: Bool { self == .original }
 }
