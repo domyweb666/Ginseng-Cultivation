@@ -14,7 +14,8 @@ final class LogUITests: RencanUITestCase {
         let submit = require(app.buttons["記下"], "記一筆表單的「記下」按鈕")
         shot("表單打開")
 
-        // 重量從 20 加兩次到 25 公斤，次數從 5 加到 6
+        // 重量從 20 加兩次到 25 公斤，次數從 5 加到 6。功法分頁一開始停在腿，拔山式在拉那頁
+        tapButton("拉")
         tapButton("拔山式・硬舉")
         tapButton("重量加 2.5 公斤")
         tapButton("重量加 2.5 公斤")
@@ -50,6 +51,8 @@ final class LogPreviewUITests: RencanUITestCase {
         expectPreview("預估 1RM 73 公斤・1.04 倍體重")
         shot("表單帶上次的數字")
 
+        // 分頁停在推山掌的推那頁，坐馬樁要先切到腿
+        tapButton("腿")
         tapButton("坐馬樁・深蹲")
         expectPreview("預估 1RM 117 公斤・1.66 倍體重")
         shot("換成坐馬樁100公斤")

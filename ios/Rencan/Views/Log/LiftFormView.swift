@@ -1,7 +1,7 @@
 import RencanCore
 import SwiftUI
 
-/// 記一筆修煉的彈出表單（照畫布 LogSheet）：功法分腿、推、拉三排各四格，重量、次數、組數、日期，
+/// 記一筆修煉的彈出表單（照畫布 LogSheet）：功法先選腿、推、拉分頁，下面兩欄四格，重量、次數、組數、日期，
 /// 下面即時預覽這一組算出來的等級。欄位先帶上次那門功法的數字。
 /// 存檔失敗時紅字留在表單裡，內容不清掉，絕不說「已記下」（PRD S24）。
 struct LiftFormView: View {
@@ -11,6 +11,8 @@ struct LiftFormView: View {
     let lifts: [LiftRecord]
 
     @State private var moveKey: MoveKey = .squat
+    /// 現在看哪一組功法。只換分頁不換選中的功法，要點了格子才換。
+    @State private var group: MoveGroup = .legs
     @State private var kg: Double = LiftFormView.defaultKg
     @State private var reps = LiftFormView.defaultReps
     @State private var sets = LiftFormView.defaultSets
@@ -22,14 +24,11 @@ struct LiftFormView: View {
     private static let defaultKg: Double = 20
     private static let defaultReps = 5
     private static let defaultSets = 3
-    /// 一排四門（2026-11-18 擴成十二門，分腿、推、拉三排）。
+    /// 一組四門排兩欄（2026-11-18 多米選 B 版：三排十二格太雜，改成分頁一次只看一組，
+    /// 格子夠寬，「羅馬尼亞硬舉」不會被切掉）。
     private static let columns = Array(
-        repeating: GridItem(.flexible(), spacing: RencanLayout.itemSpacing), count: 4
+        repeating: GridItem(.flexible(), spacing: RencanLayout.itemSpacing), count: 2
     )
-    /// 每排最左邊「腿／推／拉」那個字的寬
-    private static let groupLabelWidth: CGFloat = 18
-    /// 功法格子裡的字離左右邊多遠；「羅馬尼亞硬舉」太長時字會縮小，不會貼邊
-    private static let moveButtonInset: CGFloat = 4
 
     var body: some View {
         VStack(spacing: 0) {
@@ -75,24 +74,15 @@ struct LiftFormView: View {
 
     private var movePicker: some View {
         VStack(alignment: .leading, spacing: RencanLayout.itemSpacing) {
-            Text("功法")
-                .font(RencanType.footnote)
-                .foregroundStyle(Color.rencan.textSecondary)
-            ForEach(MoveGroup.allCases, id: \.self) { group in
-                HStack(spacing: RencanLayout.itemSpacing) {
-                    Text(group.rawValue)
-                        .font(RencanType.footnote)
-                        .foregroundStyle(Color.rencan.textSecondary)
-                        .frame(width: LiftFormView.groupLabelWidth)
-                        .accessibilityHidden(true)
-                    LazyVGrid(columns: LiftFormView.columns, spacing: RencanLayout.itemSpacing) {
-                        ForEach(Tables.moves.filter { $0.group == group }, id: \.key) { item in
-                            moveButton(item)
-                        }
-                    }
-                    // 放在橫排裡的格子只會拿到最小寬度，要明講撐滿，四格才會平分整排。
-                    // 2026-11-18 檢查線截圖：四格擠在左半邊，字被切成「坐…」。
-                    .frame(maxWidth: .infinity)
+            Picker("功法分組", selection: $group) {
+                ForEach(MoveGroup.allCases, id: \.self) { item in
+                    Text(item.rawValue).tag(item)
+                }
+            }
+            .pickerStyle(.segmented)
+            LazyVGrid(columns: LiftFormView.columns, spacing: RencanLayout.itemSpacing) {
+                ForEach(Tables.moves.filter { $0.group == group }, id: \.key) { item in
+                    moveButton(item)
                 }
             }
         }
@@ -104,17 +94,18 @@ struct LiftFormView: View {
             moveKey = item.key
             fill(for: item.key)
         } label: {
-            VStack(spacing: 1) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text(item.artName)
                     .font(RencanType.termBody)
                 Text(item.name)
-                    .font(RencanType.caption)
+                    .font(RencanType.footnote)
+                    .foregroundStyle(isSelected ? Color.rencan.onAccent : Color.rencan.textSecondary)
             }
             .lineLimit(1)
             .minimumScaleFactor(RencanLayout.minimumTextScale)
-            .padding(.horizontal, LiftFormView.moveButtonInset)
+            .padding(.horizontal, RencanLayout.groupSpacing)
             .foregroundStyle(isSelected ? Color.rencan.onAccent : Color.rencan.textPrimary)
-            .frame(maxWidth: .infinity, minHeight: RencanLayout.moveButtonHeight)
+            .frame(maxWidth: .infinity, minHeight: RencanLayout.moveButtonHeight, alignment: .leading)
             .background(
                 isSelected ? Color.rencan.accent : Color.rencan.surface,
                 in: RoundedRectangle(cornerRadius: RencanLayout.fieldCornerRadius)
@@ -166,13 +157,14 @@ struct LiftFormView: View {
         return "1RM 再加 \(kgToNext) 公斤升\(nextLevelName)"
     }
 
-    /// 打開表單時：功法停在上次記的那一門，數字帶那一門上次的。
+    /// 打開表單時：功法停在上次記的那一門、分頁停在那一門的組，數字帶那一門上次的。
     private func loadLast() {
         guard !isLoaded else { return }
         isLoaded = true
         if let last = lifts.last, let key = MoveKey(rawValue: last.move) {
             moveKey = key
         }
+        group = move.group
         fill(for: moveKey)
     }
 
