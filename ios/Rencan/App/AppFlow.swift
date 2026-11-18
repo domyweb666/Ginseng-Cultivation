@@ -20,6 +20,8 @@ final class AppFlow {
         case moveDetail(MoveKey)
         /// 選立繪造型（組塊 M1，從設定頁打開）
         case portraitStyle
+        /// 修煉卡：分享出去的那張圖（2026-11-19 加，從境界頁、分析頁右上角打開）
+        case shareCard
 
         var id: String {
             switch self {
@@ -33,6 +35,8 @@ final class AppFlow {
                 return "move-" + key.rawValue
             case .portraitStyle:
                 return "portraitStyle"
+            case .shareCard:
+                return "shareCard"
             }
         }
     }

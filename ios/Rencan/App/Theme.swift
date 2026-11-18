@@ -59,6 +59,25 @@ struct RencanPalette {
         Color("RealmSub" + String(RencanPalette.realmSlot(realmIndex)))
     }
 
+    // 修煉卡（分享出去的圖）自己的顏色，深淺色同一個值：存下來的圖不管手機開不開深色都長一樣。
+    // 外框用該境界的 realmSub 與 realmBase 漸層，不另外加色。
+    /// 卡面的米白底
+    let cardBase = Color("CardBase")
+    /// 宗門身分那一條的深棕底，也是功法名、數字說明的字色
+    let cardBand = Color("CardBand")
+    /// 深棕條上的字
+    let onCardBand = Color("OnCardBand")
+    /// 境界名、期別、app 名的金棕
+    let cardTitle = Color("CardTitle")
+    /// 道號、數字的深色字
+    let cardText = Color("CardText")
+    /// 「道號」小字、日期這類灰字
+    let cardMuted = Color("CardMuted")
+    /// 三格數字的底
+    let cardStat = Color("CardStat")
+    /// 六門功法格子的底
+    let cardMove = Color("CardMove")
+
     /// 顏色集只有 0 到 6，超出去的序號夾回來，免得取到不存在的顏色變成透明。
     private static func realmSlot(_ realmIndex: Int) -> Int {
         max(0, min(Tables.realms.count - 1, realmIndex))
@@ -93,6 +112,12 @@ enum RencanType {
     /// 功法雷達軸端的功法名：十二根軸都要寫，字小一點圖才放得大。
     /// 雷達圖要用同一個數字算版面（MoveRadar 的 @ScaledMetric），所以字級另外給名字。
     static let radarLabelSize: CGFloat = 13
+
+    /// 修煉卡上的字。卡是要存成 1080×1920 的圖，排版固定，字不跟著系統文字大小變。
+    static func cardDisplay(_ size: CGFloat) -> Font { .custom(displayFontName, fixedSize: size) }
+    static func cardText(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
+        .system(size: size, weight: weight)
+    }
     static var radarLabel: Font { display(radarLabelSize, relativeTo: .footnote) }
     /// 宗門卡上的大身分
     static var sectTitle: Font { display(30, relativeTo: .title) }

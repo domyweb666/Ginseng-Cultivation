@@ -114,6 +114,14 @@ extension StoreService {
         try save()
     }
 
+    /// 修煉卡上的道號，打過一次就記住。前後空白去掉、超過字數截掉（卡上那一格只放得下這麼多字）。
+    func setDaoName(_ name: String) throws {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let current = try settings()
+        current.daoName = String(trimmed.prefix(ShareCardContent.daoNameLimit))
+        try save()
+    }
+
     // MARK: 提醒（組塊 I）
 
     /// 每月提醒的開關與日子。日子不在 1 到 28 不存。

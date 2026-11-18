@@ -262,6 +262,8 @@ struct PagesView: View {
             MoveDetailView(key: key, digest: digest, lifts: lifts)
         case .portraitStyle:
             PortraitStyleView(digest: digest)
+        case .shareCard:
+            ShareCardSheet(digest: digest)
         }
     }
 }

@@ -21,5 +21,7 @@
 	<string>讀你的體重、體脂率、去脂體重、身高和生理性別，用來算你的境界。</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>只有你在設定裡打開回寫，才會把你手打的體重、體脂率、去脂體重存進健康 app。</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>把你的修煉卡存到相簿。只會加入照片，看不到你相簿裡的其他照片。</string>
 </dict>
 </plist>

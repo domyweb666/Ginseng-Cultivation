@@ -39,7 +39,7 @@ struct AnalysisView: View {
         }
     }
 
-    /// 換頁改由底部分頁列負責，頁首只剩標題。
+    /// 換頁改由底部分頁列負責，頁首是標題，右上角分享修煉卡（跟境界頁同一個位置；沒量過時不放）。
     private var header: some View {
         HStack {
             Text("分析")
@@ -47,6 +47,9 @@ struct AnalysisView: View {
                 .padding(.horizontal, Metrics.titleInset)
                 .accessibilityAddTraits(.isHeader)
             Spacer(minLength: 0)
+            if digest.stele != nil {
+                ShareCardButton()
+            }
         }
         .frame(minHeight: RencanLayout.tapTarget)
         .padding(.top, RencanLayout.pageTitleTopInset)

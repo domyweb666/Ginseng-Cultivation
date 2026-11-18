@@ -45,13 +45,19 @@ struct RealmView: View {
         .safeAreaInset(edge: .bottom) { logButton }
     }
 
-    /// 頁首只剩置中的「境界」。換頁改由底部分頁列負責，原本左右兩顆圖示拿掉了。
+    /// 頁首置中的「境界」。換頁改由底部分頁列負責，原本左右兩顆圖示拿掉了。
+    /// 右上角是分享修煉卡（2026-11-19 多米選「一」）；還沒量過、沒有境界碑時不放。
     private var header: some View {
         Text("境界")
             .font(RencanType.realmHeader)
             .foregroundStyle(Color.rencan.strong)
             .accessibilityAddTraits(.isHeader)
             .frame(maxWidth: .infinity, minHeight: RencanLayout.tapTarget)
+            .overlay(alignment: .trailing) {
+                if digest.stele != nil {
+                    ShareCardButton()
+                }
+            }
             .padding(.top, Metrics.headerTopInset)
     }
 

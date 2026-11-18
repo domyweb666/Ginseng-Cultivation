@@ -19,6 +19,8 @@ final class UserSettings {
     var reminderDay: Int = Reminder.defaultDay
     /// 立繪造型的代碼（PortraitStyle.rawValue）。預設原版；舊資料沒有這欄，SwiftData 自動補預設值。
     var portraitStyleCode: String = "original"
+    /// 修煉卡上的道號（2026-11-19 加）。選填，空字串就是沒填；舊資料沒有這欄，SwiftData 自動補空字串。
+    var daoName: String = ""
 
     init() {}
 
