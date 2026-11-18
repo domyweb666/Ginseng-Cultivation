@@ -69,8 +69,9 @@ ZONE = {"ink": 0, "gold": 0, "moon": 0, "puppet": 0, "celadon": 0, "sunset": 0, 
 # 換色函式在動畫裡要多傳的參數：貼紙的陰影不要從左邊界繞出來（見 make_styles.style_sticker）
 STYLE_KW = {"sticker": {"wrap_shadow": False}}
 
-KEYS = np.array([WHITE, PALE, GOLD, an.AMBER], dtype=np.float32)   # 特效原本用的顏色
-KEY_KIND = [0, 0, 1, 1]                                             # 0 亮、1 暖
+# 特效原本用的顏色（白、淡黃、金、琥珀），加上 2026-11-18 環境特效用的草、葉子、碎石、仙鶴、塵土等（animate.ENV_FX_KINDS）
+KEYS = np.array([WHITE, PALE, GOLD, an.AMBER] + [c for c, _ in an.ENV_FX_KINDS], dtype=np.float32)
+KEY_KIND = [0, 0, 1, 1] + [k for _, k in an.ENV_FX_KINDS]           # 0 亮、1 暖、2 暗
 POST_KEYS = np.array([an.FLASH, [0, 0, 0]], dtype=np.float32)
 POST_KIND = [0, 2]                                                  # 閃白當亮、變暗當暗
 

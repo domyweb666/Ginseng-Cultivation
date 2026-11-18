@@ -120,7 +120,8 @@ def leaves(rg, base, body, lm, pivot, heady, k=0.9, lim=4.0, ph=0.0):
     平常被風輕輕帶：兩片一起往一邊偏 1.5 度、回正、再往另一邊（一次換一個姿勢，不是連續慢轉，連續轉邊緣會一直閃）。
     身體有動的時候：頭往下一沉，葉尖慢一拍、先翹起來再甩下去，盪幾下才停。"""
     flap = lambda f: max(-lim, min(lim, k * follow(heady, f)))
-    wind = lambda f: 1.5 * round(1.3 * math.sin(TAU * (f / 48.0 + ph)))
+    windy = _windy_now           # 起風的場景（煉氣、渡劫），8.4 秒那陣風把葉子吹歪
+    wind = lambda f: 1.5 * round(1.3 * math.sin(TAU * (f / 48.0 + ph)) + (gust(f) / 1.5 if windy else 0))
     rg.part('leaf_l', lm & (XS < pivot[0]), lambda f: [rot(pivot, wind(f) + flap(f))], body)
     rg.part('leaf_r', lm & (XS >= pivot[0]), lambda f: [rot(pivot, wind(f) - flap(f))], body)
 
@@ -165,8 +166,392 @@ def burst(img, c, g, n=8, r0=6, step=3, col=GOLD):
         dot(img, c[0] + (r0 + g * step) * math.cos(t), c[1] + (r0 + g * step) * math.sin(t), col if k % 2 else WHITE, 1 - g * 0.2)
 
 
+# ---------- 環境特效（照每個境界的背景配）----------
+# 多米 2026-11-18：看完分層動畫實驗，還是覺得 app 原本的動畫好，要在原本的上面加特效。
+# 第一版 14 張都套同一組（落葉、起風、紅果閃），他說每個境界要不一樣，要看背景裡有什麼再配。照他點頭的表：
+#   煉氣 山村石板路、草叢 → 起風捲起草屑、頭上葉子被吹歪；兩邊樹叢偶爾掉一片葉子（燈籠光原本就有）
+#   築基 練功場石地、石階、霧山 → 出劍那一下腳邊揚起一圈塵土；石階和遠山前一層薄霧慢慢飄
+#   金丹 懸崖、崖邊的雲和灰山 → 雲絲在灰山前慢慢流；一隻小仙鶴拍著翅膀從天上飛過
+#   元嬰 站在金白色的雲上 → 腳下的雲邊冒出小雲絮往兩邊飄散（金色光點原本就有）
+#   化神 夜空、星星、下方雲海 → 星星加多、化神女也加一顆流星；下方雲海起一層慢慢飄的霧
+#        （表上原本寫月暈，放大看那兩彎黃色是葉尖，不是月亮，所以沒做）
+#   大乘 背後金色光輪 → 大乘男：金粉從光輪往下灑（佛光原本就在轉）；大乘女：光輪的光芒一道道輪流亮（花瓣原本就有）
+#   渡劫 烏雲、雷、山頂碎石 → 斜斜的雨絲一直下；雷劈下來那一下腳邊碎石彈起來；起風時頭上葉子被吹歪
+#   14 張都有：沒有大動作的空檔，頭上紅果閃一下金色四角星，跟著身體呼吸一起升降。
+# 招牌動作都在前 48 格，起風排在後半段（GUST0）。這些都畫在 rg.back / rg.front，付費造型會照特效的規矩換色。
+GUST0 = 56                                   # 起風那一格（8.4 秒）
+GUST_KEYS = [(GUST0, 0), (GUST0 + 3, 9), (GUST0 + 6, -4.5), (GUST0 + 9, 4.5), (GUST0 + 12, -1.5), (GUST0 + 15, 0)]
+WINDY = {'r0', 'gr0', 'r6', 'gr6'}           # 有起風的場景
+_windy_now = False                           # make_rig 建骨架時設定，leaves() 建葉子時讀
+TWINKLES = (50, 84)                          # 紅果閃的格（兩顆輪流）
+GRASS_A = np.array([76, 108, 32], dtype=np.float32)
+GRASS_B = np.array([140, 164, 56], dtype=np.float32)
+GRASS_EDGE = np.array([52, 78, 22], dtype=np.float32)
+DUST_LIGHT = np.array([236, 226, 206], dtype=np.float32)
+DUST_DARK = np.array([176, 156, 124], dtype=np.float32)
+CLOUD_EDGE = np.array([214, 176, 108], dtype=np.float32)
+DUST_EDGE = np.array([150, 128, 96], dtype=np.float32)
+CRANE_DARK = np.array([70, 70, 82], dtype=np.float32)
+RAIN = np.array([236, 242, 255], dtype=np.float32)
+GOLD_EDGE = np.array([190, 112, 30], dtype=np.float32)
+MIST_EDGE = {'r1': (186, 186, 196), 'gr1': (186, 186, 196), 'r2': (176, 176, 186), 'gr2': (176, 176, 186),
+             'r4': (150, 146, 206), 'gr4': (150, 146, 206)}   # 霧、雲絲底下那條陰影，照各張雲的陰影色
+ROCK_DARK = np.array([62, 58, 66], dtype=np.float32)
+ROCK_LIGHT = np.array([126, 120, 128], dtype=np.float32)
+# 付費造型換色時，這些特效顏色各算哪一種：0 亮、1 暖（金）、2 暗（見 造型風格/make_style_anims.py）。
+# 原本的特效只有白、淡黃、金、琥珀，換成造型的亮色或暖色；這次加的草、葉子、碎石、仙鶴、塵土是深色或綠色，
+# 不列出來的話會被當成最接近的金色，碎石變成金塊。葉子顏色每張不同，這裡放一般的深綠、亮綠當代表。
+ENV_FX_KINDS = [(GRASS_A, 2), (GRASS_B, 1), (GRASS_EDGE, 2), (DUST_LIGHT, 0), (DUST_DARK, 2), (DUST_EDGE, 2),
+                (CLOUD_EDGE, 2),   # 塵土、雲絮的邊算暗色：當暖色的話水墨造型會變成一圈圈印泥紅
+                (CRANE_DARK, 2), (RAIN, 0), (ROCK_DARK, 2), (ROCK_LIGHT, 2), (GOLD_EDGE, 1),
+                (np.array([186, 186, 196], np.float32), 0), (np.array([176, 176, 186], np.float32), 0),
+                (np.array([150, 146, 206], np.float32), 0),
+                (np.array([70, 100, 40], np.float32), 2), (np.array([140, 175, 70], np.float32), 1)]
+# 飄落的葉子翻面的四個樣子（約 6 格長、帶深色邊；三格的版本放大三倍都看不到）
+# o 深色邊、d 深綠、l 亮綠；每 3 格換一個樣子：正面、斜、側面（薄薄一條）、反斜
+LEAF_SPRITES = [
+    [".ooo..",
+     "olllo.",
+     "oldddo",
+     ".oooo."],
+    ["...oo",
+     "..olo",
+     ".oldo",
+     "olddo",
+     "oddo.",
+     ".oo.."],
+    ["oooo..",
+     "oddlloo",
+     ".ooooo."],
+    ["oo...",
+     "olo..",
+     "oldo.",
+     "oddlo",
+     ".oddo",
+     "..oo."],
+]
+# 仙鶴拍翅膀三個樣子：翅膀上、平、下（o 深灰的翅尖、x 白身體）
+CRANE_SPRITES = [
+    ["o.....o",
+     ".o...o.",
+     "..oxo..",
+     "...xxxo"],
+    ["ooo.ooo",
+     "...xxxo"],
+    ["...xxxo",
+     "..oxo..",
+     ".o...o.",
+     "o.....o"],
+]
+# 每張的位置（168×210 格子上的座標，照背景量的）
+LIANQI_LEAVES = {'r0': [(4, 8, 114), (52, 146, 106)], 'gr0': [(8, 8, 116), (58, 144, 108)]}   # (第幾格掉, x, y)
+LIANQI_GROUND = 172                                    # 葉子落到這裡就淡掉
+ZHUJI_STRIKE = {'r1': [28], 'gr1': [14, 24]}           # 出劍落定的格
+ZHUJI_FEET = {'r1': [(51, 196), (107, 196)], 'gr1': [(58, 194), (110, 193)]}
+ZHUJI_MIST = [(20, 58), (140, 70), (26, 96), (146, 112)]          # 薄霧中心：兩邊灰色的遠山、石階前（白天空上看不出霧）
+JINDAN_WISPS = {'r2': [(150, 140), (140, 160), (20, 104), (154, 178)], 'gr2': [(150, 142), (140, 162), (16, 106), (152, 180)]}
+YUANYING_PUFFS = [(44, 186), (130, 184), (60, 194), (116, 194), (34, 176), (140, 176)]
+HUASHEN_OLD = {'r4': [(26, 38), (48, 24), (120, 22), (142, 36), (152, 62), (20, 70), (114, 46), (60, 44), (136, 20), (30, 56)],
+               'gr4': [(26, 40), (50, 26), (122, 24), (150, 60), (20, 72), (60, 44), (30, 58)]}   # rig_r4 / rig_gr4 原本的星星
+HUASHEN_METEOR = {'gr4': [(58, 150, 22, -4.4, 2.4, 10)]}           # (第幾格, x, y, vx, vy, 幾格)
+HUASHEN_MIST = [(22, 168), (146, 160), (84, 196), (40, 186), (130, 190)]
+DACHENG_RAYS = (88, 46, 54, 74)                                     # 大乘女光輪：中心 x, y、光芒從多遠畫到多遠
+DUJIE_HITS = {'r6': [23], 'gr6': [12, 34]}
+
+
+def gust(f):
+    """起風時頭上葉子要多轉幾度（順時針＝往右吹）。"""
+    return keys(f % N, GUST_KEYS)
+
+
+def gust_rate(f):
+    """起風那幾格，風每一格把飄著的東西往右推幾格。"""
+    g = f % N - GUST0
+    return 3.2 * math.sin(math.pi * g / 16.0) if 0 <= g < 16 else 0.0
+
+
+def leaf_colors(base):
+    h, s, v = hsv(base)
+    g = (h > 52) & (h < 110) & (s > 0.38) & (YS < 80)
+    if g.sum() < 10:
+        return np.array([70, 110, 40], np.float32), np.array([140, 180, 70], np.float32)
+    px_ = base[g]
+    l = lum(px_)
+    return px_[l <= np.percentile(l, 25)].mean(0), px_[l >= np.percentile(l, 75)].mean(0)
+
+
+def berries(base):
+    """頭上紅果裡兩顆的位置：最上面那顆和最左邊那顆。"""
+    h, s, v = hsv(base)
+    red = ((h < 14) | (h > 346)) & (s > 0.6) & (YS < 45)
+    ys, xs = np.nonzero(red)
+    if len(xs) < 4:
+        return []
+    return [(xs[ys.argmin()], ys.min() + 2), (xs.min() + 2, ys[xs.argmin()])]
+
+
+def sprite(img, x, y, rows, cols, a=1.0):
+    x0, y0 = int(round(x)) - len(rows[0]) // 2, int(round(y)) - len(rows) // 2
+    for r, row in enumerate(rows):
+        for c, ch in enumerate(row):
+            if ch != '.':
+                dot(img, x0 + c, y0 + r, cols[ch], a)
+
+
+def draw_leaf(img, x, y, t, dark, light, a=1.0):
+    sprite(img, x, y, LEAF_SPRITES[(t // 3) % 4], {'o': dark * 0.55, 'd': dark, 'l': light}, a)
+
+
+def star(img, x, y, t):
+    """紅果上閃一下：小十字 → 大的四角星 → 小十字。"""
+    plus(img, x, y, GOLD, [0.7, 1.0, 0.6][t])
+    if t == 1:
+        for d in (-2, 2):
+            dot(img, x + d, y, PALE, 0.9)
+            dot(img, x, y + d, PALE, 0.9)
+        for dx, dy in ((1, 1), (-1, 1), (1, -1), (-1, -1)):
+            dot(img, x + dx, y + dy, GOLD, 0.45)
+
+
+def mist(rg, spots, edge, amp=10, length=12):
+    """一團團扁扁的雲霧在背景上左右慢慢飄、一濃一淡（一輪剛好來回一次，接得上）。畫在角色後面。
+    第一版用光暈，白霧畫在淡色的畫上收色後整個消失；第二版畫成細長白線，像多米退過的風線。
+    現在是扁的一團：白色身體、底下一條這張雲的陰影色，看起來是雲，不是線。length 是半寬。"""
+    edge = np.array(edge, dtype=np.float32)
+
+    def fx(img, f):
+        for i, (x, y) in enumerate(spots):
+            ph = i / float(len(spots))
+            dx = amp * math.sin(TAU * (f / N + ph))
+            a = 0.5 + 0.5 * math.sin(TAU * (f / N + ph + 0.25))
+            if a < 0.2:
+                continue
+            a = min(1.0, a * 1.3)
+            hw, hh = length * (0.8 + 0.2 * a), 2.6 + 1.2 * a
+            for yy in range(int(-hh) - 1, int(hh) + 2):
+                for xx in range(int(-hw) - 1, int(hw) + 2):
+                    # 上緣鼓兩個包，像雲
+                    top = hh * (0.75 + 0.25 * math.cos(xx / hw * math.pi * 2 + i))
+                    e = (xx / hw) ** 2 + (yy / (top if yy < 0 else hh * 0.7)) ** 2
+                    if e <= 0.75:
+                        dot(img, x + dx + xx, y + yy, WHITE, a)
+                    elif e <= 1.0 and yy >= 0:
+                        dot(img, x + dx + xx, y + yy, edge, a * 0.9)
+    rg.back.append(fx)
+
+
+def puff(img, x, y, r, a, core, edge):
+    """一團小雲（塵土）：中間實心、外面一圈邊。"""
+    for dy in range(-5, 6):
+        for dx in range(-6, 7):
+            d = math.hypot(dx * 0.8, dy)
+            if d <= r - 0.8:
+                dot(img, x + dx, y + dy, core, a)
+            elif d <= r + 0.3:
+                dot(img, x + dx, y + dy, edge, a)
+
+
+def berry_twinkle(rg, base):
+    pts = berries(base)
+
+    def offset(x, y, f):
+        """(x, y) 那一格這一格被身體帶到哪裡：找蓋著它的最上面那個零件，照它的動作算位移。"""
+        for p in reversed(rg.parts):
+            if p.mask[y, x]:
+                X, Y = np.array([x], np.float32), np.array([y], np.float32)
+                for tr in p.chain(f):
+                    X, Y = tr(X, Y)
+                return x - float(X[0]), y - float(Y[0])
+        return 0.0, 0.0
+
+    def fx(img, f):
+        for (bx, by), start in zip(pts, TWINKLES):
+            t = f % N - start
+            if 0 <= t < 3:
+                dx, dy = offset(bx, by, f)
+                star(img, bx + dx, by + dy, t)
+    rg.front.append(fx)
+
+
+def env_lianqi(rg, base, name):
+    dark, light = leaf_colors(base)
+
+    def fx(img, f):
+        f %= N
+        # 起風：地上捲起五根草屑飄過去
+        t = f - GUST0
+        if 0 <= t < 34:
+            for j, (x0, y0) in enumerate([(10, 186), (22, 196), (4, 174), (30, 190), (16, 180)]):
+                s = t - (0, 1, 3, 5, 7)[j]
+                if not 0 <= s < 30:
+                    continue
+                x = x0 + 5.0 * s
+                y = y0 - 10 * math.sin(min(s, 9) / 9 * math.pi / 2) + max(0, s - 9) * 0.9 + 2 * math.sin(s * 0.7)
+                dx, dy = [(1, 0), (1, 1), (0, 1), (-1, 1)][(s // 2) % 4]
+                a = min(1.0, (30 - s) / 6.0)
+                for k, col in zip(range(-2, 3), (GRASS_EDGE, GRASS_EDGE, GRASS_A, GRASS_A, GRASS_B)):
+                    dot(img, x + k * dx, y + k * dy, col, a)
+        # 樹叢掉下來的葉子：慢慢擺著落到地上，起風那時候被推一把
+        for i, (start, x0, y0) in enumerate(LIANQI_LEAVES.get(name, [])):
+            t = (f - start) % N
+            y = y0 + 1.6 * t
+            if y > LIANQI_GROUND + 8:
+                continue
+            push = sum(gust_rate(start + k) for k in range(t))
+            x = x0 + 4 * math.sin(TAU * t / 20.0 + i) + 0.2 * t + push
+            fade = min(1.0, (LIANQI_GROUND + 8 - y) / 8.0)
+            draw_leaf(img, x, y, t, dark, light, fade)
+    rg.front.append(fx)
+
+
+def env_zhuji(rg, base, name):
+    mist(rg, ZHUJI_MIST, MIST_EDGE[name])
+    strikes, feet = ZHUJI_STRIKE[name], ZHUJI_FEET[name]
+
+    def dust(img, f):
+        for hit in strikes:
+            g = f % N - hit
+            if not 0 <= g < 9:
+                continue
+            a = min(1.0, (9 - g) / 4.0)
+            for fx_, fy in feet:
+                for side in (-1, 1):
+                    for k in range(2):          # 每隻腳往兩邊捲開兩團土
+                        x = fx_ + side * (3 + k * 5 + g * (1.4 + 0.6 * k))
+                        y = fy - 1 - g * 0.6 - k * 1.5
+                        puff(img, x, y, min(3.2, 1.4 + g * 0.4) - k * 0.5, a, DUST_LIGHT, DUST_EDGE)
+    rg.front.append(dust)
+
+
+def env_jindan(rg, base, name):
+    mist(rg, JINDAN_WISPS[name], MIST_EDGE[name], amp=9, length=9)
+
+    def crane(img, f):
+        f %= N
+        x = 176 - 1.95 * f                       # 從右邊畫面外飛進來、一輪飛出左邊，接得上
+        y = 22 + 3 * math.sin(TAU * f / 48.0)
+        sprite(img, x, y, CRANE_SPRITES[(f // 2) % 3], {'o': CRANE_DARK, 'x': WHITE})
+    rg.back.append(crane)
+
+
+def env_yuanying(rg, base, name):
+    def puffs(img, f):
+        for i, (x0, y0) in enumerate(YUANYING_PUFFS):
+            t = (f + i * 16) % N
+            if t >= 28:
+                continue
+            side = -1 if x0 < 88 else 1
+            x = x0 + side * 0.7 * t
+            y = y0 - 0.25 * t
+            r = min(4.2, 1.5 + t / 5.0)
+            a = min(1.0, (28 - t) / 8.0, (t + 1) / 3.0)
+            puff(img, x, y, r, a, WHITE, CLOUD_EDGE)
+    rg.front.append(puffs)
+
+
+def env_huashen(rg, base, name):
+    # 多加的星星：從夜空裡挑，離原本的星星和彼此都至少 14 格
+    sky = (base[..., 2] > base[..., 0] + 18) & (lum(base) < 190) & (YS < 120)
+    rnd = random.Random(41 if name == 'r4' else 43)
+    ys, xs = np.nonzero(shrink(sky, 2))
+    order = rnd.sample(range(len(xs)), len(xs))
+    taken, extra = list(HUASHEN_OLD[name]), []
+    for k in order:
+        p = (int(xs[k]), int(ys[k]))
+        if all(abs(p[0] - q[0]) + abs(p[1] - q[1]) >= 14 for q in taken):
+            taken.append(p)
+            extra.append(p)
+        if len(extra) >= 9:
+            break
+    night(rg, base, extra, HUASHEN_METEOR.get(name, []))
+    mist(rg, HUASHEN_MIST, MIST_EDGE[name], amp=12, length=12)
+
+
+def env_dacheng(rg, base, name):
+    if name == 'r5':
+        rnd = random.Random(21)
+        dust_ = [(rnd.uniform(8, 160), rnd.uniform(0, GH), rnd.uniform(0, 1)) for _ in range(22)]
+        light = (lum(base) > 200).astype(np.float32)
+
+        def gold(img, f):
+            for i, (x0, y0, ph) in enumerate(dust_):
+                y = (y0 + 2.1875 * f) % GH            # 一輪剛好落一個畫面高，接得上
+                x = x0 + 3 * math.sin(TAU * (f / 32.0 + ph))
+                xi, yi = int(round(x)), int(round(y))
+                if not (0 <= xi < GW and 0 <= yi < GH) or not light[yi, xi]:
+                    continue
+                if (f + i * 3) % 8 < 2:            # 閃一下：深色邊的十字
+                    for ddx, ddy in ((2, 0), (-2, 0), (0, 2), (0, -2)):
+                        dot(img, x + ddx, y + ddy, GOLD_EDGE, 0.8)
+                    plus(img, x, y, AMBER)
+                else:
+                    dot(img, x, y, AMBER)
+                    dot(img, x + 1, y, GOLD_EDGE, 0.9)
+                    dot(img, x, y + 1, GOLD_EDGE, 0.9)
+        rg.back.append(gold)
+    else:
+        cx, cy, r0, r1 = DACHENG_RAYS
+        light = (lum(base) > 205).astype(np.float32)
+
+        def rays(img, f):
+            """光輪外圈 12 道光芒，一道接一道輪流變亮，像在慢慢轉。只畫在原本就亮的天空，不蓋到雲和山。"""
+            tmp = img.copy()
+            for k in range(12):
+                t = math.radians(k * 30 - 90)
+                if math.sin(t) > 0.3:
+                    continue
+                lit = 0.5 + 0.5 * math.cos(TAU * (k / 12.0 - f / float(N) * 2))
+                for r in range(r0, r1):
+                    a = (0.25 + 0.6 * lit) * (1 - (r - r0) / float(r1 - r0 + 6))
+                    dot(tmp, cx + r * math.cos(t), cy + r * math.sin(t), PALE, a)
+                    dot(tmp, cx + r * math.cos(t) + 1, cy + r * math.sin(t), WHITE, a * 0.6)
+            img[:] = img * (1 - light[..., None]) + tmp * light[..., None]
+        rg.back.append(rays)
+
+
+def env_dujie(rg, base, name):
+    rnd = random.Random(31)
+    drops = [(rnd.uniform(-40, GW), rnd.uniform(0, GH)) for _ in range(30)]
+    hits = DUJIE_HITS[name]
+    rocks = [(rnd.uniform(40, 130), rnd.uniform(-2.2, 2.2), rnd.uniform(4.5, 6.5)) for _ in range(7)]
+
+    def rain(img, f):
+        for x0, y0 in drops:
+            y = (y0 + 4.375 * f) % GH                 # 一輪落兩個畫面高，接得上
+            x = x0 + 0.3 * y
+            for k in range(4):                       # 斜斜的一條，四格，頭亮尾淡
+                dot(img, x - k * 0.6, y - k * 2, RAIN, 0.95 - k * 0.18)
+        for hit in hits:
+            g = f % N - hit
+            if not 0 <= g < 16:
+                continue
+            for x0, vx, vy in rocks:                 # 雷打在山頂，碎石往上彈再掉回去
+                x, y = x0 + vx * g, 184 - vy * g + 0.45 * g * g
+                if y > 190:
+                    continue
+                sprite(img, x, y, [".oo", "oxo", "oo."] if g % 2 else ["oo.", "oxo", ".oo"], {'o': ROCK_DARK, 'x': ROCK_LIGHT})
+    rg.front.append(rain)
+
+
+ENV = {'r0': env_lianqi, 'gr0': env_lianqi, 'r1': env_zhuji, 'gr1': env_zhuji, 'r2': env_jindan, 'gr2': env_jindan,
+       'r3': env_yuanying, 'gr3': env_yuanying, 'r4': env_huashen, 'gr4': env_huashen,
+       'r5': env_dacheng, 'gr5': env_dacheng, 'r6': env_dujie, 'gr6': env_dujie}
+
+
+def make_rig(name, base, blink, M, parts=False):
+    global _windy_now
+    plain = bool(os.environ.get('NO_AMBIENT'))     # 不加環境特效，跟加之前的版本比對用
+    _windy_now = (name in WINDY) and not plain
+    rg = (PARTS if parts else RIGS)[name](base, blink, M)
+    _windy_now = False
+    if not plain:
+        ENV[name](rg, base, name)
+        berry_twinkle(rg, base)
+    return rg
+
+
 # ---------- 煉氣 ----------
-BUCKET = [(106, 128), (126, 126), (144, 134), (145, 150), (142, 170), (138, 180), (112, 180), (107, 168), (105, 148)]
+BUCKET =[(106, 128), (126, 126), (144, 134), (145, 150), (142, 170), (138, 180), (112, 180), (107, 168), (105, 148)]
 
 
 def woody(base):
@@ -892,7 +1277,7 @@ def build_rig(folder, name):
         raise FileNotFoundError(os.path.join(folder, '%s_%dx%d.png' % (name, GW, GH)))
     blink, _ = load(folder, name, '_blink')
     M = np.asarray(Image.open(os.path.join(folder, '%s_%dx%d_mask.png' % (name, GW, GH)))) > 127
-    return RIGS[name](base, blink, M), pal, M
+    return make_rig(name, base, blink, M), pal, M
 
 
 def sheet_of(cells):
@@ -924,7 +1309,7 @@ def main():
         M = np.asarray(Image.open(os.path.join(folder, '%s_%dx%d_mask.png' % (name, GW, GH)))) > 127
         pal_lab = px.rgb2lab(pal.astype(np.float32))
         use_parts = bool(os.environ.get('PARTS')) and name in PARTS
-        rg = (PARTS if use_parts else RIGS)[name](base, blink, M)
+        rg = make_rig(name, base, blink, M, use_parts)
         frames = rg.frames()
         sheet = np.zeros((GH * (N // COLS), GW * COLS), dtype=np.uint8)
         cells = []
