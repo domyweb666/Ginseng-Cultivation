@@ -1,0 +1,49 @@
+# 上架用：查與填 App Store Connect 上的版本資料（片 J2、J4）。只能手動按「Run workflow」，只准 main。
+# 程式在 ios/ci/asc_release.mjs。mode=check 只讀不改。
+name: 上架資料
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "check 只查不改"
+        required: true
+        default: check
+        type: choice
+        options: [check]
+
+permissions:
+  contents: read
+
+env:
+  BUNDLE_ID: org.domyweb.rencan
+
+jobs:
+  asc:
+    name: 上架資料（${{ inputs.mode }}）
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # 只准從 main 跑，跟 iap.yml 一樣
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: 設暫存路徑
+        run: echo "ASC_KEY_P8_PATH=$RUNNER_TEMP/AuthKey.p8" >> "$GITHUB_ENV"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: 還原 API 金鑰
+        env:
+          ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
+        run: |
+          set -euo pipefail
+          bash ios/ci/restore_asc_key.sh "$ASC_KEY_P8_PATH"
+      - name: 查或填上架資料
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          MODE: ${{ inputs.mode }}
+        run: node ios/ci/asc_release.mjs
+      - name: 刪金鑰（不管成敗）
+        if: always()
+        run: rm -f "$ASC_KEY_P8_PATH"
