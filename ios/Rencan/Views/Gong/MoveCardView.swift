@@ -44,21 +44,25 @@ struct MoveCardView: View {
         .accessibilityIdentifier("move-card-" + card.move.key.rawValue)
     }
 
+    /// 功法名和等級排同一行，現代名稱自己一行佔滿卡寬（2026-11-18 多米選的 A 版）。
+    /// 原本現代名稱跟功法名疊在左邊、被右邊的等級擠窄，「羅馬尼亞硬舉」會拆成三行。
     private var header: some View {
-        HStack(alignment: .top, spacing: RencanLayout.itemSpacing) {
-            VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .center, spacing: RencanLayout.itemSpacing) {
                 Text(card.move.artName)
                     .font(RencanType.term)
                     .foregroundStyle(Color.rencan.strong)
                     .lineLimit(1)
                     .minimumScaleFactor(RencanLayout.minimumTextScale)
-                Text(card.move.name)
-                    .font(RencanType.footnote)
-                    .foregroundStyle(Color.rencan.textSecondary)
+                Spacer(minLength: 0)
+                RencanChip(text: card.levelName)
+                    .fixedSize()
             }
-            Spacer(minLength: 0)
-            RencanChip(text: card.levelName)
-                .fixedSize()
+            Text(card.move.name)
+                .font(RencanType.footnote)
+                .foregroundStyle(Color.rencan.textSecondary)
+                .lineLimit(1)
+                .minimumScaleFactor(RencanLayout.minimumTextScale)
         }
     }
 

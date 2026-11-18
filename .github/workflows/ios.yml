@@ -27,7 +27,7 @@ env:
   # 小工具 extension 自己的 App ID 與描述檔（組塊 G）
   WIDGET_BUNDLE_ID: org.domyweb.rencan.widget
   WIDGET_PROFILE_NAME: Rencan Widget CI App Store
-  TESTFLIGHT_NOTES: "這一版只換了十四條待機動畫的去背：煉氣男女提水桶時衣服不會破圖，金丹女的金丹不再拖一條柄，元嬰女、化神女的邊緣比較乾淨。動作和速度沒變，其他功能跟上一版一樣。"
+  TESTFLIGHT_NOTES: "這一版改了四個地方：設定頁拿掉卡片下面的說明文字；境界頁的「境界」往下移；分析頁的功法卡，功法名跟等級排同一行，現代名稱不會再被拆成好幾行；功法雷達放大，軸端只寫功法名，練過的深金色、沒練過的灰色。其他功能跟上一版一樣。"
 
 jobs:
   core-tests:

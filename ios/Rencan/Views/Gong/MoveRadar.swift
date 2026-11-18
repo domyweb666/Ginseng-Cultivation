@@ -3,14 +3,14 @@ import SwiftUI
 
 /// 這張圖自己的版面常數。
 private enum Metrics {
-    /// 最外圈（化境）的半徑
-    static let radius: CGFloat = 90
+    /// 最外圈（化境）的半徑。2026-11-18 多米選丙版：圖放到最大、軸端只寫功法名
+    static let radius: CGFloat = 116
     /// 功法名字的中心離圓心多遠
-    static let labelRadius: CGFloat = 122
-    /// 功法名字那一塊的寬；十二門功法時最左最右的名字也要塞得進卡片
-    static let labelWidth: CGFloat = 72
-    /// 整張圖的高：上下各留出名字的高度
-    static let chartHeight: CGFloat = 300
+    static let labelRadius: CGFloat = 134
+    /// 功法名字那一塊的寬；最左最右的名字也要塞得進卡片（卡片內寬約 313 點）
+    static let labelWidth: CGFloat = 44
+    /// 整張圖的高：上下各留出一行名字的高度
+    static let chartHeight: CGFloat = 292
     static let gridLineWidth: CGFloat = 1
     static let shapeLineWidth: CGFloat = 2
     static let fillOpacity = 0.22
@@ -57,20 +57,15 @@ struct MoveRadar: View {
         .accessibilityIdentifier("gong-radar")
     }
 
-    /// 軸端的字：功法名（文楷）加現在的等級。
+    /// 軸端的字只寫功法名（文楷）：練過的深金色、還沒入門的灰色。等級看點落在第幾圈，
+    /// 原本每根軸再寫一行等級，十二根軸二十四行字擠成一團（2026-11-18 多米看真機）。
     private func label(_ card: MoveCard) -> some View {
-        VStack(spacing: 0) {
-            Text(card.move.artName)
-                .font(RencanType.termBody)
-            Text(card.levelName)
-                .font(RencanType.caption)
-                .foregroundStyle(
-                    card.level > 0 ? Color.rencan.strong : Color.rencan.textSecondary
-                )
-        }
-        .lineLimit(1)
-        .minimumScaleFactor(RencanLayout.minimumTextScale)
-        .frame(width: Metrics.labelWidth)
+        Text(card.move.artName)
+            .font(RencanType.radarLabel)
+            .foregroundStyle(card.level > 0 ? Color.rencan.strong : Color.rencan.textTertiary)
+            .lineLimit(1)
+            .minimumScaleFactor(RencanLayout.minimumTextScale)
+            .frame(width: Metrics.labelWidth)
     }
 
     private func dataRadius(_ card: MoveCard) -> CGFloat {

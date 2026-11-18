@@ -47,11 +47,8 @@ struct SettingsReminderSection: View {
         VStack(alignment: .leading, spacing: RencanLayout.itemSpacing) {
             SectionTitle(text: "提醒")
                 .padding(.horizontal, Metrics.titleInset)
+            // 卡片下面的固定說明 2026-11-18 拿掉（多米說字太多）；出問題才出現的提示照留
             card
-            Text("每月這一天早上 8 點提醒你量一次。通知上只有一句話，不會寫你的體重和體脂。")
-                .font(RencanType.footnote)
-                .foregroundStyle(Color.rencan.textSecondary)
-                .padding(.horizontal, Metrics.cardInset)
             if showsDeniedHint {
                 deniedHint
             }

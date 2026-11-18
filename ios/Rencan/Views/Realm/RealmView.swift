@@ -4,6 +4,8 @@ import SwiftUI
 private enum Metrics {
     /// 宗門小卡排成一行時，進度條最少要有這麼寬；放不下就把進度條換到第二行。
     static let sectBarMinimumWidth: CGFloat = 48
+    /// 「境界」兩個字離頂端再往下多少（2026-11-18 多米看真機說太貼頂，沒有安全距離）
+    static let headerTopInset: CGFloat = 16
 }
 
 /// 境界頁（中頁，照畫布 Main 與 RealmEmpty）：宗門小卡、境界碑、體組成來源列、三格天數、今天的修煉，
@@ -48,6 +50,7 @@ struct RealmView: View {
             .foregroundStyle(Color.rencan.strong)
             .accessibilityAddTraits(.isHeader)
             .frame(maxWidth: .infinity, minHeight: RencanLayout.tapTarget)
+            .padding(.top, Metrics.headerTopInset)
     }
 
     /// 宗門身分的小卡，放在境界碑上面（2026-11-17 多米選的）：身分、晉升進度、下一步。
