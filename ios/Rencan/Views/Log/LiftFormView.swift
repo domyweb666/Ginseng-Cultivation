@@ -99,13 +99,17 @@ struct LiftFormView: View {
                     .font(RencanType.termBody)
                 Text(item.name)
                     .font(RencanType.footnote)
-                    .foregroundStyle(isSelected ? Color.rencan.onAccent : Color.rencan.textSecondary)
+                    .foregroundStyle(
+                        isSelected ? Color.rencan.onAccent : Color.rencan.textSecondary
+                    )
             }
             .lineLimit(1)
             .minimumScaleFactor(RencanLayout.minimumTextScale)
             .padding(.horizontal, RencanLayout.groupSpacing)
             .foregroundStyle(isSelected ? Color.rencan.onAccent : Color.rencan.textPrimary)
-            .frame(maxWidth: .infinity, minHeight: RencanLayout.moveButtonHeight, alignment: .leading)
+            .frame(
+                maxWidth: .infinity, minHeight: RencanLayout.moveButtonHeight, alignment: .leading
+            )
             .background(
                 isSelected ? Color.rencan.accent : Color.rencan.surface,
                 in: RoundedRectangle(cornerRadius: RencanLayout.fieldCornerRadius)
