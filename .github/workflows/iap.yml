@@ -1,0 +1,51 @@
+# 在 App Store Connect 建內購商品（付費立繪造型，組塊 M）。只能手動按「Run workflow」。
+# 商品資料在 ios/ci/iap_products.json，程式在 ios/ci/iap_products.mjs。
+# mode=check 只讀不改；mode=create 才會建或更新。產品 ID 建了不能改、刪了不能再用，
+# 改 json 之前先跟多米確認。
+name: 內購商品
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "check 只查不改；create 建或更新"
+        required: true
+        default: check
+        type: choice
+        options: [check, create]
+
+permissions:
+  contents: read
+
+env:
+  BUNDLE_ID: org.domyweb.rencan
+
+jobs:
+  iap:
+    name: 內購商品（${{ inputs.mode }}）
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # 只准從 main 跑，免得分支上沒審過的 json 建出救不回來的產品 ID
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: 設暫存路徑
+        run: echo "ASC_KEY_P8_PATH=$RUNNER_TEMP/AuthKey.p8" >> "$GITHUB_ENV"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: 還原 API 金鑰
+        env:
+          ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
+        run: |
+          set -euo pipefail
+          bash ios/ci/restore_asc_key.sh "$ASC_KEY_P8_PATH"
+      - name: 建或查內購商品
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          MODE: ${{ inputs.mode }}
+        run: node ios/ci/iap_products.mjs
+      - name: 刪金鑰（不管成敗）
+        if: always()
+        run: rm -f "$ASC_KEY_P8_PATH"

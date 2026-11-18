@@ -1,0 +1,20 @@
+{
+  "locale": "zh-Hant",
+  "baseTerritory": "TWN",
+  "reviewNote": "This is a non-consumable, cosmetic-only purchase. To find it: open the app, tap the 設定 (Settings) tab at the bottom left, tap 立繪造型 (Portrait Styles), tap any style with a lock icon, then tap the purchase button at the bottom of the screen. Restore Purchases is on the same screen. No account or sign-in is needed. A style only changes the character artwork; every tracking feature stays free.",
+  "bundleReviewNoteExtra": "This bundle includes all 11 styles.",
+  "products": [
+    { "productId": "org.domyweb.rencan.style.ink", "referenceName": "造型・水墨", "displayName": "水墨造型", "description": "角色換成墨色，背景淡成宣紙，只留頭上紅果一點紅。男女七個境界一起換。", "price": 120 },
+    { "productId": "org.domyweb.rencan.style.gold", "referenceName": "造型・鎏金", "displayName": "鎏金造型", "description": "整隻變成金身，背景壓成深褐色。男女七個境界一起換。", "price": 120 },
+    { "productId": "org.domyweb.rencan.style.moon", "referenceName": "造型・月夜", "displayName": "月夜造型", "description": "深藍星空當背景，角色偏冷，邊上描一圈月光。男女七個境界一起換。", "price": 120 },
+    { "productId": "org.domyweb.rencan.style.puppet", "referenceName": "造型・皮影燈籠", "displayName": "皮影燈籠造型", "description": "角色染成皮影戲的紅褐色，背後一圈圈燈籠光。男女七個境界一起換。", "price": 120 },
+    { "productId": "org.domyweb.rencan.style.handheld", "referenceName": "造型・掌機四色", "displayName": "掌機四色造型", "description": "只用四種綠加一層網點，像老掌機的螢幕。男女七個境界一起換。", "price": 120 },
+    { "productId": "org.domyweb.rencan.style.sticker", "referenceName": "造型・貼紙", "displayName": "貼紙造型", "description": "角色描白邊、加陰影，米色點點底，像一張貼紙。男女七個境界一起換。", "price": 120 },
+    { "productId": "org.domyweb.rencan.style.chunky", "referenceName": "造型・粗像素", "displayName": "粗像素造型", "description": "格子放大一倍、只留二十色，像更早期的遊戲。男女七個境界一起換。", "price": 120 },
+    { "productId": "org.domyweb.rencan.style.celadon", "referenceName": "造型・青花瓷", "displayName": "青花瓷造型", "description": "角色只剩鈷藍一色，白瓷底，底下一條格紋邊。男女七個境界一起換。", "price": 120 },
+    { "productId": "org.domyweb.rencan.style.sunset", "referenceName": "造型・赤霞夕照", "displayName": "赤霞夕照造型", "description": "上紫下橘的晚霞，角色染暖色、描一圈金光。男女七個境界一起換。", "price": 120 },
+    { "productId": "org.domyweb.rencan.style.neon", "referenceName": "造型・霓虹", "displayName": "霓虹造型", "description": "暗底配紫粉色角色，外面一圈青色亮邊。男女七個境界一起換。", "price": 120 },
+    { "productId": "org.domyweb.rencan.style.jade", "referenceName": "造型・翠玉", "displayName": "翠玉造型", "description": "整隻像綠玉雕的，深紅褐絨布底，紅果換成金色。男女七個境界一起換。", "price": 120 },
+    { "productId": "org.domyweb.rencan.style.all", "referenceName": "造型・全套十一種", "displayName": "全套十一種造型", "description": "一次買下十一種造型，男女七個境界都能隨時換。", "price": 480, "isBundle": true }
+  ]
+}
