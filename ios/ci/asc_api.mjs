@@ -44,7 +44,7 @@ export function ascClient() {
     });
     const text = await response.text();
     if (!response.ok) {
-      const error = new Error(`${method} ${path} 回 ${response.status}：${text.slice(0, 500)}`);
+      const error = new Error(`${method} ${path} 回 ${response.status}：${text.slice(0, 3000)}`);
       error.status = response.status;
       throw error;
     }
