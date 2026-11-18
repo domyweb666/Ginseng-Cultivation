@@ -188,7 +188,8 @@ struct SettingsDataSection: View {
     }
 
     /// 資料庫刪完再清 app 自己的偏好（外觀、觸覺回饋）與還沒發的提醒；資料庫沒刪成功就什麼都不動。
-    /// 刪完 RootTabView 讀不到身高性別，自己回到第一次打開那頁。
+    /// 刪完 RootTabView 讀不到身高性別，自己回到第一次打開那頁。不跳小提示：提示掛在分頁上，
+    /// 回到第一次打開那頁時分頁已經不在了，畫面整個換掉本身就說明清完了。
     private func eraseAll() {
         do {
             try store.eraseAllData()
@@ -203,7 +204,6 @@ struct SettingsDataSection: View {
         // 剛刪掉、還能復原的那筆修煉也不留，不然按「復原」會在清除之後又冒出一筆。
         flow.undo = nil
         flow.page = .realm
-        flow.showToast(SettingsDataText.erased)
     }
 }
 
@@ -227,7 +227,6 @@ private struct SettingsDataRow: View {
 enum SettingsDataText {
     /// 匯出前的提醒（安全標準類別 1）。
     static let exportReminder = "這個檔案含你的身體數據，自己保管。"
-    static let erased = "已清除所有資料"
 
     static func counts(measurements: Int, lifts: Int) -> String {
         "量測 \(measurements) 筆、修煉 \(lifts) 筆"

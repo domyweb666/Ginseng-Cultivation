@@ -86,8 +86,8 @@ struct ShareCardContent: Hashable {
         sectTitle = digest.sect.title
         trainDays = digest.trainDays
         ffmi = Formulas.fmt(stele.ffmi, digits: 2)
-        bodyFat = showsBodyFat
-            ? Formulas.fmt(stele.measurement.bodyFatPercent, digits: 1) + "%" : nil
+        let bodyFatText = Formulas.fmt(stele.measurement.bodyFatPercent, digits: 1) + "%"
+        bodyFat = showsBodyFat ? bodyFatText : nil
         gate = Self.gateWord(stele.gate)
         // 分數高的在前；同分照功法表的順序，每次排出來都一樣
         moves = digest.moveCards.enumerated()

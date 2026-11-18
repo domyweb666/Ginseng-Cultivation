@@ -222,13 +222,10 @@ final class SettingsEraseUITests: RencanUITestCase {
         let erase = require(app.buttons["刪除所有資料"].firstMatch, "第二次確認的「刪除所有資料」")
         shot("第二次確認")
         erase.tap()
-        // 小提示只留 2.6 秒：先記下有沒有看到、照樣截圖往下走，最後才算帳，後面的圖才不會少。
-        let toast = anyElements(containing: "已清除所有資料").firstMatch
-        let sawToast = toast.waitForExistence(timeout: 4)
+        // 清完畫面整個換成第一次打開那頁（不跳小提示：提示掛在分頁上，分頁已經不在了）。
         seeText("先說你多高、男生還是女生，境界就能算。")
         shot("清除之後回到第一次打開")
         XCTAssertEqual(anyElements(containing: "FFMI 20.32").count, 0, "清除之後 FFMI 20.32 還在")
-        XCTAssertTrue(sawToast, "清除之後沒看到小提示「已清除所有資料」")
     }
 
     /// 捲到「清除所有資料」、點它，等第一次確認出來。回那顆「繼續」。
@@ -267,8 +264,11 @@ final class SettingsAboutUITests: RencanUITestCase {
         font.tap()
         let fullText = require(textContaining("SIL OPEN FONT LICENSE"), "霞鶩文楷的授權全文")
         shot("霞鶩文楷授權全文")
+        // 全文頁是推進去的第二層，左上角是返回；「關閉」在第一層
+        app.navigationBars.buttons.firstMatch.tap()
+        require(fontRow.firstMatch, "返回之後的授權清單")
         tapButton("關閉")
-        let isClosed = waitUntil(timeout: 5) { !fullText.exists }
+        let isClosed = waitUntil(timeout: 5) { !fullText.exists && !fontRow.firstMatch.exists }
         XCTAssertTrue(isClosed, "按了「關閉」，開源授權頁沒有收回去")
     }
 }
