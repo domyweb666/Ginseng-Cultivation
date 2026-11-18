@@ -36,6 +36,7 @@
     "healthOrWellnessTopics": true,
     "messagingAndChat": false,
     "parentalControls": false,
-    "userGeneratedContent": false
+    "userGeneratedContent": false,
+    "socialMedia": false
   }
 }
