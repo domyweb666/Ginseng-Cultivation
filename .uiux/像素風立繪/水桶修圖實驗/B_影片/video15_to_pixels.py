@@ -39,7 +39,8 @@ def extract(video, name):
     return files
 
 
-def to_cells(files, base, pal, pal_lab):
+def to_cells(files, base, pal, pal_lab, picks=None):
+    """picks：要取影片的第幾張（從 0 起算）；沒給就是整支平均攤成 96 格。"""
     quant = lambda rgb: pal[px.nearest(px.rgb2lab(np.clip(rgb, 0, 255).reshape(-1, 3)), pal_lab).reshape(GH, GW)].astype(np.float32)
     first = np.asarray(Image.open(files[0]).convert('RGB')).astype(np.float32)
     h, w = first.shape[:2]
@@ -55,9 +56,11 @@ def to_cells(files, base, pal, pal_lab):
     _, sx, sy, ox, oy = best
 
     # 平均攤開：第 k 格取第 k/96 的位置；最後一格不取到片尾（片尾就是原圖，等於第 0 格）
+    if picks is None:
+        picks = [int(k * len(files) / A.N) for k in range(A.N)]
     raw = []
-    for k in range(A.N):
-        f = files[int(k * len(files) / A.N)]
+    for index in picks:
+        f = files[min(index, len(files) - 1)]
         raw.append(quant(sample(np.asarray(Image.open(f).convert('RGB')).astype(np.float32), sx, sy, ox, oy)))
 
     base_lab = lab(base)
