@@ -42,9 +42,8 @@ struct SettingsHealthSection: View {
             SectionTitle(text: "健康 app")
                 .padding(.horizontal, Metrics.titleInset)
             if health.isAvailable {
+                // 卡片下面原本兩段固定說明（讀哪五項、讀不到去哪開）2026-11-18 多米看真機說字太多，拿掉
                 card
-                note(SettingsHealthText.scope, identifier: "health-scope")
-                note(SettingsHealthText.systemPermission, identifier: "health-system-hint")
             } else {
                 note(SettingsHealthText.unavailable, identifier: "health-unavailable")
             }
@@ -223,17 +222,11 @@ struct SettingsHealthSection: View {
 
 /// 健康 app 區畫面上的字。筆數先組成字串再交給小提示，數字才不會被系統加上千分位。
 enum SettingsHealthText {
-    /// 前一句是畫布 Settings 上那一行，後一句講回寫只寫什麼。
-    static let scope = "只讀體重、體脂率、去脂體重、身高、生理性別五項。寫回只寫你手打的量測。"
     static let unavailable = "這台裝置沒有健康 app，體組成請用手動輸入。"
     static let rebuild = "從健康 app 重建量測紀錄"
     static let rebuilding = "正在讀健康 app"
     /// 系統設定裡健康授權的位置。iOS 改版可能換名字，上架前要在真機上對一次。
     private static let systemPath = "手機的「設定」→「隱私權與安全性」→「健康」→「人蔘修煉」"
-
-    static var systemPermission: String {
-        "開關開著還是讀不到的話，到" + systemPath + "把讀取打開。"
-    }
 
     static var writeDenied: String {
         let reason = "健康 app 沒有允許寫入體重、體脂率、去脂體重，所以回寫沒打開。"

@@ -7,7 +7,7 @@ private enum Metrics {
     static let sectionGap: CGFloat = 14
     /// 大標題、區塊標題比卡片邊再縮進一點
     static let titleInset: CGFloat = 4
-    /// 卡片的左右內距，卡片下面那行說明也縮這麼多
+    /// 卡片的左右內距
     static let cardInset: CGFloat = 16
     /// 分段控制裡一格的寬與高
     static let segmentWidth: CGFloat = 56
@@ -76,10 +76,6 @@ struct SettingsView: View {
                 Color.rencan.surface,
                 in: RoundedRectangle(cornerRadius: RencanLayout.cardCornerRadius)
             )
-            Text("換性別，境界、功法門檻和立繪會照那一套重算。")
-                .font(RencanType.footnote)
-                .foregroundStyle(Color.rencan.textSecondary)
-                .padding(.horizontal, Metrics.cardInset)
         }
     }
 

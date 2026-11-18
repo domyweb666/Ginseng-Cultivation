@@ -11,7 +11,7 @@ private enum Metrics {
     static let sectionGap: CGFloat = 14
     /// 區塊標題比卡片邊再縮進一點
     static let titleInset: CGFloat = 4
-    /// 卡片的左右內距，卡片下面那行說明也縮這麼多
+    /// 卡片的左右內距
     static let cardInset: CGFloat = 16
 }
 
@@ -85,10 +85,6 @@ struct SettingsAboutSection: View {
                 Color.rencan.surface,
                 in: RoundedRectangle(cornerRadius: RencanLayout.cardCornerRadius)
             )
-            Text("通知要不要開，在系統設定裡這個 app 的那一頁改。")
-                .font(RencanType.footnote)
-                .foregroundStyle(Color.rencan.textSecondary)
-                .padding(.horizontal, Metrics.cardInset)
         }
     }
 
