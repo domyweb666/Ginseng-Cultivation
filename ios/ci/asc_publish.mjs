@@ -325,38 +325,86 @@ async function submit() {
   });
   console.log(`建置：${build.attributes.version}（${build.id}）`);
 
-  const iaps = await call("GET", `/v1/apps/${app.id}/inAppPurchasesV2?limit=200`);
-  for (const item of iaps.data) {
-    if (item.attributes.state !== "READY_TO_SUBMIT") {
-      console.log(`內購 ${item.attributes.productId} 狀態 ${item.attributes.state}，不送`);
-      continue;
-    }
-    await call("POST", "/v1/inAppPurchaseSubmissions", {
-      data: {
-        type: "inAppPurchaseSubmissions",
-        relationships: { inAppPurchaseV2: { data: { type: "inAppPurchases", id: item.id } } },
-      },
-    });
-    console.log(`內購 ${item.attributes.productId} 加進送審`);
+  // 第一批非消耗性內購一定要跟 app 版本一起送（Apple 回 FIRST_NON_CONSUMABLE_MUST_BE_SUBMITTED_ON_VERSION），
+  // 所以順序是：送審單（沒送出的可以沿用）→ 放進版本 → 掛上內購 → 送出。
+  const submission = await openSubmission();
+  await addVersion(submission.id);
+  const pending = await submitIaps();
+  if (pending.length) {
+    // 內購沒掛上就送版本，審核員買不到造型，幾乎一定被退。停在這裡：送審單和版本都留著，
+    // 到後台版本頁的「App 內購買項目」勾這幾個，再按送審就好。
+    throw new Error(
+      `這些內購掛不上，先不送出：${pending.map((item) => item.attributes.productId).join("、")}`,
+    );
   }
+  await patch("reviewSubmissions", submission.id, { submitted: true });
+  const after = await call("GET", `/v1/reviewSubmissions/${submission.id}`);
+  console.log(`送審了：${after.data.attributes.state}`);
+}
 
-  const submission = await call("POST", "/v1/reviewSubmissions", {
+/// 還沒送出的送審單沿用（上一次跑到一半停下來留下的），沒有就建一筆。
+async function openSubmission() {
+  const list = await call(
+    "GET",
+    `/v1/reviewSubmissions?filter[app]=${app.id}&filter[platform]=IOS&filter[state]=READY_FOR_REVIEW&limit=5`,
+  );
+  if (list.data.length) {
+    console.log(`沿用還沒送出的送審單 ${list.data[0].id}`);
+    return list.data[0];
+  }
+  const created = await call("POST", "/v1/reviewSubmissions", {
     data: {
       type: "reviewSubmissions",
       attributes: { platform: "IOS" },
       relationships: { app: { data: { type: "apps", id: app.id } } },
     },
   });
+  console.log(`建送審單 ${created.data.id}`);
+  return created.data;
+}
+
+async function addVersion(submissionId) {
+  const items = await call("GET", `/v1/reviewSubmissions/${submissionId}/items?include=appStoreVersion`);
+  const already = items.data.some((item) => item.relationships?.appStoreVersion?.data?.id === version.id);
+  if (already) {
+    console.log("版本已經在送審單裡");
+    return;
+  }
   await call("POST", "/v1/reviewSubmissionItems", {
     data: {
       type: "reviewSubmissionItems",
       relationships: {
-        reviewSubmission: { data: { type: "reviewSubmissions", id: submission.data.id } },
+        reviewSubmission: { data: { type: "reviewSubmissions", id: submissionId } },
         appStoreVersion: { data: { type: "appStoreVersions", id: version.id } },
       },
     },
   });
-  await patch("reviewSubmissions", submission.data.id, { submitted: true });
-  const after = await call("GET", `/v1/reviewSubmissions/${submission.data.id}`);
-  console.log(`送審了：${after.data.attributes.state}`);
+  console.log("版本放進送審單");
+}
+
+/// 把可以送的內購掛上去；回傳這次掛不上的（照實印出 Apple 給的原因）。
+async function submitIaps(only) {
+  const list = only ?? (await call("GET", `/v1/apps/${app.id}/inAppPurchasesV2?limit=200`)).data;
+  const failed = [];
+  for (const item of list) {
+    if (!only && item.attributes.state !== "READY_TO_SUBMIT") {
+      console.log(`內購 ${item.attributes.productId} 狀態 ${item.attributes.state}，不送`);
+      continue;
+    }
+    try {
+      await call("POST", "/v1/inAppPurchaseSubmissions", {
+        data: {
+          type: "inAppPurchaseSubmissions",
+          relationships: { inAppPurchaseV2: { data: { type: "inAppPurchases", id: item.id } } },
+        },
+      });
+      console.log(`內購 ${item.attributes.productId} 加進送審`);
+    } catch (error) {
+      const code = /"code" : "([A-Z_.]+)"/g;
+      const codes = [...error.message.matchAll(code)].map((match) => match[1]);
+      console.log(`內購 ${item.attributes.productId} 掛不上：${codes.join("、") || error.message.slice(0, 200)}`);
+      failed.push(item);
+    }
+  }
+  return failed;
 }
