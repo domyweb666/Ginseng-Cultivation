@@ -24,7 +24,8 @@ const bundleId = env("BUNDLE_ID");
 const here = (path) => new URL(path, import.meta.url);
 const listing = JSON.parse(readFileSync(here("./asc_listing.json"), "utf8"));
 const copyDoc = readFileSync(here(listing.descriptionFile), "utf8");
-const description = codeBlockStarting(copyDoc, listing.descriptionStart);
+// App Store 的描述不收「▌」（2026-11-18 fill 回 409），段落小標改成【】。
+const description = codeBlockStarting(copyDoc, listing.descriptionStart).replace(/^▌(.+)$/gm, "【$1】");
 const reviewNotes = `${codeBlockStarting(copyDoc, listing.reviewNotesStart)}\n\n${listing.reviewNotesExtra}`;
 validateListing();
 

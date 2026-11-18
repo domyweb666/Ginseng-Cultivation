@@ -1,63 +1,40 @@
-# Handoff: 付費造型補到原版加十一種、內購商品用 API 填好、出了 1.0（32）（33）、M1 換造型寫好在分支上等檢查線
+# Handoff: 整晚上架進行中（M3、M4 綠了，M2 圖做好待接 Swift，App Store Connect 填到一半）
 
-> 產出時間：2026-11-18 11:20
-> 一律在 `E:\人篸修煉` 工作（多米只用這個資料夾，不開 worktree）。現在切在分支 `work/portrait-styles`。
-> 真相源是 `.vibe/切片帳本.md`（這次加了五筆，最後一筆是 1.0（33）已出）。
+> 產出時間：2026-11-18 13:40。一律在 `E:\人篸修煉`，分支 `work/overnight-20261118-1130`（從 work/portrait-styles 開，含 M1）。
+> 多米的指示（11:30–13:35）：熬夜做到上架為止；多開 subagent；拍照和錄影都用 Limrun；**睡醒要看到已經送審，途中困難自己解決**；context 太長就寫 handoff 繼續。
+> 進度主檔是專案根目錄的 `OVERNIGHT.md`（任務清單 1–13、待確認、執行紀錄）。先讀它。
 
-## ✅ 這次完成了什麼
+## 已完成
+- 1：M1 檢查線綠。3、4：M3 內購（`Services/PurchaseService.swift`，StoreKit 2，出錯當沒買，UI 測試走假商店）、M4 選造型頁（鎖、全套卡、購買鍵、恢復購買），run 44233063338 全綠，截圖看過。
+- 5（一半）：`IAPReviewShotsUITests` 拍出 12 張審核截圖（在 run 44233063338 的 artifact rencan-ui-screenshots，檔名 IAPReviewShots-NN-代碼.png）；`iap_products.mjs` 有 MODE=screenshots，讀 `ios/ci/iap_review_screenshots/{代碼}.png`（代碼＝產品 ID 最後一段，全套 all）。**還沒把圖放進那個資料夾、還沒跑。**
+- 6、7：文件與 `docs/上架文稿.md`（commit 58f7b3c）。
+- 網站：`E:\domyweb-main` 5d51403 已推，`https://domyweb.org/rencan/privacy/`、`/rencan/support/`（部署後要確認打得開，沒斜線的網址會 308 轉）。
+- 審核聯絡資訊：GitHub secret `REVIEW_CONTACT_JSON`（從茄記 store.config.json 來，同一個人；repo 公開，不准寫進檔案）。
 
-- 付費造型從七種補成十一種：多米從五個候選挑了青花瓷、赤霞夕照、霓虹，再加翠玉湊滿選造型頁 3×4 十二格（原版加十一種）。函式在 `.uiux/像素風立繪/造型風格/make_styles.py` 的 `STYLES`，畫布四張畫板都更新了（https://claude.ai/artifact/YPBCBJde2WzFBBKRQcLZFW）。
-- `work/anim-mask` 併 main 出 TestFlight 1.0（32）：十四條待機動畫換新去背。
-- 第三輪回饋（分支 `work/ui-polish`）併 main 出 1.0（33）：設定頁拿掉固定說明（出問題才出現的提示照留）、「境界」往下 16 點、功法卡 A 版（功法名與等級同一行）、雷達圖丙版（半徑 116、軸端只寫功法名）。設計比較在 `.uiux/分析頁改版/功法卡與雷達圖.html`。
-- 付費定案：單買 120、全套十一種 480、入口在設定頁。寫進 `.vibe/付費造型計畫.md`，含 12 個商品的參考名稱、產品 ID、顯示名稱、描述、審核備註。
-- 內購 12 個商品：產品 ID 多米自己在 App Store Connect 建好；我寫了 `ios/ci/iap_products.json`＋`ios/ci/iap_products.mjs`＋`.github/workflows/iap.yml`（只能手動、只准 main，check 只讀、create 建或更新），create run 44220046564 把中文名稱、描述、價格、審核備註、上架地區都填好。狀態仍是「缺少資料」，只差審核截圖。
-- M1 換造型寫好（分支 `work/portrait-styles`，還沒併 main）：
-  - 154 張造型立繪在 `ios/Rencan/Resources/Assets.xcassets/PortraitStyles/`，名字 `r2-ink` 這種（make_styles.py 新增第三段輸出到 `<輸出資料夾>/app/`）。
-  - `Theme.swift` 新增 `PortraitStyle`（代碼＝圖名後綴＝make_styles 風格名＝存的值），`RencanPortrait.name` 多一個 `style`。
-  - `UserSettings.portraitStyleCode`（預設 original，認不得當原版）、`StoreServiceBulk.setPortraitStyle`。
-  - 設定頁 `SettingsStyleSection.swift`（「立繪造型」一列）→ 選造型頁 `PortraitStyleView.swift`（`AppFlow.Sheet.portraitStyle`），每種都能直接選，沒有鎖。
-  - 境界碑、雜役立繪、量測慶祝跟著換；付費造型還沒動畫，境界碑放靜態圖（`PortraitStyle.hasAnimation`）。
-  - UI 測試 `ios/RencanUITests/PortraitStyleUITests.swift`：選青花瓷，預覽、設定那一列、境界碑都換，沿路截圖。
-  - 第一輪檢查線 44224852140 紅（PagesView 讀不到設定、縮排），已修（b9c24a3）。第二輪 run 44226248264：編譯、排版、lint 都過，UI 測試 19 條過 18 條；M1 的六張截圖看過都對（設定那一列、選造型頁 12 格、選中青花瓷、設定寫青花瓷、境界碑青花瓷）。紅的是 HoldDeleteUITests：截圖 03 有出現「復原」，模擬器慢、測試去點時 5 秒已過，跟 M1 無關；已按 rerun（第 2 次嘗試）。
+## App Store Connect 工具（都在 main 上，用 git commit-tree 直接推 main，不動工作區）
+- `.github/workflows/asc.yml`：手動、只准 main。mode：check（`asc_release.mjs` 只讀）、fill／media／submit（`asc_publish.mjs`），submit 可帶 build 號。
+- 資料：`ios/ci/asc_listing.json`；描述與送審備註從 `docs/上架文稿.md` 抽 ``` 區塊（開頭字串比對）。
+- fill 第二輪停在：**描述不能有「▌」**。修法：asc_publish.mjs 抽描述後把 `^▌(.+)$` 換成 `【$1】`。改完要同步到整晚分支與 main（commit-tree），再 `gh workflow run asc.yml --ref main -f mode=fill`。
+- 年齡分級還空 socialMediaAgeRestricted、gracRatingClassificationNumber（先不管，送審報錯再補）。
+- 價格免費、地區全部 → fill 後段，還沒跑到。
+- media 要的檔：`ios/ci/store/6.9/*.jpg`（3–10 張，APP_IPHONE_67）、`ios/ci/store/review.mp4`（附在審核資料）。
+- 隱私標籤問卷沒有 API。內建瀏覽器沒登入 App Store Connect（我不能輸入密碼）；多米沒說可以用他的 Chrome，所以沒碰。**送審可能被這個擋住**，擋住就留給多米早上點「不蒐集資料」再跑 submit。
+- 付費 App 協議有沒有簽不知道；12 個內購都是 MISSING_METADATA（差審核截圖）。
 
-## 🚧 還沒做完 / 待決定
+## 還沒做（照 OVERNIGHT.md 編號）
+1. 2：M2 接 Swift。subagent 已把 154 個 `{代號}-{造型}Anim.imageset` 放進 `Assets.xcassets/PortraitStyles/`（21 MB），檢查圖在 `.uiux/像素風立繪/造型風格/動畫檢查/總覽_{造型}.png`（先看幾張）。Swift 要改：`Theme.swift` 的 `PortraitStyle.hasAnimation` 改成全部 true、`RencanPortrait.animationName` 加 style 參數（`name(...style) + "Anim"`），`SteleView.swift` 呼叫處帶 style。再加一條 UI 測試或改 DemoUITests 帶 `-rencanOwn celadon` 與 `-rencanPlayPortrait` 拍兩張比對。要 commit 的：`.uiux/像素風立繪/animate.py`、`造型風格/make_styles.py`、`造型風格/make_style_anims.py`、`動畫_新去背/*_anim96_mask.png`、Assets 的 154 個 imageset；`動畫_造型/` 與 `動畫檢查/` 是重複或檢查用，別 commit（太大）。
+2. 推整晚分支跑檢查線（推之前確認沒有正在跑的同分支 run，推了會取消它）。
+3. 8：商品頁截圖。照 `E:\茄記\qieji-1.1\.aso\上架展示圖準則.md`，腳本在 `docs/上架文稿.md` 第五節。用 Limrun 拍原圖（金鑰 `~/.lim/config.yaml` 可用，13:00 開機測過；做法見記憶 limrun-cloud-simulator 與 `.vibe/tools/limrun_walk.mjs`；模擬器版從檢查線 artifact `rencan-sim-app` 下載，是 Debug 版，啟動參數 -rencanUITest -rencanSeed demo -rencanOwn all 都能用）。複製 `E:\茄記\qieji-1.1\.aso\tools\store_shots.py` 到 `.aso/tools/`（或 ios/ci/store/），改顏色（app 圖示的金棕）與 SHOTS，輸出 `ios/ci/store/6.9/*.jpg`。付費那張用 `-rencanOwn all`（圖上不能有價格）。
+4. 8b：送審錄影，Limrun `client.startRecording()`／`stopRecording({ localPath })`。照送審備註的步驟走（第一次打開→身高 175、男、開始→手動輸入體組成 70／15→結算境界→慶祝→記一筆修煉→分析頁→設定→立繪造型→點有鎖的→購買鍵→恢復購買）。存 `ios/ci/store/review.mp4`，從頭看一次。模擬器 typeText 會變注音，數字用點鍵盤（見記憶）。
+5. 5 的後半：12 張審核截圖複製成 `ios/ci/iap_review_screenshots/{代碼}.png`，到 main 跑 `gh workflow run iap.yml --ref main -f mode=screenshots`。
+6. 9：安全自查（可開 subagent 跑 vibe-security-gate C，產出 `.vibe/安全檢查報告.md`）。
+7. 10：併 main 出建置：在 main 上 `git merge --no-ff --no-commit work/overnight-20261118-1130`，同一個 commit 改 `ios.yml` 的 `TESTFLIGHT_NOTES`（設定頁「立繪造型」、十一種造型與待機動畫、TestFlight 沙盒購買不扣錢），訊息不帶 [skip ci]。注意 main 上已有 asc 工具的 commit（f5cdde8、7d2d0fe、f9333cf），內容跟整晚分支相同，應該不衝突。
+8. 11：fill、media、iap screenshots 跑完再 check 一次。
+9. 12：等新建置 VALID 後 `-f mode=submit -f build=<號>`。
+10. 13：帳本（`.vibe/切片帳本.md` 進行中段加 M2–M4、上架）、OVERNIGHT.md 早上摘要、這份 HANDOFF。
 
-- **M1 併 main**：截圖已看過沒問題，只等 run 44226248264 第 2 次嘗試綠燈，就問多米要不要併 main 出 1.0（34）。如果 HoldDelete 再紅，代表那條測試在慢機器上不穩，要另外修測試（把復原的等待放寬，或測試模式把復原秒數拉長），不要拿 M1 的程式動刀。併的時候跟前兩次一樣：在 main 上 `git merge --no-ff --no-commit`，同一個 merge commit 改 `ios.yml` 的 `TESTFLIGHT_NOTES`，訊息不帶 `[skip ci]`。
-- **M2 付費造型的待機動畫**：掌機四色、粗像素可整條換色；其他九種要讓 `animate.py` 每格輸出角色範圍再換色。做好後把 `PortraitStyle.hasAnimation` 打開。
-- **M3 內購（StoreKit）、M4 選造型頁加鎖與購買鍵**：產品 ID 照 `ios/ci/iap_products.json`，一字不差。出錯一律當沒買、顯示原版（安全標準）。按鈕字用「購買」，不用「解鎖」（多米的寫作禁用詞）。
-- **審核截圖**：M4 做好後加 UI 測試一次拍 12 張，再擴充 `iap_products.mjs` 上傳。
-- 產品定稿兩處還沒改（`.vibe/產品定稿.md` 第 55、112 行「內購／無內購」），改前把原文拿給多米看。
-- 水墨、全套兩個商品的上架地區是多米自己設的，腳本沒動；如果他只勾台灣，會跟其他十個不一樣，問過他、還沒答。
-- 畫布上「境界頁換造型」那張（InAppRealm）還是舊的入口，入口已改設定頁，之後要改。
-- 付費造型的宗門晉升長老圖、第一次打開那頁不換造型（多米同意）。
-
-## 📌 關鍵決策（下次別再爭論）
-
-- 多米定的：單買 120、全套 480、入口設定頁、原版加十一種（青花瓷、赤霞夕照、霓虹、翠玉是第八到十一種）、功法卡 A 版、雷達圖丙版、設定頁固定說明拿掉。
-- 內購商品資料一律改 `ios/ci/iap_products.json` 再到 GitHub Actions 跑「內購商品」→ create；不要手動到後台改，兩邊會對不上。
-- 併 main 前一律先問多米；push 的最後一筆帶 `[skip ci]` 會整次不跑（設計檔、帳本那種才帶）。
-- 霓虹的亮邊沿「封口後的外形」描、縫補深紫；新風格都先 `binary_fill_holes`。檢查新風格要男女十四張都看、放大五倍。
-- 多米要中文回覆（這次中途我一度用英文講，他說「說中文」）。
-
-## 📂 下個會話最重要的檔案
-
-- `.vibe/安全標準.md` ← **下一個會話必讀**（內購屬付費，出錯倒向鎖住；類別 9 新增了 `iap.yml` 那一條）。
-- `.vibe/付費造型計畫.md` ← 組塊 M 五片、價格、商品清單與文案。
-- `.vibe/切片帳本.md` ← 真相源。
-- `ios/Rencan/App/Theme.swift` 的 `PortraitStyle`、`RencanPortrait` ← 造型從這裡接。
-- `ios/Rencan/Views/Settings/PortraitStyleView.swift` ← 選造型頁，M4 在這裡加鎖與購買。
-- `ios/ci/iap_products.json`、`ios/ci/iap_products.mjs` ← 內購商品。
-- `.uiux/像素風立繪/造型風格/make_styles.py`、`.uiux/像素風立繪/animate.py` ← M2 會動到。
-
-## ⏭️ 下一步從哪繼續
-
-1. 確認在 `E:\人篸修煉`、分支 `work/portrait-styles`。
-2. `gh run view 44226248264 --json attempt,conclusion` 看第 2 次嘗試：綠的話在帳本那筆 M1 記錄補上綠燈，問多米要不要併 main 出 1.0（34）；紅的話 `gh run view 44226248264 --log-failed` 看是不是又是 HoldDelete。
-3. 併 main 時 TestFlight 測試說明寫：設定頁多了「立繪造型」，可以換十一種造型（還沒收錢、付費造型暫時不會動）。
-4. 之後照 `.vibe/付費造型計畫.md` 做 M2（動畫）或 M3（內購），先問多米要先做哪個。
-
-## 🗑️ 這次會話的雜訊（下次別重新討論）
-
-- 第八種風格選型的過程（五個候選、雪夜沒選），結果已在 make_styles.py 與畫布。
-- 內購「方法一 API／方法二瀏覽器」的比較，已經用 API 做完。
-- 瀏覽器預覽 HTML 一直截圖逾時，跟頁面無關。
+## 關鍵決策（別再爭）
+- 多米 13:35 前說「自己解決」：併 main、填後台、送審都直接做，但每一步記在 OVERNIGHT.md。
+- 不用多米的 Chrome、不輸入任何密碼。
+- 推整晚分支會取消同分支正在跑的檢查線（concurrency），推之前先看。
+- 一直跳「允許」是 app 權限設定，已請多米換成自動接受。
