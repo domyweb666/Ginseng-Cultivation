@@ -27,7 +27,7 @@ env:
   # 小工具 extension 自己的 App ID 與描述檔（組塊 G）
   WIDGET_BUNDLE_ID: org.domyweb.rencan.widget
   WIDGET_PROFILE_NAME: Rencan Widget CI App Store
-  TESTFLIGHT_NOTES: "這一版改了四個地方：設定頁拿掉卡片下面的說明文字；境界頁的「境界」往下移；分析頁的功法卡，功法名跟等級排同一行，現代名稱不會再被拆成好幾行；功法雷達放大，軸端只寫功法名，練過的深金色、沒練過的灰色。其他功能跟上一版一樣。"
+  TESTFLIGHT_NOTES: "這一版多了付費立繪造型：設定頁多一列「立繪造型」，點進去有原版加十一種造型（水墨、鎏金、月夜、皮影燈籠、掌機四色、貼紙、粗像素、青花瓷、赤霞夕照、霓虹、翠玉），每種都有待機動畫。沒買的點了只預覽，底下有購買鍵和恢復購買。TestFlight 的購買是測試用的沙盒，不會扣錢。買了以後境界碑和慶祝畫面的立繪會換成那一種。其他功能跟上一版一樣。"
 
 jobs:
   core-tests:

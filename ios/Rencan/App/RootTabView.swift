@@ -38,6 +38,7 @@ struct RootTabView: View {
     @Environment(StoreService.self) private var store
     @Environment(HealthKitService.self) private var health
     @Environment(NotificationService.self) private var notifications
+    @Environment(PurchaseService.self) private var purchases
     @Query(sort: \Measurement.day) private var measurements: [Measurement]
     @Query(sort: \LiftRecord.createdAt) private var lifts: [LiftRecord]
     @Query private var settingsRows: [UserSettings]
@@ -52,7 +53,8 @@ struct RootTabView: View {
                 case .success(let digest):
                     PagesView(
                         digest: digest, lifts: lifts, latestSource: latestSource,
-                        healthStatus: healthStatus
+                        healthStatus: healthStatus,
+                        portraitStyle: purchases.effective(settings.portraitStyle)
                     )
                 case .failure(let error):
                     DataErrorView(message: RencanError.message(for: error))
@@ -82,6 +84,11 @@ struct RootTabView: View {
         }
         .task(id: syncTrigger) {
             await syncHealth()
+        }
+        // 回到前景就重看一次買過什麼（退款、別台裝置買的），沒買的造型畫面自動回原版。
+        .task(id: scenePhase == .active) {
+            guard scenePhase == .active else { return }
+            await purchases.refresh()
         }
     }
 
@@ -153,7 +160,9 @@ struct RootTabView: View {
         let summary = try digest(settings).get()
         let judgement = try store.saveMeasurement(draft, replacing: false, digest: summary)
         flow.page = .realm
-        if let celebration = Celebration.make(for: judgement, sex: sex) {
+        if let celebration = Celebration.make(
+            for: judgement, sex: sex, style: purchases.effective(settings.portraitStyle)
+        ) {
             flow.celebration = celebration
         } else {
             flow.showToast(Celebration.toast(for: judgement, sex: sex))
@@ -191,6 +200,8 @@ struct PagesView: View {
     let lifts: [LiftRecord]
     let latestSource: RecordSource?
     let healthStatus: HealthLinkStatus
+    /// 設定裡選的立繪造型（組塊 M1），境界頁要用
+    let portraitStyle: PortraitStyle
 
     var body: some View {
         @Bindable var flow = flow
@@ -223,7 +234,7 @@ struct PagesView: View {
                 .tag(RencanPage.settings)
             RealmView(
                 digest: digest, lifts: lifts, latestSource: latestSource,
-                healthStatus: healthStatus
+                healthStatus: healthStatus, portraitStyle: portraitStyle
             )
             .tabPage(.realm, current: flow.page, clearance: clearance)
             .tag(RencanPage.realm)
@@ -249,6 +260,8 @@ struct PagesView: View {
             EditRecordView(record: record, digest: digest)
         case .moveDetail(let key):
             MoveDetailView(key: key, digest: digest, lifts: lifts)
+        case .portraitStyle:
+            PortraitStyleView(digest: digest)
         }
     }
 }

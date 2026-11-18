@@ -24,7 +24,7 @@ private enum Metrics {
 }
 
 /// 設定頁（分頁列最右那格，照畫布 Settings）：文楷大標題，下面一區一張卡。
-/// 由上到下：身體、提醒、資料（匯出、匯入、刪除全部紀錄）、權限與關於。
+/// 由上到下：身體、立繪造型、健康 app、提醒、資料（匯出、匯入、刪除全部紀錄）、權限與關於。
 /// 每一區自己一個檔（Settings*Section.swift），這裡只管「身體」區與排順序。
 struct SettingsView: View {
     @Environment(AppFlow.self) private var flow
@@ -39,6 +39,7 @@ struct SettingsView: View {
                 if let heightCm = digest.heightCm, let sex = digest.sex {
                     bodySection(heightCm: heightCm, sex: sex)
                 }
+                SettingsStyleSection()
                 SettingsHealthSection(digest: digest)
                 SettingsReminderSection(digest: digest)
                 SettingsDataSection(digest: digest)

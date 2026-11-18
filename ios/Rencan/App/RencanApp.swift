@@ -9,6 +9,7 @@ struct AppServices {
     let store: StoreService
     let health: HealthKitService
     let notifications: NotificationService
+    let purchases: PurchaseService
 
     /// 建本機資料庫（不開 iCloud，審核規範 5.1.3）。inMemory 給 UI 測試用，每次從乾淨狀態開始。
     /// app 與 Siri 要拿同一份，所以外面一律呼叫 shared()（Intents/IntentSupport.swift），不直接叫這個。
@@ -25,7 +26,7 @@ struct AppServices {
         }
         return AppServices(
             container: container, store: store, health: HealthKitService(),
-            notifications: NotificationService()
+            notifications: NotificationService(), purchases: PurchaseService()
         )
     }
 }
@@ -46,6 +47,8 @@ struct RencanApp: App {
                 made.store.afterSave?()
                 // 在這裡就開始聽：點通知把 app 叫起來那一下，畫面還沒出現也收得到。
                 made.notifications.startListening()
+                // 內購的交易通知也一打開就聽（別台裝置買的、家長核准的、退款撤銷的）。
+                made.purchases.start()
             }
         } catch {
             made = nil
@@ -66,6 +69,7 @@ struct RencanApp: App {
                 .environment(services.store)
                 .environment(services.health)
                 .environment(services.notifications)
+                .environment(services.purchases)
                 .environment(flow)
         } else {
             StartupErrorView()

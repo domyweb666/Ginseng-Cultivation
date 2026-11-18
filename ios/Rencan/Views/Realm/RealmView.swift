@@ -18,6 +18,8 @@ struct RealmView: View {
     let latestSource: RecordSource?
     /// 健康 app 這條線現在怎麼樣（RootTabView 回到前景時去讀一次）。
     let healthStatus: HealthLinkStatus
+    /// 設定裡選的立繪造型（組塊 M1）
+    let portraitStyle: PortraitStyle
 
     var body: some View {
         ScrollView {
@@ -25,7 +27,7 @@ struct RealmView: View {
                 header
                 sectLine
                 if let stele = digest.stele, let sex = digest.sex {
-                    SteleView(stele: stele, sex: sex)
+                    SteleView(stele: stele, sex: sex, style: portraitStyle)
                     SourceRow(
                         measurement: stele.measurement, source: latestSource,
                         today: digest.today, status: healthStatus
@@ -107,17 +109,19 @@ struct RealmView: View {
     /// 多一顆「去設定打開讀取」。
     private var emptyStele: some View {
         VStack(spacing: RencanLayout.groupSpacing) {
-            Image(RencanPortrait.name(realmIndex: 0, sex: digest.sex ?? .male))
-                .interpolation(.none)
-                .resizable()
-                .scaledToFill()
-                .frame(
-                    width: RencanLayout.portraitSize.width,
-                    height: RencanLayout.portraitSize.height
-                )
-                .background(Color.rencan.tint)
-                .clipShape(RoundedRectangle(cornerRadius: RencanLayout.portraitCornerRadius))
-                .accessibilityLabel("雜役服人蔘立繪")
+            Image(
+                RencanPortrait.name(realmIndex: 0, sex: digest.sex ?? .male, style: portraitStyle)
+            )
+            .interpolation(.none)
+            .resizable()
+            .scaledToFill()
+            .frame(
+                width: RencanLayout.portraitSize.width,
+                height: RencanLayout.portraitSize.height
+            )
+            .background(Color.rencan.tint)
+            .clipShape(RoundedRectangle(cornerRadius: RencanLayout.portraitCornerRadius))
+            .accessibilityLabel("雜役服人蔘立繪")
             Text("還沒量過體組成")
                 .font(RencanType.title3)
             Text(HealthLinkText.emptyHint(for: healthStatus))

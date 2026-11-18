@@ -30,6 +30,7 @@
   渡劫男 扛一道大雷      渡劫女 電弧纏身、兩道小雷
 
 用法：python animate.py <統一色盤資料夾> [檢查圖的資料夾] [只做哪幾張，逗號分隔]
+輸出：{代號}_anim96.png（動畫），以及同樣 12×8 排法的 {代號}_anim96_mask.png（白＝角色，付費造型換色用，見 layers()）。
 比較用：環境變數 IDLE=still（身體不動）或 IDLE=sway（慢慢左右晃）可以出別種待機方式，
         這時成品檔名會多一段（{代號}_anim96_still.png），並存到環境變數 OUTDIR 指定的資料夾。
 """
@@ -821,6 +822,89 @@ def rig_gr6(base, blink, M):
     return rg
 
 
+# ---------- 分層輸出（付費造型的動畫用，組塊 M2）----------
+# 造型換色要知道每一格哪裡是角色、哪裡是背景、哪裡是特效。這裡照 Rig.frame 的疊法再走一次，
+# 動作、時間、疊的順序都跟 Rig.frame 一樣，只是多記下每一格是從哪裡來的。成品動畫還是由 Rig.frame 產生，這裡不改它。
+CHAR_MIN_PIECE = 8     # 跟 造型風格/ai_matte.py 的 MIN_PIECE 一樣
+
+
+def fx_affine(fns, f, post=False):
+    """把一串特效換成 out = img * T + C。特效都是「往某個顏色混 a」（點、線、光暈、閃白、變暗），疊幾層都還是這個形式，
+    所以各餵一張全黑、全白的圖進去，就能把 T（底下透出來多少）和 C（特效貼上去的顏色乘上濃度）解出來。"""
+    lo = np.zeros((GH, GW, 3), dtype=np.float32)
+    hi = np.full((GH, GW, 3), 255.0, dtype=np.float32)
+    for fn in fns:
+        if post:
+            lo, hi = fn(lo, f), fn(hi, f)
+        else:
+            fn(lo, f)
+            fn(hi, f)
+    return (hi - lo) / 255.0, lo
+
+
+def layers(rg, A, f, fx=True):
+    """第 f 格拆成幾層。A 是角色範圍（AI 去背的遮罩）。
+    回傳 clean：沒有特效的畫面；char：這一格哪些格子是角色（零件搬過來的格子，原本的位置在 A 裡面才算，
+    零件外面多切的那一圈背景色不算）；cover：哪些格子被零件蓋住（背景層的特效畫不到）；
+    fx=True 時再加 back、front、post 三組 (T, C)，分別是角色後面、最上面、整張的特效。"""
+    if not rg._built:
+        rg.build()
+    if rg.soft:
+        raise ValueError('有柔性變形的骨架還沒支援分層輸出')
+    union = rg.hole.copy() if rg.hole is not None else np.zeros((GH, GW), dtype=bool)
+    for p in rg.parts:
+        union |= p.mask
+    closed = bool(rg._blink) and (f % N) in rg._blink[1]
+    clean = (rg.bg_alt if closed else rg.bg).copy()
+    char = A & ~union                 # 背景層裡沒被補掉、還留著原圖角色的格子
+    cover = np.zeros((GH, GW), dtype=bool)
+    for p in rg.parts:
+        mask, tex = p.mask, (p.alt if closed else p.tex)
+        X, Y = XS, YS
+        for tr in p.chain(f):
+            X, Y = tr(X, Y)
+        sx, sy = np.floor(X + 0.5).astype(int), np.floor(Y + 0.5).astype(int)
+        ok = (sx >= 0) & (sx < GW) & (sy >= 0) & (sy < GH)
+        m = np.zeros((GH, GW), dtype=bool)
+        m[ok] = mask[sy[ok], sx[ok]]
+        clean[m] = tex[sy[m], sx[m]]
+        char[m] = A[sy[m], sx[m]]
+        cover |= m
+    # 零件分開動的時候會切出一兩格離群的碎點（金丹女繞圈時金丹邊緣留在手上的兩格、葉子轉動切下的根鬚尖）。
+    # 照 ai_matte.py 的規矩，小於 CHAR_MIN_PIECE 格的碎點當灰塵、不算角色；不然貼紙、霓虹會幫每顆碎點描一圈邊，一格一格閃
+    from scipy import ndimage
+    lab, n = ndimage.label(char, structure=np.ones((3, 3)))
+    if n:
+        sizes = ndimage.sum(char, lab, range(1, n + 1))
+        char &= np.isin(lab, [i + 1 for i, s in enumerate(sizes) if s >= CHAR_MIN_PIECE])
+    out = {'clean': clean, 'char': char, 'cover': cover}
+    if fx:
+        out['back'] = fx_affine(rg.back, f)
+        out['front'] = fx_affine(rg.front, f)
+        out['post'] = fx_affine(rg.post, f, post=True)
+    return out
+
+
+def build_rig(folder, name):
+    """讀圖、建骨架。回傳 (骨架, 色盤, 角色範圍)。缺檔直接丟例外。"""
+    base, pal = load(folder, name)
+    if base is None:
+        raise FileNotFoundError(os.path.join(folder, '%s_%dx%d.png' % (name, GW, GH)))
+    blink, _ = load(folder, name, '_blink')
+    M = np.asarray(Image.open(os.path.join(folder, '%s_%dx%d_mask.png' % (name, GW, GH)))) > 127
+    return RIGS[name](base, blink, M), pal, M
+
+
+def sheet_of(cells):
+    """96 格排成 12×8 的格子圖。"""
+    h, w = cells[0].shape[:2]
+    out = np.zeros((h * (N // COLS), w * COLS) + cells[0].shape[2:], dtype=cells[0].dtype)
+    for i, c in enumerate(cells):
+        r, k = divmod(i, COLS)
+        out[r * h:(r + 1) * h, k * w:(k + 1) * w] = c
+    return out
+
+
 # 拆成零件的試做版。環境變數 PARTS=1 時用這裡的，成品檔名多一段 _parts，零件圖層另外存到 OUTDIR/<代號>_layers/
 PARTS = {'r0': rig_r0_parts}
 RIGS = {'r0': rig_r0, 'gr0': rig_gr0, 'r1': rig_r1, 'gr1': rig_gr1, 'r2': rig_r2, 'gr2': rig_gr2, 'r3': rig_r3, 'gr3': rig_gr3,
@@ -864,6 +948,11 @@ def main():
                 Image.fromarray(rgba, 'RGBA').save(os.path.join(ldir, '%d_%s.png' % (i + 1, part.name)))
         im.save(out, optimize=True)
         print(name, 'frames', N, os.path.getsize(out), 'bytes')
+        if not use_parts:
+            # 每一格的角色範圍（白＝角色，零件掛在身上的道具、葉子都算），付費造型換色用
+            chars = [layers(rg, M, f, fx=False)['char'] for f in range(N)]
+            mout = os.path.join(outdir, '%s_anim%d%s_mask.png' % (name, N, tag))
+            Image.fromarray(sheet_of([(c * 255).astype(np.uint8) for c in chars]), 'L').save(mout, optimize=True)
         if dbg:
             rg.debug(os.path.join(dbg, 'dbg_%s.png' % name))
             a = STRIP[name]

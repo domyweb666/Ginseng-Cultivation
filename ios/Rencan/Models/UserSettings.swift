@@ -17,12 +17,19 @@ final class UserSettings {
     var reminderEnabled: Bool = false
     /// 每月幾號提醒（1 到 28）。
     var reminderDay: Int = Reminder.defaultDay
+    /// 立繪造型的代碼（PortraitStyle.rawValue）。預設原版；舊資料沒有這欄，SwiftData 自動補預設值。
+    var portraitStyleCode: String = "original"
 
     init() {}
 
     var sex: Sex? {
         get { sexCode.flatMap(Sex.init(rawValue:)) }
         set { sexCode = newValue?.rawValue }
+    }
+
+    /// 認不得的代碼（例如之後拿掉的造型）一律當原版，不會顯示一張不存在的圖。
+    var portraitStyle: PortraitStyle {
+        PortraitStyle(rawValue: portraitStyleCode) ?? .original
     }
 
     /// 身高與性別都有了，才算得出境界。

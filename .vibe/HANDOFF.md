@@ -1,68 +1,40 @@
-# Handoff: 立繪改用 AI 去背、待機動畫重出（檢查線全綠，等併 main）；付費造型七種做好、還要補第八種，計畫等多米點頭
+# Handoff: 整晚上架進行中（M3、M4 綠了，M2 圖做好待接 Swift，App Store Connect 填到一半）
 
-> 產出時間：2026-11-18 06:30
-> 這次會話從「立繪畫不同風格當收費項目」開始，做了風格提案、AI 去背、動畫重出、付費計畫。
-> **一律在 `E:\人篸修煉` 工作（多米只用這個資料夾）**。這次的分支是 `work/anim-mask`，資料夾已經切在這個分支上。中途開過的第二個資料夾 `E:\人篸修煉-動畫` 已經拿掉，不要再開 worktree。
-> 真相源是 `.vibe/切片帳本.md`。app 主線的上一個狀態：TestFlight 1.0（31）已出，等多米在手機上看（帳本第 182 行）。
+> 產出時間：2026-11-18 13:40。一律在 `E:\人篸修煉`，分支 `work/overnight-20261118-1130`（從 work/portrait-styles 開，含 M1）。
+> 多米的指示（11:30–13:35）：熬夜做到上架為止；多開 subagent；拍照和錄影都用 Limrun；**睡醒要看到已經送審，途中困難自己解決**；context 太長就寫 handoff 繼續。
+> 進度主檔是專案根目錄的 `OVERNIGHT.md`（任務清單 1–13、待確認、執行紀錄）。先讀它。
 
-## ✅ 這次完成了什麼
+## 已完成
+- 1：M1 檢查線綠。3、4：M3 內購（`Services/PurchaseService.swift`，StoreKit 2，出錯當沒買，UI 測試走假商店）、M4 選造型頁（鎖、全套卡、購買鍵、恢復購買），run 44233063338 全綠，截圖看過。
+- 5（一半）：`IAPReviewShotsUITests` 拍出 12 張審核截圖（在 run 44233063338 的 artifact rencan-ui-screenshots，檔名 IAPReviewShots-NN-代碼.png）；`iap_products.mjs` 有 MODE=screenshots，讀 `ios/ci/iap_review_screenshots/{代碼}.png`（代碼＝產品 ID 最後一段，全套 all）。**還沒把圖放進那個資料夾、還沒跑。**
+- 6、7：文件與 `docs/上架文稿.md`（commit 58f7b3c）。
+- 網站：`E:\domyweb-main` 5d51403 已推，`https://domyweb.org/rencan/privacy/`、`/rencan/support/`（部署後要確認打得開，沒斜線的網址會 308 轉）。
+- 審核聯絡資訊：GitHub secret `REVIEW_CONTACT_JSON`（從茄記 store.config.json 來，同一個人；repo 公開，不准寫進檔案）。
 
-- 畫布 https://claude.ai/artifact/YPBCBJde2WzFBBKRQcLZFW ：金丹男八種風格並排、男女各一張「每種風格套七境界」、境界頁換造型、選造型頁、待機動畫新舊並排（可暫停、逐格）。畫板原始檔在 `.uiux/像素風立繪/造型風格/畫布原始檔/`。
-- 八種風格用程式從像素圖轉出：原版（免費）＋水墨、鎏金、月夜、皮影燈籠、掌機四色、貼紙、粗像素（付費）。程式 `.uiux/像素風立繪/造型風格/make_styles.py`（用法：`python 造型風格/make_styles.py 統一色盤 <輸出資料夾>`，在 `.uiux/像素風立繪` 底下跑）。水彩典藏多米決定拿掉。
-- 角色範圍改用 rembg AI 去背（`造型風格/ai_matte.py`，結果在 `造型風格/aimask/`），取代 GrabCut 的舊 mask。兩個模型逐張挑：大多 birefnet-general；金丹男、化神男用 isnet-general-use；化神女兩者聯集再照顏色扣掉月亮；元嬰女用框扣掉法杖右邊的雲（框避開法杖頭）。模型在 `C:\Users\fcharlie\.u2net`。
-- 14 條待機動畫用新去背重出（`造型風格/動畫_新去背/`，animate.py 動作不變），另修三個舊毛病：
-  - 煉氣男女盪桶時衣襬露白線、袖口碎片、桶的殘影輪廓（`animate.py` 的 `bucket_cut`、手臂水桶只留角色多一格、煉氣男袖口 `CUFF_R0` 疊在手臂上）。
-  - 金丹女的金丹拖著一條柄（`core_mask` 加 `below`，金丹女切在 +4）。
-- 新動畫換進 app（`ios/Rencan/Resources/Assets.xcassets/Portraits/*Anim.imageset`），推上 `work/anim-mask`，檢查線 run 44182808267 全綠。
-- 寫了付費計畫 `.vibe/付費造型計畫.md`（組塊 M 五片）。
+## App Store Connect 工具（都在 main 上，用 git commit-tree 直接推 main，不動工作區）
+- `.github/workflows/asc.yml`：手動、只准 main。mode：check（`asc_release.mjs` 只讀）、fill／media／submit（`asc_publish.mjs`），submit 可帶 build 號。
+- 資料：`ios/ci/asc_listing.json`；描述與送審備註從 `docs/上架文稿.md` 抽 ``` 區塊（開頭字串比對）。
+- fill 第二輪停在：**描述不能有「▌」**。修法：asc_publish.mjs 抽描述後把 `^▌(.+)$` 換成 `【$1】`。改完要同步到整晚分支與 main（commit-tree），再 `gh workflow run asc.yml --ref main -f mode=fill`。
+- 年齡分級還空 socialMediaAgeRestricted、gracRatingClassificationNumber（先不管，送審報錯再補）。
+- 價格免費、地區全部 → fill 後段，還沒跑到。
+- media 要的檔：`ios/ci/store/6.9/*.jpg`（3–10 張，APP_IPHONE_67）、`ios/ci/store/review.mp4`（附在審核資料）。
+- 隱私標籤問卷沒有 API。內建瀏覽器沒登入 App Store Connect（我不能輸入密碼）；多米沒說可以用他的 Chrome，所以沒碰。**送審可能被這個擋住**，擋住就留給多米早上點「不蒐集資料」再跑 submit。
+- 付費 App 協議有沒有簽不知道；12 個內購都是 MISSING_METADATA（差審核截圖）。
 
-## 🚧 還沒做完 / 待決定
+## 還沒做（照 OVERNIGHT.md 編號）
+1. 2：M2 接 Swift。subagent 已把 154 個 `{代號}-{造型}Anim.imageset` 放進 `Assets.xcassets/PortraitStyles/`（21 MB），檢查圖在 `.uiux/像素風立繪/造型風格/動畫檢查/總覽_{造型}.png`（先看幾張）。Swift 要改：`Theme.swift` 的 `PortraitStyle.hasAnimation` 改成全部 true、`RencanPortrait.animationName` 加 style 參數（`name(...style) + "Anim"`），`SteleView.swift` 呼叫處帶 style。再加一條 UI 測試或改 DemoUITests 帶 `-rencanOwn celadon` 與 `-rencanPlayPortrait` 拍兩張比對。要 commit 的：`.uiux/像素風立繪/animate.py`、`造型風格/make_styles.py`、`造型風格/make_style_anims.py`、`動畫_新去背/*_anim96_mask.png`、Assets 的 154 個 imageset；`動畫_造型/` 與 `動畫檢查/` 是重複或檢查用，別 commit（太大）。
+2. 推整晚分支跑檢查線（推之前確認沒有正在跑的同分支 run，推了會取消它）。
+3. 8：商品頁截圖。照 `E:\茄記\qieji-1.1\.aso\上架展示圖準則.md`，腳本在 `docs/上架文稿.md` 第五節。用 Limrun 拍原圖（金鑰 `~/.lim/config.yaml` 可用，13:00 開機測過；做法見記憶 limrun-cloud-simulator 與 `.vibe/tools/limrun_walk.mjs`；模擬器版從檢查線 artifact `rencan-sim-app` 下載，是 Debug 版，啟動參數 -rencanUITest -rencanSeed demo -rencanOwn all 都能用）。複製 `E:\茄記\qieji-1.1\.aso\tools\store_shots.py` 到 `.aso/tools/`（或 ios/ci/store/），改顏色（app 圖示的金棕）與 SHOTS，輸出 `ios/ci/store/6.9/*.jpg`。付費那張用 `-rencanOwn all`（圖上不能有價格）。
+4. 8b：送審錄影，Limrun `client.startRecording()`／`stopRecording({ localPath })`。照送審備註的步驟走（第一次打開→身高 175、男、開始→手動輸入體組成 70／15→結算境界→慶祝→記一筆修煉→分析頁→設定→立繪造型→點有鎖的→購買鍵→恢復購買）。存 `ios/ci/store/review.mp4`，從頭看一次。模擬器 typeText 會變注音，數字用點鍵盤（見記憶）。
+5. 5 的後半：12 張審核截圖複製成 `ios/ci/iap_review_screenshots/{代碼}.png`，到 main 跑 `gh workflow run iap.yml --ref main -f mode=screenshots`。
+6. 9：安全自查（可開 subagent 跑 vibe-security-gate C，產出 `.vibe/安全檢查報告.md`）。
+7. 10：併 main 出建置：在 main 上 `git merge --no-ff --no-commit work/overnight-20261118-1130`，同一個 commit 改 `ios.yml` 的 `TESTFLIGHT_NOTES`（設定頁「立繪造型」、十一種造型與待機動畫、TestFlight 沙盒購買不扣錢），訊息不帶 [skip ci]。注意 main 上已有 asc 工具的 commit（f5cdde8、7d2d0fe、f9333cf），內容跟整晚分支相同，應該不衝突。
+8. 11：fill、media、iap screenshots 跑完再 check 一次。
+9. 12：等新建置 VALID 後 `-f mode=submit -f build=<號>`。
+10. 13：帳本（`.vibe/切片帳本.md` 進行中段加 M2–M4、上架）、OVERNIGHT.md 早上摘要、這份 HANDOFF。
 
-- **補第八種付費風格（多米要開新對話做）**。選造型頁是三欄，現在原版加七種共八格，最後一排缺一格，多米說「感覺少一張」。要再畫一種新風格補成九格：
-  - 做法照其他七種：在 `make_styles.py` 的 `STYLES` 加一個函式，輸入像素圖與 `aimask`，輸出同尺寸的圖。最好是「逐點換色」或「角色與背景分開換色」，這樣待機動畫也套得上。
-  - 先出金丹男、金丹女兩張給多米選（他習慣先在畫布上看到樣子），選定後再出男女七境界。
-  - 定了以後要更新的地方：畫布四張畫板（Main 八種並排、Series 男、SeriesFemale 女、InAppShop 選造型頁）、`付費造型計畫.md`（七種改八種、全套改八種、app 大小估算）。
-  - 我沒有替他選風格。可以提給他挑的方向（都還沒做）：青花瓷（白底藍色單色）、赤霞夕照（橘紫漸層背景）、翠玉（綠色玉石質感）、雪夜（白雪背景加冷色）、霓虹（暗底亮色描邊）。
-- **併 main**：檢查線全綠，要問多米要不要併 main 出新的 TestFlight（照他習慣，併 main 前先問）。
-- **付費造型計畫等多米點頭**，要他做或決定的事：
-  - 他自己去 App Store Connect 簽「付費 App 協議」、填稅務銀行（要幾天，沒做完 TestFlight 也買不到）。
-  - 怎麼賣（我建議單買＋全套）、價格（畫布寫 [價格]）、入口放境界頁還是設定頁。
-- 產品定稿兩處要改（「明確不做」的「內購、廣告（第一版免費）」、收費列「免費，無內購」）。多米 2026-11-18 說「第一版就加付費」，但檔案還沒改；改前把那兩行拿給他看（他的規矩）。
-- 元嬰女法杖右邊、袖子上緣留了一塊 4×4 淡色，我判斷是袖口沒扣。多米說是雲再扣（`ai_matte.py` 的 `DROP_BOX`）。
-- 水墨、鎏金、月夜、皮影、貼紙的動畫還沒做（要讓 animate.py 輸出每格角色範圍再換色）；掌機四色、粗像素可直接整條換色。這是計畫的 M2。
-
-## 📌 關鍵決策（下次別再爭論）
-
-- 多米親口定的：付費造型「第一版就加」；水彩典藏拿掉；新動畫「換進 app」；只在 `E:\人篸修煉` 一個資料夾工作；要補一種新風格湊滿九格。
-- 風格靠程式轉，不重畫；完全不同畫風（Q 版等）要生圖，這次不做。
-- 去背一律用 `造型風格/aimask/`，不要再用 `統一色盤/*_mask.png`（GrabCut 版分不出白袍與雲，補規則補了兩輪都越補越壞）。
-- 檢查去背和新風格的方法：放大五倍、男女十四張都看、用貼紙風格看邊緣（它會把去背邊緣描白邊），看完才能說修好。這次我兩次沒看仔細就說修好，被多米抓到。
-- 動畫程式不改、只換輸入：把像素圖、閉眼圖、`aimask` 改名成 `_mask.png` 放進 `動畫_新去背/`，在 `.uiux/像素風立繪` 底下跑 `python animate.py 造型風格/動畫_新去背`，輸出不會蓋掉 `統一色盤/` 的定版。
-- 煉氣男重跑跟定版差一條 9 格線（水桶附近），來自之後拆零件試做改過共用程式，跟去背無關。
-- push 的最後一筆 commit 帶 `[skip ci]` 會整次不跑檢查線。設計檔那筆帶 `[skip ci]` 排前面、要驗的那筆排最後。
-- 改畫板用 sed 刪整段時要先看清楚行號，這次多刪一行把水墨卡片的開頭刪掉，補回來了。
-
-## 📂 下個會話最重要的檔案
-
-- `.vibe/安全標準.md` ← **下一個會話必讀**。內購屬於付費相關，出錯要倒向鎖住。
-- `.uiux/像素風立繪/造型風格/make_styles.py` ← 加新風格的地方（`STYLES`）。
-- `.uiux/像素風立繪/造型風格/畫布原始檔/` ← 畫布四張要加新風格的畫板原始檔。
-- `.vibe/付費造型計畫.md` ← 組塊 M 的計畫與待決定的事。
-- `.vibe/切片帳本.md` ← 真相源，第 183 行是這次的記錄。
-- `.vibe/產品定稿.md` 第 55、112 行 ← 要改的兩處。
-- `ios/Rencan/App/Theme.swift` 的 `RencanPortrait` ← app 唯一決定顯示哪張立繪的地方，造型從這裡接。
-- `.uiux/像素風立繪/animate.py` ← 這次改了水桶與金丹的切法。
-
-## ⏭️ 下一步從哪繼續
-
-1. 確認 `git branch` 是 `work/anim-mask`（在 `E:\人篸修煉`）。
-2. 多米說開新對話畫第八種風格：先給他幾個方向挑（上面列的五個，或他自己說），選了就在 `make_styles.py` 加函式，出金丹男女兩張放上畫布給他看；他點頭再出男女七境界、更新四張畫板和計畫。
-3. 找空檔問多米要不要把 `work/anim-mask` 併 main 出 TestFlight（檢查線 run 44182808267 已全綠）。
-4. 付費計畫：問他怎麼賣、價格、入口，提醒付費 App 協議先辦。他點頭後先改產品定稿兩處（給他看原文），再從 M1 開始。
-
-## 🗑️ 這次會話的雜訊（下次別重新討論）
-
-- GrabCut 遮罩加「頭頂區域」「亮又沒彩度」規則的兩輪嘗試，全部被 AI 去背取代。
-- 九種風格的色票與參數調整過程，結果都在 `make_styles.py`。
-- 第一輪檢查線 cancelled 是被新推送取消，不是機器排不到。
-- worktree 的來回，已經收掉了。
+## 關鍵決策（別再爭）
+- 多米 13:35 前說「自己解決」：併 main、填後台、送審都直接做，但每一步記在 OVERNIGHT.md。
+- 不用多米的 Chrome、不輸入任何密碼。
+- 推整晚分支會取消同分支正在跑的檢查線（concurrency），推之前先看。
+- 一直跳「允許」是 app 權限設定，已請多米換成自動接受。

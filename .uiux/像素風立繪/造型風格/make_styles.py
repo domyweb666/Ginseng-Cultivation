@@ -4,11 +4,9 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageFilter
 
-SRC = Path(sys.argv[1])          # 統一色盤資料夾
-OUT = Path(sys.argv[2])
 # 水彩典藏 2026-11-18 多米決定拿掉（水彩圖做不了動畫），所以不再讀水彩原圖
 AIMASK = Path(__file__).parent / "aimask"
-OUT.mkdir(parents=True, exist_ok=True)
+SRC = None                       # 統一色盤資料夾，main() 從命令列設定；別的程式 import 時自己傳 src 給 load()
 
 
 def hexs(*hs):
@@ -35,8 +33,8 @@ def posterize_map(l, stops):
     return stops[i]
 
 
-def load(code):
-    im = Image.open(SRC / f"{code}_168x210.png").convert("RGB")
+def load(code, src=None):
+    im = Image.open(Path(src or SRC) / f"{code}_168x210.png").convert("RGB")
     rgb = np.asarray(im).astype(np.float32)
     # 角色範圍改用 ai_matte.py 的 AI 去背（2026-11-18）；GrabCut 版分不出白袍和雲，補規則越補越壞
     m = Image.open(AIMASK / f"{code}_168x210_aimask.png").convert("L")
@@ -100,12 +98,18 @@ def style_handheld(rgb, mask):
     return posterize_map(np.clip(l + dither, 0, 0.999), hexs("#1B2A1A", "#3C6233", "#87A84D", "#CFE09A"))
 
 
-def style_sticker(rgb, mask, bgc="#F2E6CC", dot="#E6D6B4"):
+def style_sticker(rgb, mask, bgc="#F2E6CC", dot="#E6D6B4", wrap_shadow=True):
+    """wrap_shadow：陰影用 np.roll 往右下推，角色碰到右邊界的（r2–r6、gr3、gr5、gr6）會從左邊界繞出一條三格寬的陰影。
+    靜態圖已經是這樣（預設 True 不變）；動畫傳 False，不然那條會跟著呼吸上下跳（2026-11-18 組塊 M2 發現）。"""
     h, w = mask.shape
     m = Image.fromarray((mask * 255).astype(np.uint8))
     white = np.asarray(m.filter(ImageFilter.MaxFilter(7))) > 127
     dark = np.asarray(m.filter(ImageFilter.MaxFilter(9))) > 127
-    shadow = np.roll(np.roll(dark, 4, axis=0), 3, axis=1)
+    if wrap_shadow:
+        shadow = np.roll(np.roll(dark, 4, axis=0), 3, axis=1)
+    else:
+        shadow = np.zeros_like(dark)
+        shadow[4:, 3:] = dark[:-4, :-3]
     yy, xx = np.mgrid[0:h, 0:w]
     out = np.broadcast_to(hexs(bgc)[0], (h, w, 3)).copy()
     out[((yy % 8) == 0) & ((xx % 8) == 0)] = hexs(dot)[0]
@@ -116,14 +120,22 @@ def style_sticker(rgb, mask, bgc="#F2E6CC", dot="#E6D6B4"):
     return out
 
 
-def style_chunky(rgb, mask):
-    im = Image.fromarray(rgb.astype(np.uint8))
+def chunky_small(rgb):
+    """粗像素的前半段：縮成一半、拉回對比與飽和度（縮小會把線條平均掉）。"""
+    im = Image.fromarray(np.clip(rgb, 0, 255).astype(np.uint8))
     small = np.asarray(im.resize((84, 105), Image.BOX)).astype(np.float32)
-    # 縮小會把線條平均掉，拉回對比與飽和度
     g = small.mean(axis=2, keepdims=True)
-    small = np.clip((small - g) * 1.35 + (g - 128) * 1.25 + 128, 0, 255).astype(np.uint8)
-    q = Image.fromarray(small).quantize(colors=20, method=Image.Quantize.MEDIANCUT).convert("RGB")
-    return np.asarray(q.resize((168, 210), Image.NEAREST)).astype(np.float32)
+    return Image.fromarray(np.clip((small - g) * 1.35 + (g - 128) * 1.25 + 128, 0, 255).astype(np.uint8))
+
+
+def style_chunky(rgb, mask, palette=None):
+    """palette：給一張 P 模式的圖就照它的色盤收色、不抖色（動畫每格共用同一份色盤才不會閃）；沒給就每張自己挑 20 色。"""
+    small = chunky_small(rgb)
+    if palette is None:
+        q = small.quantize(colors=20, method=Image.Quantize.MEDIANCUT)
+    else:
+        q = small.quantize(palette=palette, dither=Image.Dither.NONE)
+    return np.asarray(q.convert("RGB").resize((168, 210), Image.NEAREST)).astype(np.float32)
 
 
 def style_celadon(rgb, mask):
@@ -203,26 +215,46 @@ def save(arr, path):
     Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8)).save(path)
 
 
-# 一、金丹男、金丹女各八種（原版加七種付費）
-for code in ("r2", "gr2"):
-    rgb, mask = load(code)
-    save(rgb, OUT / f"{code}_original.png")
-    for name, fn in STYLES.items():
-        save(fn(rgb, mask), OUT / f"{code}_{name}.png")
+def main():
+    global SRC
+    SRC = Path(sys.argv[1])          # 統一色盤資料夾
+    OUT = Path(sys.argv[2])
+    OUT.mkdir(parents=True, exist_ok=True)
 
-# 二、每種風格七境界一排，男 sheet_{風格}.png、女 sheet_{風格}_f.png，1 倍、間隔 12
-GAP = 12
-for prefix, suffix in (("r", ""), ("gr", "_f")):
-    codes = [f"{prefix}{i}" for i in range(7)]
-    for name in ["original", *STYLES]:
-        sheet = Image.new("RGBA", (168 * 7 + GAP * 6, 210), (0, 0, 0, 0))
-        for i, c in enumerate(codes):
-            rgb, mask = load(c)
-            arr = rgb if name == "original" else STYLES[name](rgb, mask)
-            sheet.paste(Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8)), (i * (168 + GAP), 0))
-        sheet.save(OUT / f"sheet_{name}{suffix}.png")
+    # 一、金丹男、金丹女各八種（原版加七種付費）
+    for code in ("r2", "gr2"):
+        rgb, mask = load(code, SRC)
+        save(rgb, OUT / f"{code}_original.png")
+        for name, fn in STYLES.items():
+            save(fn(rgb, mask), OUT / f"{code}_{name}.png")
 
-# 三、動畫相容性檢查：鎏金套在動畫格子圖上（換色系風格整張套即可）
-anim = Image.open(SRC / "r2_anim96.png").convert("RGB")
-print("anim size", anim.size)
-print("done", sorted(p.name for p in OUT.iterdir()))
+    # 二、每種風格七境界一排，男 sheet_{風格}.png、女 sheet_{風格}_f.png，1 倍、間隔 12
+    GAP = 12
+    for prefix, suffix in (("r", ""), ("gr", "_f")):
+        codes = [f"{prefix}{i}" for i in range(7)]
+        for name in ["original", *STYLES]:
+            sheet = Image.new("RGBA", (168 * 7 + GAP * 6, 210), (0, 0, 0, 0))
+            for i, c in enumerate(codes):
+                rgb, mask = load(c, SRC)
+                arr = rgb if name == "original" else STYLES[name](rgb, mask)
+                sheet.paste(Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8)), (i * (168 + GAP), 0))
+            sheet.save(OUT / f"sheet_{name}{suffix}.png")
+
+    # 三、app 用的單張：男女十四張 × 每種付費風格，檔名 {境界代碼}-{風格}.png（2026-11-18 組塊 M1）
+    APP = OUT / "app"
+    APP.mkdir(exist_ok=True)
+    for prefix in ("r", "gr"):
+        for i in range(7):
+            code = f"{prefix}{i}"
+            rgb, mask = load(code, SRC)
+            for name, fn in STYLES.items():
+                save(fn(rgb, mask), APP / f"{code}-{name}.png")
+
+    # 四、動畫相容性檢查：鎏金套在動畫格子圖上（換色系風格整張套即可）
+    anim = Image.open(SRC / "r2_anim96.png").convert("RGB")
+    print("anim size", anim.size)
+    print("done", sorted(p.name for p in OUT.iterdir()))
+
+
+if __name__ == "__main__":
+    main()

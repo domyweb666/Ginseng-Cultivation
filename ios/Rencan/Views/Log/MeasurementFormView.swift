@@ -19,6 +19,7 @@ struct MeasurementFormView: View {
     @Environment(AppFlow.self) private var flow
     @Environment(StoreService.self) private var store
     @Environment(HealthKitService.self) private var health
+    @Environment(PurchaseService.self) private var purchases
     @Query private var settingsRows: [UserSettings]
     let digest: Digest
 
@@ -228,7 +229,8 @@ struct MeasurementFormView: View {
             writeBackIfEnabled(draft)
             flow.sheet = nil
             flow.page = .realm
-            if let celebration = Celebration.make(for: judgement, sex: sex) {
+            let style = purchases.effective(settingsRows.first?.portraitStyle ?? .original)
+            if let celebration = Celebration.make(for: judgement, sex: sex, style: style) {
                 flow.celebration = celebration
                 HapticsService.success()
             } else {

@@ -18,6 +18,8 @@ final class AppFlow {
         case measurementForm
         case editLift(LiftRecord)
         case moveDetail(MoveKey)
+        /// 選立繪造型（組塊 M1，從設定頁打開）
+        case portraitStyle
 
         var id: String {
             switch self {
@@ -29,6 +31,8 @@ final class AppFlow {
                 return "edit-" + record.uid
             case .moveDetail(let key):
                 return "move-" + key.rawValue
+            case .portraitStyle:
+                return "portraitStyle"
             }
         }
     }
@@ -54,6 +58,10 @@ final class AppFlow {
     func showError(_ error: Error) {
         if let health = error as? HealthError {
             toast = Toast(text: health.message)
+            return
+        }
+        if let purchase = error as? PurchaseError {
+            toast = Toast(text: purchase.message)
             return
         }
         toast = Toast(text: RencanError.message(for: error))
