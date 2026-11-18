@@ -43,6 +43,12 @@
   .badge { font-size: 11px; border-radius: 6px; padding: 0 6px; color: #fff; background: var(--c); margin-left: 6px; white-space: nowrap; }
   .foot { text-align: center; margin-top: 18px; color: var(--text2); font-size: 13px; }
   .foot .appic { width: 34px; height: 34px; border-radius: 9px; margin: 0 auto 4px; background: linear-gradient(135deg, #4A3A1A, #8B6A1E); }
+  .social { display: flex; justify-content: center; gap: 26px; margin-top: 14px; }
+  .social a { width: 28px; height: 28px; display: grid; place-items: center; }
+  .social svg { width: 26px; height: 26px; fill: none; stroke: #7A6E86; stroke-width: 1.6; }
+  .social svg .fill { fill: #7A6E86; stroke: none; }
+  .social svg .cut { fill: var(--canvas); stroke: none; }
+  .social svg .dot { fill: #7A6E86; stroke: none; }
   .stepper { display: flex; align-items: center; gap: 10px; }
   .stepper b { font-size: 17px; }
   .rb { width: 28px; height: 28px; border-radius: 50%; background: var(--soft); display: grid; place-items: center; color: var(--accent); }
@@ -175,6 +181,11 @@
         <div class="foot">
           <div class="appic"></div>
           人蔘修煉 1.0（36）<br>Made by DOMYWEB
+          <div class="social">
+            <a href="https://domyweb.org/" title="官網"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/></svg></a>
+            <a href="https://www.facebook.com/profile.php?id=61556891560581" title="臉書"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" class="fill"/><path d="M13.2 20v-6.3h2.1l.3-2.5h-2.4V9.6c0-.7.2-1.2 1.2-1.2h1.3V6.2a17 17 0 0 0-1.9-.1c-1.9 0-3.2 1.2-3.2 3.3v1.8H8.5v2.5h2.1V20" class="cut"/></svg></a>
+            <a href="https://www.instagram.com/domyweb_fc/" title="IG"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r="1" class="dot"/></svg></a>
+          </div>
         </div>
       </div>
     </div>
@@ -192,11 +203,12 @@
     <tr><td>恢復購買</td><td><span class="badge" style="--c:var(--new)">新增</span></td><td>現在只在選造型頁裡有，規格要設定頁也一列。成功、沒找到、失敗三種情況各一句話（「已恢復你的購買」「沒有找到購買紀錄」「出了點問題，請再試一次」）。</td></tr>
     <tr><td>意見回饋</td><td><span class="badge" style="--c:var(--new)">新增</span></td><td>開系統寫信畫面，主旨「[人蔘修煉] 意見回饋」，信末帶 app 版本、iOS 版本、機型、語言。<b>不帶任何體重、體脂數字</b>（安全標準：健康數值不外流）。手機沒設郵件就改開 mailto。需要你給一個支援信箱。</td></tr>
     <tr><td>評分</td><td><span class="badge" style="--c:var(--new)">新增</span></td><td>設定頁這列直接開 App Store 寫評論頁。另外系統的評分小視窗，我建議放在「突破境界的慶祝畫面關掉之後」問，加上安裝滿 3 天、記過 5 筆以上、同一版只問一次。這是全 app 最有成就感的一刻。</td></tr>
-    <tr><td>分享給朋友</td><td><span class="badge" style="--c:var(--new)">新增</span></td><td>系統分享面板，內容「我在用人蔘修煉：{一句話介紹} {App Store 連結}」。一句話介紹要你定。</td></tr>
+    <tr><td>分享給朋友</td><td><span class="badge" style="--c:var(--new)">新增</span></td><td>點了跳出修煉卡（就是之前畫的那張分享卡），下面「存到相簿」「分享」兩顆。境界頁、分析頁也各放一個入口，打開的是同一張卡。卡長什麼樣、按鈕放哪，見另一頁「分享卡選項」。</td></tr>
     <tr><td>蔬菜家族的其他 app</td><td><span class="badge" style="--c:var(--new)">新增</span></td><td>見第 2 條，這列跟「不連網」那條規矩打架。</td></tr>
     <tr><td>隱私權政策</td><td><span class="badge" style="--c:var(--rename)">改字</span></td><td>「隱私政策」改成「隱私權政策」。網址見第 6 條。</td></tr>
     <tr><td>開源授權</td><td><span class="badge" style="--c:var(--new)">新增</span></td><td>app 沒用外部套件，但字體「霞鶩文楷」是 SIL 開放字型授權（OFL），隨 app 發布要附授權全文。這頁就放它一份。</td></tr>
     <tr><td>版本</td><td><span class="badge" style="--c:var(--move)">搬位置</span></td><td>從「關於」的一列改成頁尾：小 icon、「人蔘修煉 1.0（36）」、「Made by DOMYWEB」。長按複製版本資訊，跳一句「已複製版本資訊」。</td></tr>
+    <tr><td>官網、臉書、IG</td><td><span class="badge" style="--c:var(--new)">新增</span></td><td>頁尾最下面三個小圖示，跟茄記同一組網址（domyweb.org、臉書粉專、IG domyweb_fc），點了跳出 app 開瀏覽器或該 app。網址跟茄記一樣寫在同一個檔，改一處就好。</td></tr>
     <tr><td>權限（整區）</td><td><span class="badge" style="--c:var(--drop)">拿掉</span></td><td>通知搬去「一般」，健康 app 的授權本來就在「健康 app」區管，這區就空了。</td></tr>
   </table>
 
