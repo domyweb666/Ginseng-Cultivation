@@ -59,14 +59,18 @@ extension StoreService {
         }
     }
 
-    /// 刪掉本機全部的量測與修煉（PRD S28）。身高與性別留著；健康 app 裡的資料不歸這裡管。
-    /// 不可逆：呼叫前畫面要先讓使用者再確認一次。存檔失敗會整個退回，一筆都不少。
-    /// 小工具的快照不用另外清：save() 成功後會照刪完的狀態重寫一份（尚未入道、本週 0 天）。
-    func deleteAllRecords() throws {
+    /// 清除所有資料（PRD S28；2026-11-19 照蔬菜家族共用規格改成連設定一起清）：量測、修煉、
+    /// 身高性別與其他設定（UserSettings 整筆）全部刪掉，畫面會回到第一次打開那頁。健康 app 裡的資料不歸這裡管。
+    /// 不可逆：呼叫前畫面要先讓使用者確認兩次。存檔失敗會整個退回，一筆都不少。
+    /// 小工具的快照不用另外清：save() 成功後會照刪完的狀態重寫一份。
+    func eraseAllData() throws {
         for record in try context.fetch(FetchDescriptor<Measurement>()) {
             context.delete(record)
         }
         for record in try context.fetch(FetchDescriptor<LiftRecord>()) {
+            context.delete(record)
+        }
+        for record in try context.fetch(FetchDescriptor<UserSettings>()) {
             context.delete(record)
         }
         try save()

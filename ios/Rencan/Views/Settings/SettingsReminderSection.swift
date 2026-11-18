@@ -9,7 +9,7 @@ import SwiftUI
 //                       （日子不在 1 到 28 丟 RencanError.invalidDate，存不進去丟 saveFailed）
 //   RencanApp.swift     畫面上 `.environment(services.notifications)`（NotificationService）
 // 已經有、這裡直接用的：AppFlow.showError、Task.pause(seconds:)、SectionTitle、RowDivider、
-// RencanSecondaryButtonStyle、SettingsAboutLinks.systemSettings（SettingsAboutSection.swift）。
+// RencanSecondaryButtonStyle、SettingsSystemLink.url（SettingsGeneralSection.swift）。
 
 /// 這一區自己的版面常數（數值照畫布 Settings）。
 private enum Metrics {
@@ -146,7 +146,7 @@ struct SettingsReminderSection: View {
                 .padding(.horizontal, Metrics.cardInset)
                 .accessibilityIdentifier("reminder-denied")
             Button("到系統設定打開通知") {
-                if let url = SettingsAboutLinks.systemSettings {
+                if let url = SettingsSystemLink.url {
                     openURL(url)
                 }
             }

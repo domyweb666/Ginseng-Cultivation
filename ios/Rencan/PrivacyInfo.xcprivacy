@@ -14,9 +14,12 @@
 	<array/>
 	<!-- 需要申報理由的 API：2026-11-16 搜過 ios/Rencan 與 ios/RencanCore，@AppStorage、檔案時間戳、
 	     開機時間、磁碟空間、鍵盤清單都沒用到。
-	     UserDefaults 只有一處：Services/WidgetBridge.swift 把小工具的快照寫進 App Group 那一格（組塊 G）。
-	     理由代碼 1C8F.1：只讀寫同一個 App Group 裡的 app 與 extension 自己放的資料。
-	     小工具的 target 有自己的一份（RencanWidget/PrivacyInfo.xcprivacy），兩邊要一起改。 -->
+	     UserDefaults 有兩種用法：
+	     1. Services/WidgetBridge.swift 把小工具的快照寫進 App Group 那一格（組塊 G）。
+	        理由代碼 1C8F.1：只讀寫同一個 App Group 裡的 app 與 extension 自己放的資料。
+	        小工具的 target 有自己的一份（RencanWidget/PrivacyInfo.xcprivacy），兩邊要一起改。
+	     2. 設定頁「一般」區的外觀、觸覺回饋（2026-11-19 加，VeggieKit 的 @AppStorage）。
+	        理由代碼 CA92.1：只存 app 自己用的偏好，不給別的 app 看。 -->
 	<key>NSPrivacyAccessedAPITypes</key>
 	<array>
 		<dict>
@@ -25,6 +28,7 @@
 			<key>NSPrivacyAccessedAPITypeReasons</key>
 			<array>
 				<string>1C8F.1</string>
+				<string>CA92.1</string>
 			</array>
 		</dict>
 	</array>

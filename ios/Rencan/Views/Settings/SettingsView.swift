@@ -1,5 +1,6 @@
 import RencanCore
 import SwiftUI
+import VeggieKit
 
 /// 這一頁自己的版面常數（數值照畫布 Settings）。
 private enum Metrics {
@@ -24,7 +25,8 @@ private enum Metrics {
 }
 
 /// 設定頁（分頁列最右那格，照畫布 Settings）：文楷大標題，下面一區一張卡。
-/// 由上到下：身體、立繪造型、健康 app、提醒、資料（匯出、匯入、刪除全部紀錄）、權限與關於。
+/// 順序照蔬菜家族共用規格（2026-11-19）：app 自己的設定（身體、立繪造型、健康 app、提醒）→
+/// 一般 → 資料 → 購買、支援 → 關於與頁尾。後面幾區的列用 VeggieKit 的共用元件，顏色字體照人蔘修煉。
 /// 每一區自己一個檔（Settings*Section.swift），這裡只管「身體」區與排順序。
 struct SettingsView: View {
     @Environment(AppFlow.self) private var flow
@@ -42,12 +44,15 @@ struct SettingsView: View {
                 SettingsStyleSection()
                 SettingsHealthSection(digest: digest)
                 SettingsReminderSection(digest: digest)
+                SettingsGeneralSection()
                 SettingsDataSection(digest: digest)
+                SettingsSupportSection(digest: digest)
                 SettingsAboutSection()
             }
             .padding(.horizontal, RencanLayout.screenMargin)
             .padding(.bottom, RencanLayout.sectionSpacing)
         }
+        .veggieStyle(.rencan)
     }
 
     private var header: some View {

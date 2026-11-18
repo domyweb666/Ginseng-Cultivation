@@ -4,7 +4,7 @@ import RencanCore
 // 這個檔假設 StoreService 有下面這個函式（組塊 F，由主會話貼進 StoreService.swift）：
 //   func importRecords(_ plan: WebImportPlan) throws
 //     一次寫進 plan 裡要新增的量測、修煉與身高；任何一筆沒過檢查或存檔失敗就整批不寫。
-// 「刪除全部紀錄」不經過這裡，畫面直接呼叫 StoreService.deleteAllRecords()。
+// 「清除所有資料」不經過這裡，畫面直接呼叫 StoreService.eraseAllData()。
 
 /// 匯入匯出這一層自己的錯誤。訊息是給使用者看的中文，不夾數值（規矩檔第 4 節）。
 enum ImportExportError: LocalizedError, Equatable {
@@ -36,9 +36,10 @@ enum ImportExportService {
 
     // MARK: 匯出
 
-    /// 匯出檔的檔名：rencan-2026-11-16.json，跟網頁版同一個寫法。
+    /// 匯出檔的檔名：人蔘修煉-備份-2026-11-19.json（蔬菜家族共用規格，多米 2026-11-19 決定）。
+    /// 只改檔名，檔案內容照舊是網頁版匯出的格式；app 匯入只看內容不看檔名，網頁版下載的 rencan-*.json 照樣匯得進來。
     static func exportFileName(day: String) -> String {
-        "rencan-" + day + ".json"
+        "人蔘修煉-備份-" + day + ".json"
     }
 
     /// 把本機全部的量測、修煉與身高寫成一個暫存檔，回它的位置，交給系統的分享表單。

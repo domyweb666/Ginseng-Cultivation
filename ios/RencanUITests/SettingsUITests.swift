@@ -1,10 +1,11 @@
 import XCTest
 
-// 設定頁「身體」以下的三區：提醒、資料（匯出、匯入、刪除全部紀錄）、權限與關於。
+// 設定頁「身體」以下：提醒、一般、資料（匯出、匯入、清除所有資料）、購買、支援、關於與頁尾。
+// 2026-11-19 照蔬菜家族共用規格重排，後面幾區用 VeggieKit 的共用元件。
 // 都從 `-rencanSeed demo` 起手：身高 174、男，三筆量測、十三筆修煉（UITestSupport.demoLifts）。
 // UI 測試模式下通知不碰系統、問權限一律當允許，所以提醒開關打得開。
 // 健康 app 那一區在 UI 測試模式下只有一句說明，這裡只捲過它，不查它的字。
-// 不點的東西：系統分享表單、檔案選擇器、隱私政策、「到系統設定改」（會離開 app，或在模擬器上不穩）。
+// 不點的東西：系統分享表單、檔案選擇器、隱私權政策、通知那列（會跳系統設定）、意見回饋（模擬器沒設郵件）。
 // 一個流程一個類別：截圖檔名的流水號是每個測試各自從 01 起算，分開才不會撞名。
 
 extension RencanUITestCase {
@@ -74,7 +75,7 @@ extension RencanUITestCase {
     }
 }
 
-/// 設定頁全貌：從頂一路捲到底，每捲一次截一張。身體、提醒、資料、刪除全部紀錄、權限、關於都入鏡。
+/// 設定頁全貌：從頂一路捲到底，每捲一次截一張。每一區和頁尾都入鏡。
 final class SettingsOverviewUITests: RencanUITestCase {
     func test設定頁從頭捲到尾每一區都在() {
         openDemoSettings()
@@ -82,29 +83,37 @@ final class SettingsOverviewUITests: RencanUITestCase {
         requireVisible(anyElements(containing: "174"), "身高 174")
         shot("設定頁-頂")
 
-        // 一次捲不到半個螢幕，三次夠捲到底；捲到底那一拖會回彈，先查一次元素等畫面停下來再截。
-        let version = element(id: "about-version")
-        for index in 1...3 {
+        // 一次捲不到半個螢幕，區塊變多了，捲六次才到底；捲到底那一拖會回彈，先查一次元素等畫面停下來再截。
+        let version = element(id: "veggie-version")
+        for index in 1...6 {
             scrollDown()
             _ = version.waitForExistence(timeout: 2)
             shot("設定頁-往下捲\(index)")
         }
-        requireVisible(idQuery("about-version"), "捲到底之後最下面的「版本」那一列", timeout: 5)
+        requireVisible(idQuery("veggie-version"), "捲到底之後頁尾的版本號", timeout: 5)
         checkSections()
     }
 
     /// 每一區都在。設定頁不是懶載入，捲到哪裡都找得到，所以放在截完圖之後才查。
     /// 匯入要過系統的檔案選擇器，不測，只確認那一列在。
     private func checkSections() {
-        for title in ["身體", "提醒", "資料", "權限", "關於"] {
+        for title in ["身體", "提醒", "一般", "資料", "購買", "支援", "關於"] {
             waitForText(title)
         }
         require(element(id: "reminder-toggle"), "「每月量測提醒」開關")
         require(element(id: "reminder-day"), "提醒日那顆按鈕")
-        require(element(id: "settings-export"), "「匯出紀錄」那一列")
-        require(element(id: "settings-import"), "「匯入紀錄」那一列")
-        require(element(id: "settings-delete-all"), "「刪除全部紀錄」那張卡")
-        require(element(id: "about-notification-status"), "通知的授權狀態")
+        require(element(id: "settings-appearance"), "「外觀」那一列")
+        require(element(id: "settings-notifications"), "「通知」那一列")
+        require(element(id: "settings-haptics"), "「觸覺回饋」開關")
+        require(element(id: "settings-export"), "「匯出資料」那一列")
+        require(element(id: "settings-import"), "「匯入資料」那一列")
+        require(element(id: "settings-erase-all"), "「清除所有資料」那一列")
+        require(element(id: "settings-restore"), "「恢復購買」那一列")
+        require(element(id: "settings-feedback"), "「意見回饋」那一列")
+        require(element(id: "settings-share"), "「分享給朋友」那一列")
+        require(element(id: "about-family"), "「蔬菜家族的其他 app」那一列")
+        require(element(id: "about-privacy"), "「隱私權政策」那一列")
+        require(element(id: "about-licenses"), "「開源授權」那一列")
     }
 }
 
@@ -163,13 +172,13 @@ final class SettingsReminderUITests: RencanUITestCase {
     }
 }
 
-/// 匯出：點「匯出紀錄」跳出表單，上面寫量測 3 筆、修煉 13 筆與「含身體數據」的提醒。
+/// 匯出：點「匯出資料」跳出表單，上面寫量測 3 筆、修煉 13 筆與「含身體數據」的提醒。
 /// 不點「分享檔案」（系統分享表單在模擬器上不穩），按「關閉」收掉。
 final class SettingsExportUITests: RencanUITestCase {
     func test匯出表單寫對筆數再關閉() {
         openDemoSettings()
-        let export = scrollToPlace(idQuery("settings-export"), "「匯出紀錄」那一列")
-        require(element(id: "settings-import"), "「匯入紀錄」那一列")
+        let export = scrollToPlace(idQuery("settings-export"), "「匯出資料」那一列")
+        require(element(id: "settings-import"), "「匯入資料」那一列")
         shot("資料區")
 
         export.tap()
@@ -186,106 +195,80 @@ final class SettingsExportUITests: RencanUITestCase {
         tapButton("關閉")
         let isClosed = waitUntil(timeout: 5) { !summary.exists }
         XCTAssertTrue(isClosed, "按了「關閉」，匯出表單沒有收回去")
-        requireVisible(idQuery("settings-export"), "關閉表單後的「匯出紀錄」那一列")
+        requireVisible(idQuery("settings-export"), "關閉表單後的「匯出資料」那一列")
         shot("關閉匯出表單之後")
     }
 }
 
-/// 刪除全部紀錄：先問一次。取消，紀錄還在；再來一次按「全部刪除」，量測與修煉都沒了，身高與性別留著。
-/// 卡片上的字是「刪除全部紀錄」，確認的那顆是「全部刪除」，兩個字不一樣是故意的。
-final class SettingsDeleteUITests: RencanUITestCase {
-    func test刪除全部先取消再確認身高性別留著() {
+/// 清除所有資料：問兩次。第一次取消，紀錄還在；再來一次按「繼續」、再按「刪除所有資料」，
+/// 量測、修煉、身高性別全部清掉，回到第一次打開那頁。兩次的按鈕字不一樣是故意的。
+final class SettingsEraseUITests: RencanUITestCase {
+    func test清除所有資料問兩次刪完回到第一次打開() {
         openDemoSettings()
-        let confirm = openDeleteDialog()
-        require(anyElements(containing: "量測 3 筆、修煉 13 筆").firstMatch, "確認視窗裡寫的筆數")
-        shot("確認視窗")
-        cancelDialog(confirm)
-        shot("取消之後")
+        let proceed = openEraseDialog()
+        require(anyElements(containing: "量測 3 筆、修煉 13 筆").firstMatch, "第一次確認裡寫的筆數")
+        require(app.buttons["先匯出"].firstMatch, "第一次確認的「先匯出」")
+        shot("第一次確認")
+        tapButton("取消")
+        let isGone = waitUntil(timeout: 5) { !proceed.exists }
+        XCTAssertTrue(isGone, "按了「取消」，確認視窗還在")
         backToRealmFromSettings()
         seeStele()
         requireVisible(anyElements(containing: "FFMI 20.32"), "取消之後還在的 FFMI 20.32")
         shot("取消之後境界頁紀錄還在")
 
         openTab("設定")
-        let again = openDeleteDialog()
-        again.tap()
+        openEraseDialog().tap()
+        let erase = require(app.buttons["刪除所有資料"].firstMatch, "第二次確認的「刪除所有資料」")
+        shot("第二次確認")
+        erase.tap()
         // 小提示只留 2.6 秒：先記下有沒有看到、照樣截圖往下走，最後才算帳，後面的圖才不會少。
-        let toast = anyElements(containing: "已刪除全部紀錄").firstMatch
+        let toast = anyElements(containing: "已清除所有資料").firstMatch
         let sawToast = toast.waitForExistence(timeout: 4)
-        shot("全部刪除之後")
-        let isGone = waitUntil(timeout: 5) { !again.exists }
-        XCTAssertTrue(isGone, "按了「全部刪除」，確認視窗沒有收掉")
-
-        checkRealmIsEmpty()
-        checkProfileKept()
-        XCTAssertTrue(sawToast, "全部刪除之後沒看到小提示「已刪除全部紀錄」")
+        seeText("先說你多高、男生還是女生，境界就能算。")
+        shot("清除之後回到第一次打開")
+        XCTAssertEqual(anyElements(containing: "FFMI 20.32").count, 0, "清除之後 FFMI 20.32 還在")
+        XCTAssertTrue(sawToast, "清除之後沒看到小提示「已清除所有資料」")
     }
 
-    /// 捲到「刪除全部紀錄」那張卡、點它，等確認視窗出來。回確認的那顆「全部刪除」。
-    private func openDeleteDialog() -> XCUIElement {
-        scrollToPlace(idQuery("settings-delete-all"), "「刪除全部紀錄」那張卡").tap()
-        let confirm = require(app.buttons["全部刪除"].firstMatch, "確認視窗的「全部刪除」按鈕")
-        require(anyElements(containing: "要刪除全部紀錄嗎").firstMatch, "確認視窗的標題")
-        return confirm
-    }
-
-    /// 不刪了。底部動作表有「取消」就點它；確認視窗如果是從卡片旁邊長出來的小視窗（iOS 26），
-    /// 上面沒有「取消」那顆，點視窗外面就是取消。
-    private func cancelDialog(_ confirm: XCUIElement) {
-        let cancel = app.buttons["取消"].firstMatch
-        if cancel.waitForExistence(timeout: 2) && cancel.isHittable {
-            cancel.tap()
-        } else {
-            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).tap()
-        }
-        let isGone = waitUntil(timeout: 5) { !confirm.exists }
-        XCTAssertTrue(isGone, "取消之後，確認視窗還在")
-    }
-
-    /// 回境界頁：量測沒了是空狀態，修煉沒了宗門身分退回雜役弟子（示範資料原本是客卿）。
-    private func checkRealmIsEmpty() {
-        backToRealmFromSettings()
-        seeText("還沒量過體組成")
-        require(anyElements(containing: "雜役弟子").firstMatch, "修煉刪光後的宗門身分「雜役弟子」")
-        let steleCount = anyElements(containing: "FFMI 20.32").count
-        XCTAssertEqual(steleCount, 0, "全部刪除之後，境界碑上的 FFMI 20.32 還在")
-        shot("全部刪除之後境界頁空了")
-    }
-
-    /// 身高與性別不算紀錄，全部刪除之後要留著。
-    /// 分頁列會記住設定頁捲到哪（剛才捲到底按刪除），要先捲回最上面才看得到身高。
-    private func checkProfileKept() {
-        openTab("設定")
-        for _ in 0..<8 where visibleElement(in: anyElements(containing: "174")) == nil {
-            scrollUp()
-        }
-        requireVisible(anyElements(containing: "174"), "全部刪除之後還留著的身高 174")
-        let male = requireVisible(app.buttons.matching(named("男")), "性別的「男」那一格")
-        XCTAssertTrue(male.isSelected, "全部刪除之後，性別選中的不是「男」")
-        shot("全部刪除之後設定頁身高性別還在")
+    /// 捲到「清除所有資料」、點它，等第一次確認出來。回那顆「繼續」。
+    private func openEraseDialog() -> XCUIElement {
+        scrollToPlace(idQuery("settings-erase-all"), "「清除所有資料」那一列").tap()
+        require(anyElements(containing: "要清除所有資料嗎").firstMatch, "第一次確認的標題")
+        return require(app.buttons["繼續"].firstMatch, "第一次確認的「繼續」")
     }
 }
 
-/// 權限與關於：通知的授權狀態、版本都有字。不點「隱私政策」與「到系統設定改」，點了會跳出 app。
+/// 一般與關於：通知那列寫得出狀態、頁尾有版本號；點「開源授權」看得到霞鶩文楷的授權全文再關掉。
+/// 不點「通知」與「隱私權政策」，點了會跳出 app。
 final class SettingsAboutUITests: RencanUITestCase {
-    func test權限與關於有通知狀態與版本() {
+    func test通知狀態版本號與開源授權() {
         openDemoSettings()
-        scrollToSee(idQuery("about-version"), "「版本」那一列", maxDrags: 8)
-        // 再捲一次確定到底，兩組都整塊露出來；查元素會等回彈停下來。
-        scrollDown()
-        let version = requireVisible(idQuery("about-version"), "「版本」那一列")
-        let status = requireVisible(idQuery("about-notification-status"), "通知的授權狀態")
-        shot("權限與關於")
-
-        let versionText = version.label
-        XCTAssertFalse(versionText.isEmpty, "「版本」那一列是空的")
-        XCTAssertFalse(versionText.contains("未知"), "版本號讀不出來，上面寫的是：\(versionText)")
+        let status = scrollToPlace(idQuery("settings-notifications"), "「通知」那一列")
         let statusText = status.label
-        let knownStates = ["還沒問過", "已允許", "沒有允許"]
-        XCTAssertTrue(knownStates.contains(statusText), "通知的授權狀態不是預期的字：\(statusText)")
-        waitForText("權限")
-        waitForText("關於")
-        require(element(id: "about-open-settings"), "「到系統設定改」那一列")
-        require(element(id: "about-privacy"), "「隱私政策」那一列")
+        let knownStates = ["還沒問過", "已開啟", "已關閉"]
+        let isKnown = knownStates.contains { statusText.contains($0) }
+        XCTAssertTrue(isKnown, "通知那一列沒有寫出狀態：\(statusText)")
+        shot("一般")
+
+        scrollToSee(idQuery("veggie-version"), "頁尾的版本號", maxDrags: 8)
+        // 再捲一次確定到底，關於和頁尾整塊露出來；查元素會等回彈停下來。
+        scrollDown()
+        let version = requireVisible(idQuery("veggie-version"), "頁尾的版本號")
+        shot("關於與頁尾")
+        let versionText = version.label
+        XCTAssertTrue(versionText.contains("人蔘修煉"), "頁尾版本號沒有 app 名字：\(versionText)")
+        XCTAssertTrue(versionText.contains("（"), "頁尾版本號沒有建置號：\(versionText)")
+
+        requireVisible(idQuery("about-licenses"), "「開源授權」那一列").tap()
+        let fontRow = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "霞鶩文楷"))
+        let font = require(fontRow.firstMatch, "授權頁的「霞鶩文楷 TC」")
+        shot("開源授權")
+        font.tap()
+        let fullText = require(textContaining("SIL OPEN FONT LICENSE"), "霞鶩文楷的授權全文")
+        shot("霞鶩文楷授權全文")
+        tapButton("關閉")
+        let isClosed = waitUntil(timeout: 5) { !fullText.exists }
+        XCTAssertTrue(isClosed, "按了「關閉」，開源授權頁沒有收回去")
     }
 }

@@ -1,6 +1,7 @@
 import RencanCore
 import SwiftData
 import SwiftUI
+import VeggieKit
 
 /// app 起來要用到的東西：資料庫、改資料的服務、健康 app、通知。
 @MainActor
@@ -71,6 +72,10 @@ struct RencanApp: App {
                 .environment(services.notifications)
                 .environment(services.purchases)
                 .environment(flow)
+                // 設定頁選過的外觀（淺色、深色）一打開就套上；設在視窗上，所以等畫面出來才套
+                .onAppear {
+                    Appearance.stored.apply()
+                }
         } else {
             StartupErrorView()
         }
