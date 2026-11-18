@@ -1,16 +1,23 @@
 # 上架用：查與填 App Store Connect 上的版本資料（片 J2、J4）。只能手動按「Run workflow」，只准 main。
-# 程式在 ios/ci/asc_release.mjs。mode=check 只讀不改。
+# check 只讀不改（ios/ci/asc_release.mjs）；fill、media、submit 會改（ios/ci/asc_publish.mjs）：
+#   fill   文字、類別、年齡分級、價格、地區、審核聯絡與備註（資料在 ios/ci/asc_listing.json 與 docs/上架文稿.md）
+#   media  商品頁截圖（ios/ci/store/6.9）與送審錄影（ios/ci/store/review.mp4）
+#   submit 選建置、內購加進送審、送出審核（送出後要等 Apple 審，撤回要到後台按）
 name: 上架資料
 
 on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "check 只查不改"
+        description: "check 只查；fill 填文字；media 傳截圖與錄影；submit 送審"
         required: true
         default: check
         type: choice
-        options: [check]
+        options: [check, fill, media, submit]
+      build:
+        description: "submit 用的建置號（空白＝最新處理好的那個）"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -22,7 +29,7 @@ jobs:
   asc:
     name: 上架資料（${{ inputs.mode }}）
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     # 只准從 main 跑，跟 iap.yml 一樣
     if: github.ref == 'refs/heads/main'
     steps:
@@ -42,8 +49,15 @@ jobs:
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          REVIEW_CONTACT_JSON: ${{ secrets.REVIEW_CONTACT_JSON }}
           MODE: ${{ inputs.mode }}
-        run: node ios/ci/asc_release.mjs
+          BUILD_NUMBER: ${{ inputs.build }}
+        run: |
+          if [ "$MODE" = "check" ]; then
+            node ios/ci/asc_release.mjs
+          else
+            node ios/ci/asc_publish.mjs
+          fi
       - name: 刪金鑰（不管成敗）
         if: always()
         run: rm -f "$ASC_KEY_P8_PATH"

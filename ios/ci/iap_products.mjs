@@ -1,20 +1,25 @@
 // 照 iap_products.json 在 App Store Connect 建內購商品（付費立繪造型，組塊 M）。
-// 兩種模式，環境變數 MODE：
-//   check  只讀：找得到 app、列出已經有的內購、說明 create 會做什麼。不改任何東西。
-//   create 沒有的建、有的照 json 更新名稱、審核備註、中文名稱與描述、價格、上架地區。
+// 三種模式，環境變數 MODE：
+//   check       只讀：找得到 app、列出已經有的內購與審核截圖、說明 create 會做什麼。不改任何東西。
+//   create      沒有的建、有的照 json 更新名稱、審核備註、中文名稱與描述、價格、上架地區。
+//   screenshots 傳審核截圖：iap_review_screenshots/{代碼}.png（代碼是產品 ID 最後一段，全套是 all），
+//               已經有一張的先刪掉再傳新的。只傳給已經建好的商品，不會建商品。
 // 跑幾次都一樣：已經有的產品 ID 不會再建一個（產品 ID 建了不能改、刪了不能再用）。
-// 審核截圖還沒有（選造型頁 M4 做好才拍得到），這支先不傳。
+// 審核截圖由 UI 測試 IAPReviewShotsUITests 在模擬器上拍（組塊 M4），看過再放進 iap_review_screenshots/。
 // API 的簽章與呼叫在 asc_api.mjs，零套件。
 // 用法（環境變數）：ASC_KEY_ID、ASC_ISSUER_ID、ASC_KEY_P8_PATH、BUNDLE_ID、MODE
-import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { readFileSync, statSync } from "node:fs";
 import { ascClient, env } from "./asc_api.mjs";
 
-const MODES = ["check", "create"];
+const MODES = ["check", "create", "screenshots"];
 // Apple 的字數上限
 const MAX_DISPLAY_NAME = 30;
 const MAX_DESCRIPTION = 45;
 const MAX_REVIEW_NOTE = 4000;
 const PRODUCT_ID_PATTERN = /^org\.domyweb\.rencan\.style\.[a-z]+$/;
+// PNG 檔頭；審核截圖 Apple 收 PNG 或 JPG，這裡只傳 UI 測試拍的 PNG
+const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
 const mode = env("MODE");
 if (!MODES.includes(mode)) {
@@ -23,6 +28,7 @@ if (!MODES.includes(mode)) {
 const bundleId = env("BUNDLE_ID");
 const spec = JSON.parse(readFileSync(new URL("./iap_products.json", import.meta.url), "utf8"));
 validate(spec);
+const screenshotFiles = mode === "screenshots" ? readScreenshots(spec.products) : null;
 
 const call = ascClient();
 
@@ -48,10 +54,28 @@ console.log(`上架地區共 ${territories.data.length} 個，基準地區 ${spe
 
 if (mode === "check") {
   for (const product of spec.products) {
-    const verb = existingById.has(product.productId) ? "更新" : "新建";
+    const found = existingById.get(product.productId);
+    const verb = found ? "更新" : "新建";
     console.log(`create 會${verb}：${product.productId}　${product.displayName}　NT$${product.price}`);
+    if (found) {
+      const shot = await currentScreenshot(found.id);
+      console.log(`  審核截圖：${shot ? `有（${shot.attributes.fileName}）` : "還沒有"}`);
+    }
   }
   console.log("check 模式到這裡，沒有改任何東西");
+  process.exit(0);
+}
+
+if (mode === "screenshots") {
+  for (const product of spec.products) {
+    const found = existingById.get(product.productId);
+    if (!found) {
+      throw new Error(`${product.productId} 還沒建，先跑 create`);
+    }
+    console.log(`--- ${product.productId}`);
+    await uploadScreenshot(found.id, screenshotFiles.get(product.productId));
+  }
+  console.log("十二張審核截圖都傳好了");
   process.exit(0);
 }
 
@@ -215,4 +239,72 @@ async function ensureAvailability(iapId) {
     },
   });
   console.log(`上架地區設成全部 ${territories.data.length} 個`);
+}
+
+/// 審核截圖的檔案先全部讀好、檢查過才打 API：少一張或不是 PNG 就一張都不傳。
+function readScreenshots(products) {
+  const files = new Map();
+  for (const product of products) {
+    const code = product.productId.split(".").pop();
+    const url = new URL(`./iap_review_screenshots/${code}.png`, import.meta.url);
+    let bytes;
+    try {
+      bytes = readFileSync(url);
+    } catch (error) {
+      throw new Error(`${product.productId}：找不到審核截圖 ${url.pathname}（${error.code}）`);
+    }
+    if (!bytes.subarray(0, PNG_SIGNATURE.length).equals(PNG_SIGNATURE)) {
+      throw new Error(`${product.productId}：${code}.png 不是 PNG`);
+    }
+    files.set(product.productId, { fileName: `${code}.png`, bytes, size: statSync(url).size });
+  }
+  console.log(`審核截圖驗過：${files.size} 張`);
+  return files;
+}
+
+/// 這個商品現在的審核截圖；沒有回 null。
+async function currentScreenshot(iapId) {
+  try {
+    const found = await call("GET", `/v2/inAppPurchases/${iapId}/appStoreReviewScreenshot`);
+    return found?.data ?? null;
+  } catch (error) {
+    if (error.status === 404) return null;
+    throw error;
+  }
+}
+
+/// Apple 的上傳三步：先登記檔名與大小拿到上傳位置、照它給的切片 PUT 上去、再回報傳完加上 MD5。
+/// 已經有一張就先換掉（一個商品只能有一張）。
+async function uploadScreenshot(iapId, file) {
+  const old = await currentScreenshot(iapId);
+  if (old) {
+    await call("DELETE", `/v1/inAppPurchaseAppStoreReviewScreenshots/${old.id}`);
+    console.log(`換掉舊的審核截圖 ${old.attributes.fileName}`);
+  }
+  const reserved = await call("POST", "/v1/inAppPurchaseAppStoreReviewScreenshots", {
+    data: {
+      type: "inAppPurchaseAppStoreReviewScreenshots",
+      attributes: { fileName: file.fileName, fileSize: file.size },
+      relationships: { inAppPurchaseV2: { data: { type: "inAppPurchases", id: iapId } } },
+    },
+  });
+  for (const operation of reserved.data.attributes.uploadOperations) {
+    const headers = Object.fromEntries(
+      (operation.requestHeaders ?? []).map((header) => [header.name, header.value]),
+    );
+    const slice = file.bytes.subarray(operation.offset, operation.offset + operation.length);
+    const response = await fetch(operation.url, { method: operation.method, headers, body: slice });
+    if (!response.ok) {
+      throw new Error(`上傳 ${file.fileName} 的一段回 ${response.status}`);
+    }
+  }
+  const checksum = createHash("md5").update(file.bytes).digest("hex");
+  await call("PATCH", `/v1/inAppPurchaseAppStoreReviewScreenshots/${reserved.data.id}`, {
+    data: {
+      type: "inAppPurchaseAppStoreReviewScreenshots",
+      id: reserved.data.id,
+      attributes: { uploaded: true, sourceFileChecksum: checksum },
+    },
+  });
+  console.log(`傳好 ${file.fileName}（${file.size} 位元組），Apple 那邊處理完才會顯示`);
 }
