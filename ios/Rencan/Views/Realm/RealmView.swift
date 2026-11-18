@@ -112,16 +112,16 @@ struct RealmView: View {
             Image(
                 RencanPortrait.name(realmIndex: 0, sex: digest.sex ?? .male, style: portraitStyle)
             )
-                .interpolation(.none)
-                .resizable()
-                .scaledToFill()
-                .frame(
-                    width: RencanLayout.portraitSize.width,
-                    height: RencanLayout.portraitSize.height
-                )
-                .background(Color.rencan.tint)
-                .clipShape(RoundedRectangle(cornerRadius: RencanLayout.portraitCornerRadius))
-                .accessibilityLabel("雜役服人蔘立繪")
+            .interpolation(.none)
+            .resizable()
+            .scaledToFill()
+            .frame(
+                width: RencanLayout.portraitSize.width,
+                height: RencanLayout.portraitSize.height
+            )
+            .background(Color.rencan.tint)
+            .clipShape(RoundedRectangle(cornerRadius: RencanLayout.portraitCornerRadius))
+            .accessibilityLabel("雜役服人蔘立繪")
             Text("還沒量過體組成")
                 .font(RencanType.title3)
             Text(HealthLinkText.emptyHint(for: healthStatus))

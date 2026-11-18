@@ -52,7 +52,7 @@ struct RootTabView: View {
                 case .success(let digest):
                     PagesView(
                         digest: digest, lifts: lifts, latestSource: latestSource,
-                        healthStatus: healthStatus
+                        healthStatus: healthStatus, portraitStyle: settings.portraitStyle
                     )
                 case .failure(let error):
                     DataErrorView(message: RencanError.message(for: error))
@@ -193,6 +193,8 @@ struct PagesView: View {
     let lifts: [LiftRecord]
     let latestSource: RecordSource?
     let healthStatus: HealthLinkStatus
+    /// 設定裡選的立繪造型（組塊 M1），境界頁要用
+    let portraitStyle: PortraitStyle
 
     var body: some View {
         @Bindable var flow = flow
@@ -225,8 +227,7 @@ struct PagesView: View {
                 .tag(RencanPage.settings)
             RealmView(
                 digest: digest, lifts: lifts, latestSource: latestSource,
-                healthStatus: healthStatus,
-                portraitStyle: settingsRows.first?.portraitStyle ?? .original
+                healthStatus: healthStatus, portraitStyle: portraitStyle
             )
             .tabPage(.realm, current: flow.page, clearance: clearance)
             .tag(RencanPage.realm)
