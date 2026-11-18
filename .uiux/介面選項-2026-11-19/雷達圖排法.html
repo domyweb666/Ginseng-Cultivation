@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>雷達圖排法選項</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --canvas: #F5F1E9; --surface: #FFFFFF; --soft: #EEE7D9; --accent: #8B6A1E; --strong: #7A5A12;
+    --text: #222; --text2: #8A8478; --text3: #B8B2A6; --line: #E3DCCD;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #E9E4DA; color: var(--text);
+    font-family: -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif; }
+  header { max-width: 1180px; margin: 0 auto; padding: 28px 16px 8px; }
+  h1 { font-size: 24px; margin: 0 0 6px; }
+  h2.group { max-width: 1180px; margin: 26px auto 0; padding: 0 16px; font-size: 20px; }
+  header p, .note { margin: 4px 0; color: #555; line-height: 1.7; }
+  .note { max-width: 1180px; margin: 4px auto; padding: 0 16px; }
+  .toggles { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  .seg { display: inline-flex; background: #DDD5C6; border-radius: 12px; padding: 3px; }
+  .seg button { font: inherit; border: 0; background: none; padding: 6px 14px; border-radius: 9px; font-size: 15px; color: #555; cursor: pointer; }
+  .seg button.on { background: #fff; color: var(--text); font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,.1); }
+  .grid { max-width: 1180px; margin: 0 auto; padding: 16px; display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; }
+  .opt { background: #fff; border-radius: 18px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  .opt.rec { outline: 3px solid var(--accent); }
+  .opt.now { opacity: .85; }
+  .tag { display: inline-block; font-weight: 700; background: var(--accent); color: #fff;
+    border-radius: 8px; padding: 2px 10px; margin-right: 6px; }
+  .opt.now .tag { background: #999; }
+  .rec-badge { font-size: 13px; color: var(--accent); font-weight: 700; }
+  .opt h3 { font-size: 18px; margin: 0 0 4px; }
+  .pros { font-size: 14px; color: #555; line-height: 1.6; margin: 6px 0 12px; }
+  .pros b { color: #333; }
+  .phone { background: var(--canvas); border-radius: 22px; padding: 14px 12px 16px; max-width: 345px; margin: 0 auto; }
+  .stitle { font-size: 15px; color: var(--text2); margin: 0 4px 8px; font-weight: 600; }
+  .card { background: var(--surface); border-radius: 16px; padding: 12px 16px 14px; }
+  svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .wk { font-family: "LXGW WenKai TC", "Kaiti TC", "STKaiti", "DFKai-SB", serif; }
+  .cap { font-size: var(--cap); color: var(--text2); font-weight: 500; text-align: center; margin-top: 8px; line-height: 1.5; }
+  /* 下面那句：1 刻度條 */
+  .ruler { display: flex; align-items: center; margin-top: 10px; font-size: var(--cap); color: var(--text2); font-weight: 500; }
+  .ruler .end { color: var(--text3); font-size: calc(var(--cap) - 1px); }
+  .ruler .steps { flex: 1; display: grid; grid-template-columns: repeat(5, 1fr); position: relative; margin: 0 6px; }
+  .ruler .steps::before { content: ""; position: absolute; left: 10%; right: 10%; top: 6px; height: 1px; background: var(--line); }
+  .ruler .st { display: flex; flex-direction: column; align-items: center; gap: 3px; white-space: nowrap; }
+  .ruler .dot { width: var(--d); height: var(--d); border-radius: 50%; border: 1.5px solid var(--accent); background: #fff; position: relative; margin-top: calc(6px - var(--d) / 2); }
+  /* 下面那句：3 兩行色塊 */
+  .chips-t { font-size: calc(var(--cap) - 1px); color: var(--text3); text-align: center; margin-top: 8px; }
+  .chips { display: flex; justify-content: center; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+  .chip { font-size: var(--cap); border-radius: 8px; padding: 3px 9px; font-weight: 600; white-space: nowrap; }
+  .meta { font-size: 12px; color: #999; text-align: center; margin-top: 8px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>功法雷達：字的位置和下面那句</h1>
+  <p>現在的問題有兩個。一是功法名字的中心都放在同一個圓上，左右兩側的字是橫的、比較寬，所以「架橋式」「挽弓式」「探海式」那幾個會壓到外圈。二是下面那句「由內到外：入門・小成・大成・圓滿・化境」字一大就折成兩行，最後「化境」孤零零掉到第二行。</p>
+  <p>下面分兩組選：<b>第一組選字的位置</b>（甲、乙、丙），<b>第二組選下面那句</b>（1、2、3）。兩組可以自由搭。外框金色的是我推薦的。</p>
+  <div class="toggles">
+    <div class="seg" id="dataSeg"><button data-v="0">沒有紀錄</button><button data-v="1" class="on">有紀錄（示意）</button></div>
+    <div class="seg" id="sizeSeg"><button data-v="0" class="on">標準字</button><button data-v="1">手機字調大</button></div>
+  </div>
+</header>
+
+<h2 class="group">第一組：功法名字放哪裡</h2>
+<p class="note">四張都配「1 刻度條」，方便只看字的差別。</p>
+<div class="grid" id="labelGrid"></div>
+
+<h2 class="group">第二組：「由內到外」那句怎麼排</h2>
+<p class="note">三張都配「甲」，方便只看下面那句的差別。</p>
+<div class="grid" id="legendGrid"></div>
+
+<script>
+const NAMES = ["坐馬樁","抱鼎樁","探海式","架橋式","推山掌","推月掌","托天式","撐柱式","拔山式","挽弓式","攀雲梯","捧丹手"];
+const LEVELS = ["入門","小成","大成","圓滿","化境"];
+// 示意用的分數（0～5，等級加往下一階走了幾成）；0 代表還沒入門
+const SAMPLE = [3.4, 2.6, 1.2, 2.1, 3.0, 1.7, 2.4, 0, 3.7, 2.2, 1.0, 0.6];
+const HALF = 156;      // 卡片內寬 313 的一半
+const GAP = 6;         // 字離最外圈多遠
+
+let state = { data: 1, big: 0 };
+const fs = () => state.big ? 16 : 13;      // 功法名字級
+const cap = () => state.big ? 15 : 12;     // 下面那句字級
+
+// 第 i 根軸的方向：第一根朝正上方，順時針
+function dir(i) { const a = -Math.PI / 2 + 2 * Math.PI * i / 12; return [Math.cos(a), Math.sin(a)]; }
+
+// 每個名字是橫的還是直的
+function isVertical(mode, i) {
+  if (mode === "vertical") return true;
+  if (mode === "mixed") return Math.abs(dir(i)[0]) > 0.8;
+  return false;
+}
+function boxSize(mode, i) {
+  const f = fs();
+  return isVertical(mode, i) ? [f * 1.15, f * 3.05] : [f * 3.05, f * 1.2];
+}
+// 把名字往外推到剛好不碰最外圈：字框在這個方向上的半寬
+function pushDist(R, mode, i) {
+  const [dx, dy] = dir(i), [w, h] = boxSize(mode, i);
+  return R + GAP + Math.abs(dx) * w / 2 + Math.abs(dy) * h / 2;
+}
+// 找卡片放得下的最大半徑
+function fitRadius(mode) {
+  for (let R = 150; R > 60; R -= 1) {
+    let ok = true;
+    for (let i = 0; i < 12; i++) {
+      const d = pushDist(R, mode, i), [dx] = dir(i), [w] = boxSize(mode, i);
+      if (Math.abs(dx * d) + w / 2 > HALF) { ok = false; break; }
+    }
+    if (ok) return R;
+  }
+  return 60;
+}
+
+function layout(mode) {
+  if (mode === "now") {
+    // 現在 app 裡的：半徑 116，名字中心放在 134 的圓上，一律置中
+    const R = 116;
+    return { R, labels: NAMES.map((n, i) => { const [dx, dy] = dir(i); return { n, x: dx * 134, y: dy * 134, v: false }; }) };
+  }
+  const R = fitRadius(mode);
+  return { R, labels: NAMES.map((n, i) => { const [dx, dy] = dir(i), d = pushDist(R, mode, i); return { n, x: dx * d, y: dy * d, v: isVertical(mode, i) }; }) };
+}
+
+function poly(radii) {
+  return radii.map((r, i) => { const [dx, dy] = dir(i); return (dx * r).toFixed(1) + "," + (dy * r).toFixed(1); }).join(" ");
+}
+
+function radarSVG(mode, legend) {
+  const { R, labels } = layout(mode);
+  const f = fs();
+  let top = 0;
+  labels.forEach((l, i) => { const [w, h] = mode === "now" ? [f * 3.05, f * 1.2] : boxSize(mode, i); top = Math.max(top, Math.abs(l.y) + h / 2); });
+  if (mode === "now") top = 146; // app 裡固定高 292
+  const H = Math.ceil(top) + 2;
+  let s = `<svg viewBox="${-HALF - 1} ${-H} ${HALF * 2 + 2} ${H * 2}">`;
+  for (let k = 1; k <= 5; k++) s += `<polygon points="${poly(Array(12).fill(R * k / 5))}" fill="none" stroke="#E3DCCD" stroke-width="1"/>`;
+  for (let i = 0; i < 12; i++) { const [dx, dy] = dir(i); s += `<line x1="0" y1="0" x2="${dx * R}" y2="${dy * R}" stroke="#E3DCCD" stroke-width="1"/>`; }
+  const scores = state.data ? SAMPLE : Array(12).fill(0);
+  const radii = scores.map(v => R * v / 5);
+  s += `<polygon points="${poly(radii)}" fill="rgba(139,106,30,.22)" stroke="#8B6A1E" stroke-width="2" stroke-linejoin="round"/>`;
+  radii.forEach((r, i) => { const [dx, dy] = dir(i); s += `<circle cx="${dx * r}" cy="${dy * r}" r="3" fill="#8B6A1E"/>`; });
+  if (legend === 2) {
+    // 圈上直接標：寫在第一、二根軸中間那條縫（往右偏 15 度）
+    const a = -Math.PI / 2 + Math.PI / 12;
+    LEVELS.forEach((lv, k) => {
+      const r = R * (k + 1) / 5;
+      s += `<text x="${Math.cos(a) * r + 2}" y="${Math.sin(a) * r}" font-size="${state.big ? 11 : 9.5}" fill="#A39C8E" dominant-baseline="central" style="paint-order:stroke" stroke="#fff" stroke-width="3">${lv}</text>`;
+    });
+  }
+  labels.forEach((l, i) => {
+    const color = state.data && SAMPLE[i] > 0 ? "#7A5A12" : "#B8B2A6";
+    if (mode === "now") {
+      // 現在 app 是 44 點寬的框、最小縮到 0.8 倍
+      const scale = Math.min(1, 44 / (f * 3.05));
+      s += `<text class="wk" x="${l.x}" y="${l.y}" font-size="${f * Math.max(scale, .8)}" fill="${color}" text-anchor="middle" dominant-baseline="central">${l.n}</text>`;
+    } else if (l.v) {
+      [...l.n].forEach((ch, j) => {
+        s += `<text class="wk" x="${l.x}" y="${l.y + (j - 1) * f * 1.02}" font-size="${f}" fill="${color}" text-anchor="middle" dominant-baseline="central">${ch}</text>`;
+      });
+    } else {
+      s += `<text class="wk" x="${l.x}" y="${l.y}" font-size="${f}" fill="${color}" text-anchor="middle" dominant-baseline="central">${l.n}</text>`;
+    }
+  });
+  s += `</svg>`;
+  return { svg: s, R, H: H * 2 };
+}
+
+function legendHTML(legend) {
+  if (legend === 0) return `<div class="cap">由內到外：${LEVELS.join("・")}</div>`;
+  if (legend === 1) {
+    const dots = LEVELS.map((lv, k) => `<div class="st"><span class="dot" style="--d:${5 + k * 1.6}px"></span>${lv}</div>`).join("");
+    return `<div class="ruler"><span class="end">內</span><div class="steps">${dots}</div><span class="end">外</span></div>`;
+  }
+  if (legend === 2) return "";
+  if (legend === 3) {
+    const tints = ["#F4EEDF", "#E9DDBF", "#D9C493", "#B8964B", "#8B6A1E"];
+    const fg = ["#8A7A55", "#7A6A45", "#5E4B1E", "#fff", "#fff"];
+    return `<div class="chips-t">五圈，由內到外</div><div class="chips">${LEVELS.map((lv, k) => `<span class="chip" style="background:${tints[k]};color:${fg[k]}">${lv}</span>`).join("")}</div>`;
+  }
+}
+
+function phone(mode, legend) {
+  const r = radarSVG(mode, legend);
+  return { html: `<div class="phone" style="--cap:${cap()}px"><div class="stitle">功法雷達</div><div class="card">${r.svg}${legendHTML(legend)}</div></div>`, R: r.R, H: r.H };
+}
+
+const LABEL_OPTS = [
+  { key: "now", legend: 0, tag: "現在", title: "現在 app 裡的樣子", pros: "名字的中心都在同一個圓上。橫的字比較寬，所以左右兩側和斜上斜下那幾個會壓到外圈。" },
+  { key: "push", legend: 1, tag: "甲", rec: true, title: "照方向往外推，剛好不碰外圈", pros: "<b>好處：</b>名字全部橫寫，最好讀；每個名字照自己的方向推出去，左右兩側推得多、上下推得少，永遠不碰線。<br><b>代價：</b>圖會小一點點。" },
+  { key: "mixed", legend: 1, tag: "乙", title: "左右兩側直寫，其他橫寫", pros: "<b>好處：</b>左右那幾個改直寫就變窄，圖可以比現在還大。<br><b>代價：</b>有橫有直，第一眼會覺得字的方向不統一。" },
+  { key: "vertical", legend: 1, tag: "丙", title: "全部直寫（像碑文）", pros: "<b>好處：</b>最有古書、碑文的味道，跟境界碑同一個調性。<br><b>代價：</b>上下兩端的字變長，整張圖會變高；直寫讀起來也比橫寫慢一點。" },
+];
+const LEGEND_OPTS = [
+  { legend: 1, tag: "1", rec: true, title: "刻度條", pros: "<b>好處：</b>一排五個，點由小到大，左邊寫「內」右邊寫「外」，不用整句話也看得懂順序。手機字調大也排得下一行。" },
+  { legend: 2, tag: "2", title: "直接寫在圈上", pros: "<b>好處：</b>看圖就知道點落在哪一階，下面那句可以拿掉，卡片變矮。<br><b>代價：</b>字很小，最裡面兩圈的字會擠在中心附近。" },
+  { legend: 3, tag: "3", title: "兩行：小標加五個色塊", pros: "<b>好處：</b>顏色由淡到深，一眼看出越外面越高；就算手機字調很大，色塊會整顆換行，不會把一個詞拆開。<br><b>代價：</b>比 1 多佔一行高度。" },
+];
+
+function render() {
+  document.getElementById("labelGrid").innerHTML = LABEL_OPTS.map(o => {
+    const p = phone(o.key, o.legend);
+    return `<div class="opt${o.rec ? " rec" : ""}${o.key === "now" ? " now" : ""}"><h3><span class="tag">${o.tag}</span>${o.title}${o.rec ? ' <span class="rec-badge">推薦</span>' : ""}</h3><div class="pros">${o.pros}</div>${p.html}<div class="meta">最外圈半徑 ${p.R} 點（現在是 116）・圖高約 ${p.H} 點（現在是 292）</div></div>`;
+  }).join("");
+  document.getElementById("legendGrid").innerHTML = LEGEND_OPTS.map(o => {
+    const p = phone("push", o.legend);
+    return `<div class="opt${o.rec ? " rec" : ""}"><h3><span class="tag">${o.tag}</span>${o.title}${o.rec ? ' <span class="rec-badge">推薦</span>' : ""}</h3><div class="pros">${o.pros}</div>${p.html}</div>`;
+  }).join("");
+}
+function bindSeg(id, key) {
+  document.querySelectorAll(`#${id} button`).forEach(b => b.onclick = () => {
+    document.querySelectorAll(`#${id} button`).forEach(x => x.classList.remove("on"));
+    b.classList.add("on"); state[key] = +b.dataset.v; render();
+  });
+}
+bindSeg("dataSeg", "data"); bindSeg("sizeSeg", "big");
+render();
+document.fonts && document.fonts.ready.then(render);
+</script>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>設定頁規劃</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --canvas: #F5F1E9; --surface: #FFFFFF; --soft: #EEE7D9; --accent: #8B6A1E;
+    --text: #222; --text2: #8A8478; --text3: #B8B2A6; --line: #ECE6DA; --red: #C0392B;
+    --new: #2E7D4F; --move: #2F6FA8; --rename: #9A6B00; --drop: #999;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #E9E4DA; color: var(--text); line-height: 1.6;
+    font-family: -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 16px 60px; }
+  h1 { font-size: 24px; margin: 0 0 6px; }
+  h2 { font-size: 20px; margin: 34px 0 10px; }
+  p { margin: 6px 0; color: #444; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin: 12px 0 4px; font-size: 14px; }
+  .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; background: var(--c); }
+  .phones { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 24px; align-items: start; }
+  .col h3 { font-size: 17px; margin: 0 0 8px; text-align: center; }
+  .phone { background: var(--canvas); border-radius: 30px; padding: 18px 14px 22px; max-width: 360px; margin: 0 auto; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .ptitle { font-family: "LXGW WenKai TC", "Kaiti TC", serif; font-size: 32px; margin: 4px 4px 12px; }
+  .sec { font-size: 13px; color: var(--text2); margin: 14px 4px 6px; font-weight: 600; display: flex; justify-content: space-between; }
+  .sec i { font-style: normal; font-weight: 400; color: var(--text3); }
+  .card { background: var(--surface); border-radius: 14px; padding: 0 14px; }
+  .row { display: flex; align-items: center; gap: 10px; min-height: 46px; border-bottom: 1px solid var(--line); font-size: 15.5px; position: relative; }
+  .row:last-child { border-bottom: 0; }
+  .ic { width: 26px; height: 26px; border-radius: 7px; background: var(--accent); color: #fff; display: grid; place-items: center; font-size: 13px; flex: none; }
+  .row .name { flex: 1; }
+  .row .val { color: var(--text2); font-size: 14.5px; }
+  .row .ar { color: var(--text3); font-size: 15px; margin-left: 4px; }
+  .row.red .name { color: var(--red); }
+  .row.red .ic { background: var(--red); }
+  .tog { width: 40px; height: 24px; border-radius: 12px; background: #34C759; position: relative; flex: none; }
+  .tog::after { content: ""; position: absolute; right: 2px; top: 2px; width: 20px; height: 20px; border-radius: 50%; background: #fff; }
+  .tog.off { background: #E3DED4; } .tog.off::after { right: auto; left: 2px; }
+  .mark { position: absolute; left: -14px; top: 8px; bottom: 8px; width: 4px; border-radius: 2px; background: var(--c); }
+  .badge { font-size: 11px; border-radius: 6px; padding: 0 6px; color: #fff; background: var(--c); margin-left: 6px; white-space: nowrap; }
+  .foot { text-align: center; margin-top: 18px; color: var(--text2); font-size: 13px; }
+  .foot .appic { width: 34px; height: 34px; border-radius: 9px; margin: 0 auto 4px; background: linear-gradient(135deg, #4A3A1A, #8B6A1E); }
+  .stepper { display: flex; align-items: center; gap: 10px; }
+  .stepper b { font-size: 17px; }
+  .rb { width: 28px; height: 28px; border-radius: 50%; background: var(--soft); display: grid; place-items: center; color: var(--accent); }
+  .segc { display: inline-flex; background: var(--soft); border-radius: 9px; padding: 2px; }
+  .segc span { padding: 3px 14px; border-radius: 7px; font-size: 14px; color: var(--text2); }
+  .segc span.on { background: #fff; color: var(--text); font-weight: 600; }
+  .bigdivider { margin: 18px 4px 4px; font-size: 12px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+  .bigdivider::before, .bigdivider::after { content: ""; flex: 1; height: 1px; background: #D9CDB2; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 14px; overflow: hidden; font-size: 14.5px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid #EEE; vertical-align: top; }
+  th { background: #F6F2EA; font-size: 13.5px; color: #555; }
+  td .badge { margin-left: 0; }
+  .dec { background: #fff; border-radius: 16px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .dec h4 { margin: 0 0 6px; font-size: 16px; }
+  .dec .num { display: inline-block; background: var(--accent); color: #fff; border-radius: 7px; padding: 0 8px; margin-right: 6px; font-size: 14px; }
+  .dec ul { margin: 4px 0 0; padding-left: 20px; }
+  .dec li { margin: 3px 0; }
+  .dec .pick { color: var(--accent); font-weight: 700; }
+  .why { color: #666; font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>設定頁：照蔬菜家族共用規格改的規劃</h1>
+  <p>規格的順序是「app 自己的設定 → 一般 → 資料 → 購買 → 支援 → 關於 → 頁尾」。人蔘修煉現在的設定頁大部分東西都有，主要是順序要調、補上「支援」那一區和頁尾，再把「權限」那一區拆進「一般」。</p>
+  <p>規格裡有幾條跟這個 app 當初定下的規矩打架（不連網、不進 iCloud、零外部套件），我列在最下面「要你決定的事」，每條都附了我推薦的做法。</p>
+  <div class="legend">
+    <span style="--c:var(--new)">新增</span>
+    <span style="--c:var(--move)">搬位置</span>
+    <span style="--c:var(--rename)">改字或改做法</span>
+    <span style="--c:var(--drop)">拿掉</span>
+  </div>
+
+  <h2>一、改前改後</h2>
+  <div class="phones">
+    <div class="col">
+      <h3>現在</h3>
+      <div class="phone">
+        <div class="ptitle">設定</div>
+        <div class="sec">身體</div>
+        <div class="card">
+          <div class="row" style="flex-direction:column;align-items:flex-start;padding:10px 0;gap:6px"><span>身高</span><div class="stepper"><span class="rb">−</span><b>172 公分</b><span class="rb">＋</span></div></div>
+          <div class="row"><span class="name">性別</span><span class="segc"><span class="on">男</span><span>女</span></span></div>
+        </div>
+        <div class="sec">立繪造型</div>
+        <div class="card"><div class="row"><span class="name">目前的造型</span><span class="val">原版</span><span class="ar">›</span></div></div>
+        <div class="sec">健康 app</div>
+        <div class="card">
+          <div class="row"><span class="name">讀取體重與體脂</span><span class="tog"></span></div>
+          <div class="row"><span class="name">量測寫回健康 app</span><span class="tog off"></span></div>
+          <div class="row"><span class="name">從健康 app 重建量測紀錄</span><span class="ar">›</span></div>
+        </div>
+        <div class="sec">提醒</div>
+        <div class="card">
+          <div class="row"><span class="name">每月量測提醒</span><span class="tog"></span></div>
+          <div class="row"><span class="name">提醒日</span><span class="val">每月 1 號</span></div>
+        </div>
+        <div class="sec">資料</div>
+        <div class="card">
+          <div class="row"><span class="name">匯出紀錄</span><span class="ar">›</span></div>
+          <div class="row"><span class="name">匯入紀錄</span><span class="ar">›</span></div>
+        </div>
+        <div class="card" style="margin-top:10px"><div class="row red"><span class="name">刪除全部紀錄</span></div></div>
+        <div class="sec">權限</div>
+        <div class="card">
+          <div class="row"><span class="name">通知</span><span class="val">已允許</span></div>
+          <div class="row"><span class="name">到系統設定改</span><span class="ar">›</span></div>
+        </div>
+        <div class="sec">關於</div>
+        <div class="card">
+          <div class="row"><span class="name">隱私政策</span><span class="ar">↗</span></div>
+          <div class="row"><span class="name">版本</span><span class="val">1.0（36）</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <h3>照規格改之後</h3>
+      <div class="phone">
+        <div class="ptitle">設定</div>
+        <div class="sec">身體</div>
+        <div class="card">
+          <div class="row" style="flex-direction:column;align-items:flex-start;padding:10px 0;gap:6px"><span>身高</span><div class="stepper"><span class="rb">−</span><b>172 公分</b><span class="rb">＋</span></div></div>
+          <div class="row"><span class="name">性別</span><span class="segc"><span class="on">男</span><span>女</span></span></div>
+        </div>
+        <div class="sec">立繪造型</div>
+        <div class="card"><div class="row"><span class="name">目前的造型</span><span class="val">原版</span><span class="ar">›</span></div></div>
+        <div class="sec">健康 app</div>
+        <div class="card">
+          <div class="row"><span class="name">讀取體重與體脂</span><span class="tog"></span></div>
+          <div class="row"><span class="name">量測寫回健康 app</span><span class="tog off"></span></div>
+          <div class="row"><span class="name">從健康 app 重建量測紀錄</span><span class="ar">›</span></div>
+        </div>
+        <div class="sec">提醒</div>
+        <div class="card">
+          <div class="row"><span class="name">每月量測提醒</span><span class="tog"></span></div>
+          <div class="row"><span class="name">提醒日</span><span class="val">每月 1 號</span></div>
+        </div>
+
+        <div class="bigdivider">以下每個蔬菜 app 都一樣</div>
+
+        <div class="sec">一般</div>
+        <div class="card">
+          <div class="row"><span class="mark" style="--c:var(--new)"></span><span class="ic">◐</span><span class="name">外觀</span><span class="val">跟隨系統</span><span class="ar">›</span></div>
+          <div class="row"><span class="mark" style="--c:var(--move)"></span><span class="ic">♪</span><span class="name">通知</span><span class="val">已開啟</span><span class="ar">↗</span></div>
+          <div class="row"><span class="mark" style="--c:var(--new)"></span><span class="ic">≋</span><span class="name">觸覺回饋</span><span class="tog"></span></div>
+        </div>
+        <div class="sec">資料</div>
+        <div class="card">
+          <div class="row"><span class="mark" style="--c:var(--rename)"></span><span class="ic">⇪</span><span class="name">匯出資料</span><span class="ar">›</span></div>
+          <div class="row"><span class="mark" style="--c:var(--rename)"></span><span class="ic">⇩</span><span class="name">匯入資料</span><span class="ar">›</span></div>
+          <div class="row red"><span class="mark" style="--c:var(--rename)"></span><span class="ic">✕</span><span class="name">清除所有資料</span></div>
+        </div>
+        <div class="sec">購買</div>
+        <div class="card">
+          <div class="row"><span class="mark" style="--c:var(--new)"></span><span class="ic">↺</span><span class="name">恢復購買</span></div>
+        </div>
+        <div class="sec">支援</div>
+        <div class="card">
+          <div class="row"><span class="mark" style="--c:var(--new)"></span><span class="ic">✉</span><span class="name">意見回饋</span><span class="ar">›</span></div>
+          <div class="row"><span class="mark" style="--c:var(--new)"></span><span class="ic">★</span><span class="name">在 App Store 給我們評分</span><span class="ar">↗</span></div>
+          <div class="row"><span class="mark" style="--c:var(--new)"></span><span class="ic">⇧</span><span class="name">分享給朋友</span><span class="ar">↗</span></div>
+        </div>
+        <div class="sec">關於</div>
+        <div class="card">
+          <div class="row"><span class="mark" style="--c:var(--new)"></span><span class="ic">▦</span><span class="name">蔬菜家族的其他 app</span><span class="ar">›</span></div>
+          <div class="row"><span class="mark" style="--c:var(--rename)"></span><span class="ic">ⓘ</span><span class="name">隱私權政策</span><span class="ar">↗</span></div>
+          <div class="row"><span class="mark" style="--c:var(--new)"></span><span class="ic">§</span><span class="name">開源授權</span><span class="ar">›</span></div>
+        </div>
+        <div class="foot">
+          <div class="appic"></div>
+          人蔘修煉 1.0（36）<br>Made by DOMYWEB
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2>二、每一列怎麼改</h2>
+  <table>
+    <tr><th style="width:150px">列</th><th style="width:90px">動作</th><th>做法</th></tr>
+    <tr><td>身體、立繪造型、健康 app、提醒</td><td>不動</td><td>這四區是人蔘修煉自己的設定，照規格放最上面，內容不改。</td></tr>
+    <tr><td>外觀</td><td><span class="badge" style="--c:var(--new)">新增</span></td><td>跟隨系統（預設）／淺色／深色三選一，選完立刻換。app 的深色已經做好了，只差開關。</td></tr>
+    <tr><td>通知</td><td><span class="badge" style="--c:var(--move)">搬位置</span></td><td>從「權限」搬到「一般」。右邊寫已開啟或已關閉，點了直接跳系統設定。原本「到系統設定改」那一列就不用了，「權限」整區拿掉。</td></tr>
+    <tr><td>觸覺回饋</td><td><span class="badge" style="--c:var(--new)">新增</span></td><td>規格寫「觸覺回饋可以在設定頁關掉」。app 存檔、突破時會震，所以要有這個開關，預設開。</td></tr>
+    <tr><td>匯出資料、匯入資料</td><td><span class="badge" style="--c:var(--rename)">改字</span></td><td>「紀錄」改成「資料」，跟其他蔬菜 app 同一個說法。檔名和檔案格式見下面第 4 條。</td></tr>
+    <tr><td>清除所有資料</td><td><span class="badge" style="--c:var(--rename)">改做法</span></td><td>從獨立一張紅卡收進「資料」區最後一列。確認改成兩步：第一步講會刪什麼、附一顆「先匯出」；第二步按鈕寫「刪除所有資料」。要不要連身高性別一起刪，見第 3 條。</td></tr>
+    <tr><td>恢復購買</td><td><span class="badge" style="--c:var(--new)">新增</span></td><td>現在只在選造型頁裡有，規格要設定頁也一列。成功、沒找到、失敗三種情況各一句話（「已恢復你的購買」「沒有找到購買紀錄」「出了點問題，請再試一次」）。</td></tr>
+    <tr><td>意見回饋</td><td><span class="badge" style="--c:var(--new)">新增</span></td><td>開系統寫信畫面，主旨「[人蔘修煉] 意見回饋」，信末帶 app 版本、iOS 版本、機型、語言。<b>不帶任何體重、體脂數字</b>（安全標準：健康數值不外流）。手機沒設郵件就改開 mailto。需要你給一個支援信箱。</td></tr>
+    <tr><td>評分</td><td><span class="badge" style="--c:var(--new)">新增</span></td><td>設定頁這列直接開 App Store 寫評論頁。另外系統的評分小視窗，我建議放在「突破境界的慶祝畫面關掉之後」問，加上安裝滿 3 天、記過 5 筆以上、同一版只問一次。這是全 app 最有成就感的一刻。</td></tr>
+    <tr><td>分享給朋友</td><td><span class="badge" style="--c:var(--new)">新增</span></td><td>系統分享面板，內容「我在用人蔘修煉：{一句話介紹} {App Store 連結}」。一句話介紹要你定。</td></tr>
+    <tr><td>蔬菜家族的其他 app</td><td><span class="badge" style="--c:var(--new)">新增</span></td><td>見第 2 條，這列跟「不連網」那條規矩打架。</td></tr>
+    <tr><td>隱私權政策</td><td><span class="badge" style="--c:var(--rename)">改字</span></td><td>「隱私政策」改成「隱私權政策」。網址見第 6 條。</td></tr>
+    <tr><td>開源授權</td><td><span class="badge" style="--c:var(--new)">新增</span></td><td>app 沒用外部套件，但字體「霞鶩文楷」是 SIL 開放字型授權（OFL），隨 app 發布要附授權全文。這頁就放它一份。</td></tr>
+    <tr><td>版本</td><td><span class="badge" style="--c:var(--move)">搬位置</span></td><td>從「關於」的一列改成頁尾：小 icon、「人蔘修煉 1.0（36）」、「Made by DOMYWEB」。長按複製版本資訊，跳一句「已複製版本資訊」。</td></tr>
+    <tr><td>權限（整區）</td><td><span class="badge" style="--c:var(--drop)">拿掉</span></td><td>通知搬去「一般」，健康 app 的授權本來就在「健康 app」區管，這區就空了。</td></tr>
+  </table>
+
+  <h2>三、規格有、這次不做的</h2>
+  <table>
+    <tr><th style="width:150px">項目</th><th>為什麼不做</th></tr>
+    <tr><td>iCloud 同步</td><td>人蔘修煉定稿寫明不做 iCloud，安全標準也規定量測不進 iCloud。換手機靠匯出匯入。</td></tr>
+    <tr><td>語言</td><td>只有中文，規格本來就說一種語言時整列藏起來。</td></tr>
+    <tr><td>使用條款、管理訂閱</td><td>造型是一次買斷，沒有訂閱，規格說可以不做。</td></tr>
+    <tr><td>新功能</td><td>現在是第一版，沒有東西可以介紹。1.1 出的時候再開。</td></tr>
+    <tr><td>開發者面板</td><td>規格列「建議」。這個 app 已經有測試用的假資料啟動參數，暫時用不到面板。你想要的話，可以做成只在 TestFlight 出現。</td></tr>
+    <tr><td>帳號</td><td>規格本來就預設不做。</td></tr>
+  </table>
+
+  <h2>四、要你決定的事</h2>
+
+  <div class="dec">
+    <h4><span class="num">1</span>共用套件 VeggieKit 現在做，還是先寫在 app 裡</h4>
+    <ul>
+      <li><span class="pick">推薦：先寫在人蔘修煉裡</span>。檔案照區塊切好（一般、支援、關於、頁尾各一個檔），等第二個原生蔬菜 app 要用時，整包搬出去變成 VeggieKit。</li>
+      <li>另一個做法：現在就開 <code>veggie-kit</code> 這個 repo，人蔘修煉第一個引入。</li>
+    </ul>
+    <p class="why">理由：這個 app 的規矩是「零外部套件，要加先改藍圖」，而且 1.0 已經送審。現在拆套件等於同時改兩個 repo，驗證要多跑一輪。先寫在 app 裡，文案和網址還是集中在一個檔，之後搬家只是換位置。</p>
+  </div>
+
+  <div class="dec">
+    <h4><span class="num">2</span>「蔬菜家族的其他 app」要不要連網讀清單</h4>
+    <ul>
+      <li><span class="pick">推薦：清單寫死在 app 裡</span>，只放已經上架的蔬菜 app，點了開 App Store。一個都還沒上架就整列藏起來。</li>
+      <li>另一個做法：照規格讀網路上的 <code>apps.json</code>，要先改藍圖和安全標準，放行這一個網址。</li>
+    </ul>
+    <p class="why">理由：人蔘修煉的安全標準寫「不准任何 HTTP 呼叫」，隱私說明也是這樣寫的。為了一個導流清單開網路，送審時隱私那邊要重新說明。寫死的缺點是上新 app 要等下一版才看得到。</p>
+  </div>
+
+  <div class="dec">
+    <h4><span class="num">3</span>「清除所有資料」要不要連身高、性別、設定一起清</h4>
+    <ul>
+      <li><span class="pick">推薦：照規格全部清掉</span>，刪完回到第一次打開那頁（填身高性別）。健康 app 裡的資料照樣不碰。</li>
+      <li>另一個做法：只改成兩步確認，身高性別照現在留著，名字維持「刪除全部紀錄」。</li>
+    </ul>
+    <p class="why">理由：叫「清除所有資料」卻留下身高性別，名字和結果對不上。真的想整個重來的人，現在得刪 app 才辦得到。</p>
+  </div>
+
+  <div class="dec">
+    <h4><span class="num">4</span>匯出檔的檔名和格式</h4>
+    <ul>
+      <li><span class="pick">推薦：檔名照規格改成「人蔘修煉-備份-2026-11-19.json」</span>；檔案裡加 <code>app</code>、<code>schemaVersion</code>、<code>exportedAt</code> 三個欄位之前，我先試網頁版讀不讀得進去，讀不進就先不加。</li>
+      <li>另一個做法：維持現在的 <code>rencan-2026-11-19.json</code> 和網頁版同一個格式，完全不動。</li>
+    </ul>
+    <p class="why">理由：現在的格式是為了跟網頁版互通，這件事比跟規格一致重要。檔名改中文不影響互通。</p>
+  </div>
+
+  <div class="dec">
+    <h4><span class="num">5</span>意見回饋用哪個信箱</h4>
+    <p>規格建議全系列共用一個專用信箱，不用個人信箱。要你給我一個地址，我才寫得進去。</p>
+  </div>
+
+  <div class="dec">
+    <h4><span class="num">6</span>隱私權政策網址</h4>
+    <ul>
+      <li><span class="pick">推薦：1.0 維持現在送審的 <code>domyweb.org/rencan/privacy</code></span>，網站那邊另外讓 <code>domyweb.org/apps/rencan/privacy</code> 也打得開，下一版 app 再換成新路徑。</li>
+      <li>另一個做法：這次就改成規格的路徑，App Store Connect 那邊也要跟著改。</li>
+    </ul>
+    <p class="why">理由：送審資料裡填的是舊路徑，現在改 app 不改後台，兩邊會對不上。</p>
+  </div>
+
+  <div class="dec">
+    <h4><span class="num">7</span>分享給朋友那句一句話介紹</h4>
+    <p>例如「把健身紀錄變成修仙境界」。你給一句，我照抄。</p>
+  </div>
+</div>
+</body>
+</html>
