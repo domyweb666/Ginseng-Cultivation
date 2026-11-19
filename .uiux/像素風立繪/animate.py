@@ -786,11 +786,19 @@ def rig_gr1(base, blink, M):
 
 
 # ---------- 金丹 ----------
-def core_mask(base, c, below=7):
+RIM_SATURATION = 0.30    # 金丹外框算「偏橘」的飽和度；光暈比這個淡
+
+
+def core_mask(base, c, below=7, rim=False):
     """只有金丹那一顆。下面托著它的手指顏色一樣、又連在一起，所以高度要切在金丹底下，不然手指會跟著金丹飛走。
-    below：切在金丹中心往下幾格。金丹女的金丹底下連著一條到掌心的細光，切太低那條光會跟著金丹繞圈、像在滴（多米 2026-11-18）。"""
+    below：切在金丹中心往下幾格。金丹女的金丹底下連著一條到掌心的細光，切太低那條光會跟著金丹繞圈、像在滴（多米 2026-11-18）。
+    rim：再往外多帶兩格偏橘的外框。金丹女的金丹會左右繞圈，外框沒帶走就留在原地，像一段斷掉的棕色弧線（多米 2026-11-19 抓到）；
+    淡色光暈不帶，不然金丹外面會多一圈硬邊。金丹男只上下浮，殘邊被金丹自己蓋住，不用。"""
     h, s, v = hsv(base)
-    return grow(flood(disc(c, 9) & (s > 0.42) & (YS <= c[1] + below - 1), c), 1) & (YS <= c[1] + below)
+    core = grow(flood(disc(c, 9) & (s > 0.42) & (YS <= c[1] + below - 1), c), 1)
+    if rim:
+        core |= grow(core, 2) & (s > RIM_SATURATION)
+    return core & (YS <= c[1] + below)
 
 
 def core_fx(rg, c, pos, sparks=3, radius=12, catch=None, trail=None):
@@ -843,7 +851,7 @@ def rig_gr2(base, blink, M):
     c = (136, 60)
     orbit = lambda f: (int(round(5 * math.cos(TAU * f / 24.0))), int(round(3.5 * math.sin(TAU * f / 24.0) - 2)))
     lm = leafgreen(base, (22, 0, 132, 42), pivot)
-    core = core_mask(base, c, below=4)       # 金丹本體到第 64 列，底下那條細光留在手上
+    core = core_mask(base, c, below=4, rim=True)       # 金丹本體到第 64 列，底下那條細光留在手上
     M = M & ~(box(113, 38, 154, c[1] + 5) & ~core)     # 金丹周圍那一圈光暈是背景，不要跟著身體走；手指留在身體上
 
     def P(f):
