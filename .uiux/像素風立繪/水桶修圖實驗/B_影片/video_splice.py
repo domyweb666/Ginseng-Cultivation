@@ -12,7 +12,9 @@
      角色後面的（back）只疊在不是角色的格子上。
   4. 角色遮罩（付費造型換色用）：跟背景層差得夠多的格子算角色，太小的碎點不算（跟 animate.layers 同一個規矩）。
 
-用法：python video_splice.py 影片.mp4 代號 [START]
+用法：python video_splice.py 影片.mp4 代號 [START] [格數]
+  START、格數：影片從第幾格接進去、接幾格。程式動畫在 START 前一格、START+格數 那一格要跟原圖最像，進出才不會跳
+  （金丹女的身體跟著金丹左右晃，只有每 12 格回到中間一次，所以要用 19 36）
 輸出：{代號}_anim96_B6.png、{代號}_anim96_B6_mask.png、{代號}_B6_一輪.gif、{代號}_B6_接縫.png（都在這個資料夾）
 """
 import os
@@ -35,9 +37,10 @@ SETTLE_LAB = [25, 45, 70, None]
 
 def main():
     if len(sys.argv) < 3:
-        raise SystemExit('用法：python video_splice.py 影片.mp4 代號 [START]')
+        raise SystemExit('用法：python video_splice.py 影片.mp4 代號 [START] [格數]')
     video, name = sys.argv[1], sys.argv[2]
     start = int(sys.argv[3]) if len(sys.argv) > 3 else DEFAULT_START
+    wanted = int(sys.argv[4]) if len(sys.argv) > 4 else None
     if not os.path.isfile(video):
         raise SystemExit('找不到影片：' + video)
 
@@ -51,8 +54,14 @@ def main():
     # 最後一格一定取片尾：片尾才是回到原圖的那一張。第一版只取到 5.85 秒，結尾沒收回原圖，
     # 接回程式動畫那一格整片跳掉（14 張都是，相鄰兩格差 5000 格以上，平常只差幾百）
     clip_frames = int(round(len(files) / V.FPS / V.STEP_S))
-    if not 0 <= start <= A.N - clip_frames:
-        raise SystemExit('START 要在 0 到 %d 之間' % (A.N - clip_frames))
+    # 煉氣男女整條都用影片（多米 2026-11-19：程式晃的桶子、褲子不自然）：15 秒的片子比一輪 14.4 秒長，只取滿 96 格
+    clip_frames = min(clip_frames, A.N - start)
+    if wanted is not None:
+        if not len(SETTLE_LAB) < wanted <= clip_frames:
+            raise SystemExit('格數要在 %d 到 %d 之間' % (len(SETTLE_LAB) + 1, clip_frames))
+        clip_frames = wanted
+    if not 0 <= start < A.N:
+        raise SystemExit('START 要在 0 到 %d 之間' % (A.N - 1))
     picks = [int(round(k * V.STEP_S * V.FPS)) for k in range(clip_frames - 1)] + [len(files) - 1]
     clip = P.to_cells(files, base, pal, pal_lab, picks)
     base_lab = P.lab(base)

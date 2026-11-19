@@ -7,3 +7,5 @@ splice_log.txt
 # 13 張的 6 秒原片（共約 50 MB）只留本機，Higgsfield 生成紀錄也找得到
 *_6s_raw.mp4
 !r0_6s_raw.mp4
+*_15s_raw.mp4
+!h3_15s_raw.mp4
