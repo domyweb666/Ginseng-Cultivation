@@ -16,7 +16,9 @@
   START、格數：影片從第幾格接進去、接幾格。程式動畫在 START 前一格、START+格數 那一格要跟原圖最像，進出才不會跳
   （金丹女的身體跟著金丹左右晃，只有每 12 格回到中間一次，所以要用 19 36）
 輸出：{代號}_anim96_B6.png、{代號}_anim96_B6_mask.png、{代號}_B6_一輪.gif、{代號}_B6_接縫.png（都在這個資料夾）
+      付費造型換色用：{代號}_anim96_B6_clean.png（影片格沒疊特效的樣子，其他格黑的）、{代號}_B6.json（接在第幾格、接幾格）
 """
+import json
 import os
 import sys
 
@@ -76,12 +78,18 @@ def main():
     frames = [f.astype(np.float32) for f in rg.frames()]
     bg_lab = P.lab(rg.bg)
     sheet_cells, mask_cells = [], []
+    # 付費造型換色要「沒疊特效」的影片格（make_style_anims.py 把角色換色後再把特效照造型的顏色疊回去），
+    # 影片以外的格子留黑，那幾格換色程式照舊用 animate.layers() 拆
+    clean_cells = [np.zeros((GH, GW, 3), np.uint8) for _ in range(A.N)]
     old_mask = np.asarray(Image.open(os.path.join(V.FOLDER, name + '_anim96_mask.png')).convert('L')) > 127
     for f in range(A.N):
         r, c = divmod(f, A.COLS)
         k = f - start
         if 0 <= k < clip_frames:
             img = clip[k].copy()
+            if not (quant(img) == img).all():
+                raise ValueError('第 %d 格影片格不在色盤上，沒疊特效的那份存不準' % f)
+            clean_cells[f] = img.astype(np.uint8)
             lay = A.layers(rg, mask, f)
             char = np.linalg.norm(P.lab(img) - bg_lab, axis=-1) > CHAR_LAB
             labels, n = ndimage.label(char, structure=np.ones((3, 3)))
@@ -105,6 +113,9 @@ def main():
     im.putpalette(pal.reshape(-1).tolist())
     im.save(os.path.join(P.HERE, name + '_anim96_B6.png'), optimize=True)
     Image.fromarray((A.sheet_of(mask_cells) * 255).astype(np.uint8)).save(os.path.join(P.HERE, name + '_anim96_B6_mask.png'))
+    Image.fromarray(A.sheet_of(clean_cells)).save(os.path.join(P.HERE, name + '_anim96_B6_clean.png'), optimize=True)
+    with open(os.path.join(P.HERE, name + '_B6.json'), 'w', encoding='utf-8') as fp:
+        json.dump({'start': start, 'frames': clip_frames}, fp)
 
     gif = [Image.fromarray(P.big(cell)) for cell in sheet_cells]
     gif[0].save(os.path.join(P.HERE, name + '_B6_一輪.gif'), save_all=True, append_images=gif[1:], duration=150, loop=0)

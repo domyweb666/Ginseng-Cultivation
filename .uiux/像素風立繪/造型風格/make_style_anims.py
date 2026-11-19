@@ -14,8 +14,11 @@
       整張的閃白、變暗：照原本濃度往造型的亮色、暗色混，不收階。
     背景層的特效（燈籠、星星、佛光）只畫在純背景上，不會蓋到描邊。
 
+B 方案（2026-11-19）：招牌動作那幾格（煉氣男女是整條）換成 AI 影片縮回的像素格，跟 app 原版一樣。見 use_b_video。
+
 檢查（每條都跑，不過就丟例外）：
   - 拆層後照原本的疊法重組、收色，要跟原版 _anim96.png 每一格完全一樣（證明拆層沒改到動畫）。
+  - B 方案：B6 要跟 app 裡的原版一樣；影片格用遮罩和沒疊特效的那份重組，要跟 B6 一樣。
   - 背景：角色範圍、描邊範圍（ZONE）、特效以外的格子，96 格都要等於「沒有角色的純背景」換色後的樣子。
 
 用法：python make_style_anims.py [只做哪幾個代號，逗號分隔] [只做哪幾種造型，逗號分隔]
@@ -47,6 +50,7 @@ REPO = PIX.parent.parent
 ASSETS = REPO / "ios" / "Rencan" / "Resources" / "Assets.xcassets"
 APP_STYLES = ASSETS / "PortraitStyles"
 APP_ORIG = ASSETS / "Portraits"
+BDIR = PIX / "水桶修圖實驗" / "B_影片"     # B 方案影片格（見 use_b_video）
 CODES = [f"{p}{i}" for p in ("r", "gr") for i in range(7)]
 DIRECT = {"handheld", "chunky"}
 
@@ -156,7 +160,59 @@ def load_code(code):
             raise ValueError(f"{code} 第 {f} 格：角色範圍跟 _anim96_mask.png 不一樣，先重跑 animate.py")
     if not (rg.bg_alt == rg.bg).all():
         raise ValueError(f"{code}：閉眼那幾格的背景層跟平常不一樣，背景沒辦法每格固定")
+    use_b_video(code, A, q, orig, L)
     return dict(rg=rg, A=A, q=q, orig=orig, L=L, BG=q(rg.bg), rgb_s=rgb_s)
+
+
+# 影片格的身體範圍：人蔘原本站的位置（AI 去背範圍）往外幾格以內。外面跟背景不一樣的都當成光（見 use_b_video）
+BODY_REACH = 6
+
+
+def use_b_video(code, A, q, orig, L):
+    """B 方案（2026-11-19）：app 原版動畫的招牌動作換成 AI 影片縮回的像素格（video_splice.py 出的 _anim96_B6），付費造型也要跟著換。
+    影片格拆不出零件，所以那幾格的角色範圍用 video_splice 另存的遮罩、沒疊特效的畫面用另存的 _B6_clean，
+    背景照舊用 rg.bg（每格一樣）、特效照舊用 animate.layers() 給的，換色流程不用改。
+    動畫_新去背/{代號}_anim96.png 是程式動畫，上面那兩個檢查要用它，不能拿 B6 蓋掉。
+    原地改 orig 和 L 的影片那幾格；影片格另外多一個 glow（當成光、不描邊的格子）。"""
+    spec = json.loads((BDIR / f"{code}_B6.json").read_text(encoding="utf-8"))
+    start, count = spec["start"], spec["frames"]
+    if not (0 <= start and 0 < count and start + count <= N):
+        raise ValueError(f"{code}_B6.json 的接格範圍不對：{spec}")
+    sheet = cells_of(BDIR / f"{code}_anim96_B6.png")
+    clean = cells_of(BDIR / f"{code}_anim96_B6_clean.png")
+    mask = cells_of(BDIR / f"{code}_anim96_B6_mask.png")
+    app = cells_of(APP_ORIG / f"{code}Anim.imageset" / f"{code}Anim.png")
+    body_zone = ndimage.binary_dilation(A, structure=np.ones((3, 3)), iterations=BODY_REACH)
+    for f in range(N):
+        if not (sheet[f] == app[f]).all():
+            raise ValueError(f"{code} 第 {f} 格：{code}_anim96_B6.png 跟 app 裡的原版不一樣，先確認哪個才是對的")
+        video = start <= f < start + count
+        if not video and not (sheet[f] == orig[f]).all():
+            raise ValueError(f"{code} 第 {f} 格：不是影片的格子，B6 卻跟程式動畫不一樣")
+        if not video:
+            continue
+        img = clean[f].astype(np.float32)
+        char = mask[f] > 127
+        l = L[f]
+        # 照 video_splice 的疊法重組，要跟 B6 一模一樣（證明沒疊特效的那份和遮罩是對的）
+        Tb, Cb = l["back"]
+        x = np.where(char[..., None], img, img * Tb + Cb)
+        x = x * l["front"][0] + l["front"][1]
+        x = x * l["post"][0] + l["post"][1]
+        bad = (q(x).astype(np.uint8) != sheet[f]).any(-1).sum()
+        if bad:
+            raise ValueError(f"{code} 第 {f} 格：影片格拆層重組跟 B6 差 {bad} 格")
+        # 影片的金光、光帶、雷光、整片變暗的天空跟背景差很多，遮罩會把它們算成角色，換色時就被描邊、補洞，
+        # 貼紙、霓虹、夕陽、玉石變成一大塊色塊（多米 2026-11-19 看抽查圖選「改成光，不描邊」）。
+        # 所以離身體太遠的、身體裡切下來的小碎點都改算光（glow）：照樣用造型的角色配色上色，但不描邊、不補洞（見 paint）
+        body = char & body_zone
+        pieces, n = ndimage.label(body, structure=np.ones((3, 3)))
+        if n:
+            sizes = ndimage.sum(body, pieces, range(1, n + 1))
+            body &= np.isin(pieces, [i + 1 for i, s in enumerate(sizes) if s >= an.CHAR_MIN_PIECE])
+        # 影片格沒有零件，被角色蓋住的就是角色本身（背景層的特效畫不到這裡，跟 video_splice 一樣）
+        L[f] = dict(l, clean=img, char=body, glow=char & ~body, cover=char)
+        orig[f] = sheet[f]
 
 
 def render(d, style):
@@ -173,6 +229,7 @@ def render(d, style):
         for f, l in enumerate(L):
             fx = (l["back"][0][..., 0] < 1 - 1e-6) & ~l["cover"] | (l["front"][0][..., 0] < 1 - 1e-6) | (l["post"][0][..., 0] < 1 - 1e-6)
             # 原版動畫裡，零件外面多切的那一圈背景色會跟著葉子、道具動（離角色最多兩格）；換成固定的背景層，背景才每格一樣
+            fx = fx | glow_of(l)
             rin = d["orig"][f].astype(np.float32)
             keep = l["char"] | fx
             rin[~keep] = d["BG"][~keep]
@@ -186,9 +243,9 @@ def render(d, style):
     ALL = np.ones((GH, GW), bool)
     frames, fxs = [], []
     for l in L:
-        char = l["char"]
-        rin = np.where(char[..., None], d["q"](l["clean"]), d["BG"])
-        img = fn(rin.copy(), char.copy(), **kw).astype(np.float32)
+        char, glow = l["char"], glow_of(l)
+        rin = np.where((char | glow)[..., None], d["q"](l["clean"]), d["BG"])
+        img = paint(fn, rin, char, glow, kw)
         bgonly = (u8(img) == pure).all(-1) & ~char      # 純背景：背景層的特效只畫在這裡，不蓋到描邊
         (Tb, Cb), (Tf, Cf) = l["back"], l["front"]
         ab, af = 1 - Tb[..., 0], 1 - Tf[..., 0]
@@ -200,14 +257,30 @@ def render(d, style):
             pre = rin.copy()
             pre[soft_b] = pre[soft_b] * Tb[soft_b] + Cb[soft_b]
             pre[soft_f] = pre[soft_f] * Tf[soft_f] + Cf[soft_f]
-            img = fn(pre, char.copy(), **kw).astype(np.float32)
+            img = paint(fn, pre, char, glow, kw)
         # 亮的（火花、閃電、光點、光環、花瓣）照原本的濃度畫成造型的亮色
         s1 = blend(img, l["back"], bgonly & (ab >= SOFT), style)
         s2 = blend(img, l["front"], af >= SOFT, style)
         s3 = blend(img, l["post"], ALL, style, post=True)
         frames.append(u8(img))
-        fxs.append(soft_b | soft_f | s1 | s2 | s3)
+        fxs.append(soft_b | soft_f | s1 | s2 | s3 | glow)
     return frames, fxs, zones, pure
+
+
+def glow_of(l):
+    """影片格當成光的格子（use_b_video）；程式動畫的格子沒有。"""
+    return l.get("glow", np.zeros((GH, GW), bool))
+
+
+def paint(fn, rin, char, glow, kw):
+    """角色＋背景換色。光（glow）的格子另外照「算角色」換一次色取過來：用造型的角色配色，
+    但描邊、陰影、補洞都只照身體算（光算進角色的話，金丹女那圈光帶會被補成實心的一大塊）。
+    不能當背景換：貼紙、皮影、金箔的背景是固定色，光會整個不見。"""
+    img = fn(rin.copy(), char.copy(), **kw).astype(np.float32)
+    if glow.any():
+        lit = fn(rin.copy(), char | glow, **kw).astype(np.float32)
+        img[glow] = lit[glow]
+    return img
 
 
 def verify(code, style, frames, fxs, zones, pure):
