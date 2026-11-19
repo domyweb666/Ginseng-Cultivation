@@ -1,6 +1,9 @@
 frames*/
 # Seedance 2.0 Mini 的原片：第一格沒照原圖、縮不回像素格，模型已淘汰，只留縮圖結果
 seedmini_15s_raw.mp4
-
 # 單手版 A：開頭有黑底圓形轉場，接不起來，不留
 h3_onehand_a.mp4
+splice_log.txt
+# 13 張的 6 秒原片（共約 50 MB）只留本機，Higgsfield 生成紀錄也找得到
+*_6s_raw.mp4
+!r0_6s_raw.mp4

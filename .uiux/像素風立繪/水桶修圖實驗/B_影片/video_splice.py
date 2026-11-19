@@ -4,7 +4,7 @@
 為什麼不把 6 秒攤成 96 格：會變慢動作，提桶、水花都慢下來（0.5 倍慢放早就被退過）。
 
 做法：
-  1. 影片每 0.15 秒取一張（app 的播放速度），6 秒剛好 40 格；縮回 168×210、收色盤、防閃都跟 video15_to_pixels.py 同一套。
+  1. 影片每 0.15 秒取一張（app 的播放速度），片長 6.58 秒就是 44 格、最後一格取片尾；縮回 168×210、收色盤、防閃都跟 video15_to_pixels.py 同一套。
   2. 塞進程式動畫的第 START 格起，換掉程式做的那段招牌動作。程式動畫前 48 格身體是「低」的那一拍，
      影片首尾都是原圖，接回去只差葉子被風帶的一兩格，不會整個人跳。
   3. 影片那幾格照樣疊上同一格的環境特效（落葉、草屑、燈火……），特效才不會在動作那 6 秒消失：
@@ -25,9 +25,12 @@ from scipy import ndimage
 import video15_to_pixels as P
 from video15_to_pixels import A, GH, GW, V, px
 
-CLIP_FRAMES = 40       # 6 秒 ÷ 0.15 秒
 DEFAULT_START = 0      # 程式動畫第 0 格就是原圖，從這裡接最不會跳
 CHAR_LAB = 10          # 跟背景層差多少（Lab 距離）才算角色
+# 收尾：影片最後一張姿勢回到原圖了，但重畫過的毛邊、衣紋跟原圖的像素對不上，直接接回程式動畫那一格像突然變銳利
+# （出場那格差 5000 到 1 萬格，平常相鄰只差幾百）。最後幾格照這些門檻（Lab 距離）逐步換回原圖的像素，
+# 差得少的先換，最後一格整張就是原圖
+SETTLE_LAB = [25, 45, 70, None]
 
 
 def main():
@@ -37,8 +40,6 @@ def main():
     start = int(sys.argv[3]) if len(sys.argv) > 3 else DEFAULT_START
     if not os.path.isfile(video):
         raise SystemExit('找不到影片：' + video)
-    if not 0 <= start <= A.N - CLIP_FRAMES:
-        raise SystemExit('START 要在 0 到 %d 之間' % (A.N - CLIP_FRAMES))
 
     rg, pal, mask = A.build_rig(V.FOLDER, name)
     base, _ = A.load(V.FOLDER, name)
@@ -46,9 +47,22 @@ def main():
     quant = lambda rgb: pal[px.nearest(px.rgb2lab(np.clip(rgb, 0, 255).reshape(-1, 3)), pal_lab).reshape(GH, GW)].astype(np.float32)
 
     files = P.extract(video, name + '_B6')
-    # H3 出的片子是一秒 24 張，長度會比要的多一點（6 秒出 6.58 秒），所以照張數算時間，不照片長平分
-    picks = [int(round(k * V.STEP_S * V.FPS)) for k in range(CLIP_FRAMES)]
+    # H3 出的片子是一秒 24 張，長度會比要的多一點（6 秒出 6.58 秒）。照片長算要幾格（6.58 秒 → 44 格），
+    # 最後一格一定取片尾：片尾才是回到原圖的那一張。第一版只取到 5.85 秒，結尾沒收回原圖，
+    # 接回程式動畫那一格整片跳掉（14 張都是，相鄰兩格差 5000 格以上，平常只差幾百）
+    clip_frames = int(round(len(files) / V.FPS / V.STEP_S))
+    if not 0 <= start <= A.N - clip_frames:
+        raise SystemExit('START 要在 0 到 %d 之間' % (A.N - clip_frames))
+    picks = [int(round(k * V.STEP_S * V.FPS)) for k in range(clip_frames - 1)] + [len(files) - 1]
     clip = P.to_cells(files, base, pal, pal_lab, picks)
+    base_lab = P.lab(base)
+    for j, limit in enumerate(SETTLE_LAB):
+        k = clip_frames - len(SETTLE_LAB) + j
+        if limit is None:
+            clip[k] = base.copy()
+            continue
+        close = np.linalg.norm(P.lab(clip[k]) - base_lab, axis=-1) < limit
+        clip[k] = np.where(close[..., None], base, clip[k])
 
     frames = [f.astype(np.float32) for f in rg.frames()]
     bg_lab = P.lab(rg.bg)
@@ -57,7 +71,7 @@ def main():
     for f in range(A.N):
         r, c = divmod(f, A.COLS)
         k = f - start
-        if 0 <= k < CLIP_FRAMES:
+        if 0 <= k < clip_frames:
             img = clip[k].copy()
             lay = A.layers(rg, mask, f)
             char = np.linalg.norm(P.lab(img) - bg_lab, axis=-1) > CHAR_LAB
@@ -86,14 +100,14 @@ def main():
     gif = [Image.fromarray(P.big(cell)) for cell in sheet_cells]
     gif[0].save(os.path.join(P.HERE, name + '_B6_一輪.gif'), save_all=True, append_images=gif[1:], duration=150, loop=0)
     # 接縫：影片進場前後、出場前後各三格
-    picks = [start - 2, start - 1, start, start + 1, None, start + CLIP_FRAMES - 2, start + CLIP_FRAMES - 1,
-             start + CLIP_FRAMES, start + CLIP_FRAMES + 1]
+    picks = [start - 2, start - 1, start, start + 1, None, start + clip_frames - 2, start + clip_frames - 1,
+             start + clip_frames, start + clip_frames + 1]
     strip = np.full((GH * P.S, (GW * P.S + P.GAP) * len(picks), 3), 40, np.uint8)
     for j, f in enumerate(picks):
         if f is not None:
             strip[:, j * (GW * P.S + P.GAP):j * (GW * P.S + P.GAP) + GW * P.S] = P.big(sheet_cells[f % A.N])
     Image.fromarray(strip).save(os.path.join(P.HERE, name + '_B6_接縫.png'))
-    print('接在第', start, '到', start + CLIP_FRAMES - 1, '格')
+    print('接在第', start, '到', start + clip_frames - 1, '格')
 
 
 if __name__ == '__main__':

@@ -24,6 +24,9 @@ import video_to_pixels as V
 from video_to_pixels import A, px, GH, GW, grow, shrink, lab, sample
 
 HERE = V.HERE
+H3_SIZE = (1440, 1792)
+H3_MAPPING = (8.571, 8.533, 0, 0)
+H3_MATCH = 0.85
 S, GAP = 3, 8
 
 
@@ -44,8 +47,13 @@ def to_cells(files, base, pal, pal_lab, picks=None):
     quant = lambda rgb: pal[px.nearest(px.rgb2lab(np.clip(rgb, 0, 255).reshape(-1, 3)), pal_lab).reshape(GH, GW)].astype(np.float32)
     first = np.asarray(Image.open(files[0]).convert('RGB')).astype(np.float32)
     h, w = first.shape[:2]
+    # H3 出的片子都是 1440×1792，前四支對到的都是同一組位置：先試它，原圖對得上九成就不用慢慢找（一張省好幾分鐘）
     best = None
-    for sx in np.arange(w / GW - 0.12, w / GW + 0.121, 0.02):
+    if (w, h) == H3_SIZE:
+        same = (np.abs(quant(sample(first, *H3_MAPPING)) - base).sum(-1) == 0).mean()
+        if same >= H3_MATCH:
+            best = (same,) + H3_MAPPING
+    for sx in (np.arange(w / GW - 0.12, w / GW + 0.121, 0.02) if best is None else []):
         for sy in np.arange(h / GH - 0.12, h / GH + 0.121, 0.02):
             for ox in range(-6, 7, 2):
                 for oy in range(-6, 7, 2):
