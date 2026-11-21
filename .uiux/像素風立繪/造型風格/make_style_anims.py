@@ -270,7 +270,9 @@ def use_b_video(code, rg, A, q, orig, L):
                 idx = range(1, n + 1)
                 r, g, b = (ndimage.mean(img[..., k], pieces, idx) for k in range(3))
                 glow &= np.isin(pieces, [i + 1 for i in range(n) if b[i] - max(r[i], g[i]) >= WATER_BLUE])
-            gone = (ndimage.binary_dilation(A, iterations=OLD_SPOT_GROW) & ~body)[..., None]
+            # 提把中間的洞也算進去：三點水花中間那一點剛好落在洞裡
+            old = ndimage.binary_fill_holes(ndimage.binary_dilation(A, iterations=OLD_SPOT_GROW))
+            gone = (old & ~body)[..., None]
             Tf, Cf = l["front"]
             l = dict(l, front=(np.where(gone, 1.0, Tf).astype(Tf.dtype), np.where(gone, 0.0, Cf).astype(Cf.dtype)))
         # 影片格沒有零件，被角色蓋住的就是角色本身（背景層的特效畫不到這裡，跟 video_splice 一樣）
