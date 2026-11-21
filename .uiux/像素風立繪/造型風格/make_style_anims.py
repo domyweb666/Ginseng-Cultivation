@@ -175,6 +175,19 @@ GLOW_MIN_PIECE = 6     # 比這小的光當雜點丟掉
 # 照上面的分法會是一大塊平塗的亮色蓋住半個人。這種格子角色改用原圖，整格蓋一層 FLASH_COVER 濃的亮色
 FLASH_AREA = 0.25
 FLASH_COVER = 0.75
+# 煉氣男的影片把水桶從腰邊舉到肩上再潑出去，原本水桶擋住的石階、草地整片露出來。
+# 背景層在那裡是補畫的一片淡色，跟影片畫出來的石階對不起來，亮一點的草地就被當成光、塗成亮色黏在衣襬旁邊
+# （2026-11-21 多米在赤霞夕照圈出來的那幾塊）；右邊的燈籠、左邊的招牌被影片重畫得亮一點，也有幾條細的。
+# 煉氣女的水桶一直提在原位，沒有露出這麼大一片，所以沒事。
+# 這個代號的動作裡沒有光，只有水，所以多做兩件事（見 use_b_video）：
+#   1. 「光」只留水色的。水是藍紫色（藍不比紅、綠低），殘塊是米黃或近白（藍比紅低 5 以上）。
+#      量過 251 塊，兩群中間空著，門檻放在 WATER_BLUE
+#   2. 程式動畫畫在人蔘原本站的範圍裡的特效不畫：那是水桶在腰邊時濺出來的三點水，影片裡桶已經舉走了
+# 不能改成「落在原本範圍裡的光都丟」套到所有代號：金丹飛進丹田、元嬰、渡劫的雷光本來就畫在身體前面，
+# 照丟會少一大塊（統計過，金丹男一格最多少 700 格）
+WATER_ONLY = {"r0"}
+WATER_BLUE = -3       # 一塊光的平均色，藍減掉紅綠裡大的那個，不低於這個才算水
+OLD_SPOT_GROW = 2     # 原本的範圍往外多算幾格
 
 
 def lab_of(rgb):
@@ -251,6 +264,15 @@ def use_b_video(code, rg, A, q, orig, L):
         if n:
             sizes = ndimage.sum(glow, pieces, range(1, n + 1))
             glow &= np.isin(pieces, [i + 1 for i, s in enumerate(sizes) if s >= GLOW_MIN_PIECE])
+        if code in WATER_ONLY:
+            pieces, n = ndimage.label(glow, structure=np.ones((3, 3)))
+            if n:
+                idx = range(1, n + 1)
+                r, g, b = (ndimage.mean(img[..., k], pieces, idx) for k in range(3))
+                glow &= np.isin(pieces, [i + 1 for i in range(n) if b[i] - max(r[i], g[i]) >= WATER_BLUE])
+            gone = (ndimage.binary_dilation(A, iterations=OLD_SPOT_GROW) & ~body)[..., None]
+            Tf, Cf = l["front"]
+            l = dict(l, front=(np.where(gone, 1.0, Tf).astype(Tf.dtype), np.where(gone, 0.0, Cf).astype(Cf.dtype)))
         # 影片格沒有零件，被角色蓋住的就是角色本身（背景層的特效畫不到這裡，跟 video_splice 一樣）
         L[f] = dict(l, clean=img, char=body, glow=glow, full=char, cover=char)
         if glow.sum() > FLASH_AREA * GH * GW:
