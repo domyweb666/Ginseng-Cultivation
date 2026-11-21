@@ -43,6 +43,13 @@ final class DemoRealmUITests: RencanUITestCase {
         requireVisible(open, "頁首的分享圖示").tap()
         requireVisible(app.buttons.matching(identifier: "share-card-save"), "修煉卡頁的「存到相簿」")
         shot("修煉卡頁")
+        // 打一個道號，看卡上只有名字、沒有「道號」那行小字（2026-11-21 多米選的）
+        let field = requireVisible(
+            app.textFields.matching(identifier: "share-card-dao-name"), "道號那一欄"
+        )
+        field.tap()
+        field.typeText("Domy")
+        shot("修煉卡頁-打了道號")
     }
 
     /// 境界段四塊都在。這一段不是懶載入，捲到哪裡都找得到，所以放在截完圖之後才查。

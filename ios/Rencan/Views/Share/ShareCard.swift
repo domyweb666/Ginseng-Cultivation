@@ -33,8 +33,7 @@ private enum Metrics {
     static let cellPadding: CGFloat = 8
     static let footerHeight: CGFloat = 32
     /// 字級（卡是固定大小的圖，字也固定）
-    static let daoLabelSize: CGFloat = 10
-    static let daoNameSize: CGFloat = 22
+    static let daoNameSize: CGFloat = 24
     static let realmSize: CGFloat = 22
     static let stageSize: CGFloat = 15
     static let sealTextSize: CGFloat = 18
@@ -129,7 +128,7 @@ struct ShareCardContent: Hashable {
     }
 }
 
-/// 修煉卡本身（甲版）：最上面道號與境界、中間立繪、宗門身分一條、三格數字、六門功法、最下面 app 名與日期。
+/// 修煉卡本身（甲版）：最上面道號（只有名字）與境界、中間立繪、宗門身分一條、三格數字、六門功法、最下面 app 名與日期。
 /// 存成圖片與分享頁預覽用的是同一個 View，所以固定用淺色，存下來的圖不管手機開不開深色都一樣。
 struct ShareCard: View {
     let content: ShareCardContent
@@ -176,23 +175,22 @@ struct ShareCard: View {
 
     private var header: some View {
         HStack(spacing: Metrics.headerSpacing) {
-            VStack(alignment: .leading, spacing: 0) {
-                Text("道號")
-                    .font(RencanType.cardText(Metrics.daoLabelSize))
-                    .foregroundStyle(Color.rencan.cardMuted)
-                // 沒填道號就留白，不擋分享
-                Text(content.daoName.isEmpty ? " " : content.daoName)
-                    .font(RencanType.cardDisplay(Metrics.daoNameSize))
-                    .foregroundStyle(Color.rencan.cardText)
-                    .lineLimit(1)
-            }
+            // 只放名字，上面不再寫「道號」兩個小字（2026-11-21 多米選甲版）。沒填就留白，不擋分享。
+            // 八個字放不下時名字自己縮，右邊的境界、期別不讓位
+            Text(content.daoName)
+                .font(RencanType.cardDisplay(Metrics.daoNameSize))
+                .foregroundStyle(Color.rencan.cardText)
+                .lineLimit(1)
+                .minimumScaleFactor(RencanLayout.minimumTextScale)
             Spacer(minLength: 0)
             Text(content.realmName)
                 .font(RencanType.cardDisplay(Metrics.realmSize))
                 .foregroundStyle(Color.rencan.cardTitle)
+                .fixedSize()
             Text(content.stage)
                 .font(RencanType.cardDisplay(Metrics.stageSize))
                 .foregroundStyle(Color.rencan.cardTitle)
+                .fixedSize()
             Text("境")
                 .font(RencanType.cardDisplay(Metrics.sealTextSize))
                 .foregroundStyle(Color.rencan.onSeal)
