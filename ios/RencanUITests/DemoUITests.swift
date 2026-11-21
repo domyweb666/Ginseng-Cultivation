@@ -68,10 +68,12 @@ final class DemoRealmUITests: RencanUITestCase {
         _ = app.keyboards.firstMatch.waitForExistence(timeout: 3)
         field.typeText("仙\n")
         _ = waitUntil(timeout: 3) { !app.keyboards.firstMatch.exists }
-        requireVisible(
+        let hint = requireVisible(
             app.staticTexts.matching(identifier: "share-card-dao-name-limit"), "道號超過八個字的提醒"
         )
         XCTAssertEqual((field.value as? String)?.count, 8, "道號超過八個字，多的字沒有被拿掉")
+        // 注音選字中不截字，靠的是接到輸入框本體去問它；這裡驗有接到（選字本身模擬器測不到，要真機）
+        XCTAssertEqual(hint.value as? String, "有接到輸入框", "沒接到道號輸入框，選字中不截字不會有作用")
     }
 
     /// 道號打滿八個字：卡上名字那一格會縮字，留一張圖看有沒有被截掉、擠到右邊的境界。

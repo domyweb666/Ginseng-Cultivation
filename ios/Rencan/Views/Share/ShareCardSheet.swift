@@ -17,6 +17,11 @@ private enum Metrics {
     static let nameFieldWidth: CGFloat = 180
 }
 
+/// 記著道號輸入框（不持有它，頁面關掉就放手）。
+private final class NameFieldBox {
+    weak var field: UITextField?
+}
+
 /// 修煉卡頁（2026-11-19 多米選甲版）：卡片預覽、道號、要不要顯示體脂，底下「存到相簿」「分享」。
 /// 分享交給系統的分享面板：卡的圖加一句話（多米選 A），LINE、訊息會收到兩則，IG 限動只吃圖。
 /// 存到相簿只要「加入照片」的權限，看不到使用者的相簿。
@@ -30,6 +35,8 @@ struct ShareCardSheet: View {
     @State private var daoName = ""
     /// 打超過字數上限、多的字被拿掉之後，欄位下面那一句提醒要不要出現
     @State private var showsNameLimitHint = false
+    /// 道號輸入框在 UIKit 那一層的本體，只用來問它是不是還在選字
+    @State private var nameField = NameFieldBox()
     @State private var showsBodyFat = true
     /// 照目前的道號與開關做好的 1080×1920 圖；內容一改就重做
     @State private var rendered: UIImage?
@@ -131,24 +138,40 @@ struct ShareCardSheet: View {
                     .frame(width: Metrics.nameFieldWidth)
                     .submitLabel(.done)
                     .onSubmit(saveDaoName)
+                    // 兩個時機都看一次：系統的通知和 daoName 寫回來誰先誰後不一定
+                    // （只在通知那一刻看，CI 上第九個字進來時 daoName 還是舊的，沒截到也沒提醒）
                     .onReceive(Self.textChanges) { note in
-                        guard let field = note.object as? UITextField else { return }
-                        let composing = field.markedTextRange != nil
-                        // 等這一輪跑完再截：那時候欄位的字才寫回 daoName
-                        Task { @MainActor in trimDaoName(composing: composing) }
+                        nameField.field = note.object as? UITextField
+                        trimDaoName()
                     }
+                    .onChange(of: daoName) { _, _ in trimDaoName() }
                     .accessibilityIdentifier("share-card-dao-name")
             }
             .frame(minHeight: RencanLayout.rowHeight)
             if showsNameLimitHint {
-                Text("道號最多 \(ShareCardContent.daoNameLimit) 個字")
-                    .font(RencanType.footnote)
-                    .foregroundStyle(Color.rencan.destructive)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .padding(.bottom, RencanLayout.groupSpacing)
-                    .accessibilityIdentifier("share-card-dao-name-limit")
+                limitHint
             }
         }
+    }
+
+    private var limitHint: some View {
+        Text("道號最多 \(ShareCardContent.daoNameLimit) 個字")
+            .font(RencanType.footnote)
+            .foregroundStyle(Color.rencan.destructive)
+            .frame(maxWidth: .infinity, alignment: .trailing)
+            .padding(.bottom, RencanLayout.groupSpacing)
+            .accessibilityValue(fieldWatchNote)
+            .accessibilityIdentifier("share-card-dao-name-limit")
+    }
+
+    /// 檢查線用：輸入框的通知有沒有接到。沒接到的話「選字中不截字」那一段不會有作用，測試要擋下來。
+    /// 上架的版本是空字串，旁白不會多唸東西。
+    private var fieldWatchNote: String {
+        #if DEBUG
+            return nameField.field == nil ? "沒接到輸入框" : "有接到輸入框"
+        #else
+            return ""
+        #endif
     }
 
     /// 輸入框的字每變一次就通知一次（注音還在選字時也會）。這一頁只有道號一個輸入框。
@@ -189,10 +212,10 @@ struct ShareCardSheet: View {
     }
 
     /// 道號超過上限就把多的字拿掉，並在欄位下面提醒一句；刪到上限以內提醒就收起來。
-    /// 注音、拼音還在選字時（composing）不能動欄位的字：一動，選到一半的字會變成一串注音符號，
-    /// 已經打了六七個字的人就打不出最後一個字。所以等選完字再算、再截。
-    private func trimDaoName(composing: Bool) {
-        guard !composing else { return }
+    /// 注音、拼音還在選字時不能動欄位的字：一動，選到一半的字會變成一串注音符號，
+    /// 已經打了六七個字的人就打不出最後一個字。所以等選完字（輸入框沒有 markedText）再算、再截。
+    private func trimDaoName() {
+        guard nameField.field?.markedTextRange == nil else { return }
         let limit = ShareCardContent.daoNameLimit
         if daoName.count > limit {
             daoName = String(daoName.prefix(limit))
