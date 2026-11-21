@@ -48,8 +48,24 @@ final class DemoRealmUITests: RencanUITestCase {
             app.textFields.matching(identifier: "share-card-dao-name"), "道號那一欄"
         )
         field.tap()
-        field.typeText("Domy")
+        _ = app.keyboards.firstMatch.waitForExistence(timeout: 3)
+        // 打完按「完成」收鍵盤再截圖：鍵盤開著時卡片被推到頁首底下，卡上的道號拍不到（第一版截圖就是這樣）
+        field.typeText("Domy\n")
+        _ = waitUntil(timeout: 3) { !app.keyboards.firstMatch.exists }
         shot("修煉卡頁-打了道號")
+        typeFullDaoName(into: field)
+        shot("修煉卡頁-道號八個字")
+    }
+
+    /// 道號打滿八個字：卡上名字那一格會縮字，留一張圖看有沒有被截掉、擠到右邊的境界。
+    /// 欄位的字靠右，點右緣游標會在字尾，刪掉原本四個字再打八個中文字（最寬的情況）。
+    /// 這裡不檢查打進去的字：游標萬一沒在字尾，結果會夾著英文，但一樣是八個字，看截圖就知道。
+    private func typeFullDaoName(into field: XCUIElement) {
+        field.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.5)).tap()
+        _ = app.keyboards.firstMatch.waitForExistence(timeout: 3)
+        field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 4))
+        field.typeText("太虛逍遙無極真人\n")
+        _ = waitUntil(timeout: 3) { !app.keyboards.firstMatch.exists }
     }
 
     /// 境界段四塊都在。這一段不是懶載入，捲到哪裡都找得到，所以放在截完圖之後才查。
