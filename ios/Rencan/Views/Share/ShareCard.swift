@@ -11,7 +11,7 @@ private enum Metrics {
     static let innerCornerRadius: CGFloat = 16
     /// 米白卡面的大小寫死成「整張卡四邊各扣一個外框寬」，外框四邊才一樣寬。
     /// 原本讓卡面自己長：裡面各段加起來比放得下的高 7 點，卡面往上下撐，上下的外框被吃到只剩 2.5 點
-    ///（2026-11-21 多米看存下來的圖發現的）。
+    /// （2026-11-21 多米看存下來的圖發現的）。
     static let innerSize = CGSize(
         width: size.width - frameWidth * 2, height: size.height - frameWidth * 2
     )

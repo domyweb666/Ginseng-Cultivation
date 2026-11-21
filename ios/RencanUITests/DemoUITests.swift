@@ -35,6 +35,16 @@ final class DemoRealmUITests: RencanUITestCase {
         shot("分析境界段-境界怎麼算點開")
     }
 
+    /// 修煉卡頁。2026-11-21 多米看存下來的圖，外框上下比左右窄；這裡留一張圖，在檢查線的截圖裡看四邊是不是一樣寬。
+    func test修煉卡頁() {
+        launch(["-rencanSeed", "demo"])
+        seeStele(timeout: 30)
+        let open = app.buttons.matching(identifier: "share-card-open")
+        requireVisible(open, "頁首的分享圖示").tap()
+        requireVisible(app.buttons.matching(identifier: "share-card-save"), "修煉卡頁的「存到相簿」")
+        shot("修煉卡頁")
+    }
+
     /// 境界段四塊都在。這一段不是懶載入，捲到哪裡都找得到，所以放在截完圖之後才查。
     private func checkRealmSection() {
         require(textContaining("再修煉 41 天，轉為正式真傳弟子"), "宗門卡的下一步")
