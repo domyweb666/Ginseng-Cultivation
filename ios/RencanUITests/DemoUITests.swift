@@ -54,7 +54,24 @@ final class DemoRealmUITests: RencanUITestCase {
         _ = waitUntil(timeout: 3) { !app.keyboards.firstMatch.exists }
         shot("修煉卡頁-打了道號")
         typeFullDaoName(into: field)
+        XCTAssertFalse(
+            app.staticTexts["share-card-dao-name-limit"].exists, "剛好八個字，不該出現字數提醒"
+        )
         shot("修煉卡頁-道號八個字")
+        typeOneMoreDaoNameCharacter(into: field)
+        shot("修煉卡頁-道號超過八個字")
+    }
+
+    /// 已經八個字再多打一個：多的那個字不能留在欄位裡，欄位下面要出現「道號最多 8 個字」（2026-11-21 多米要的）。
+    private func typeOneMoreDaoNameCharacter(into field: XCUIElement) {
+        field.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.5)).tap()
+        _ = app.keyboards.firstMatch.waitForExistence(timeout: 3)
+        field.typeText("仙\n")
+        _ = waitUntil(timeout: 3) { !app.keyboards.firstMatch.exists }
+        requireVisible(
+            app.staticTexts.matching(identifier: "share-card-dao-name-limit"), "道號超過八個字的提醒"
+        )
+        XCTAssertEqual((field.value as? String)?.count, 8, "道號超過八個字，多的字沒有被拿掉")
     }
 
     /// 道號打滿八個字：卡上名字那一格會縮字，留一張圖看有沒有被截掉、擠到右邊的境界。
