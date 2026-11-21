@@ -40,7 +40,8 @@ struct GongView: View {
         VStack(alignment: .leading, spacing: RencanLayout.itemSpacing) {
             SectionTitle(text: "功法雷達")
                 .padding(.horizontal, Metrics.titleInset)
-            VStack(spacing: RencanLayout.itemSpacing) {
+            // 刻度條離雷達圖遠一點：原本 8，最下面那個功法名幾乎貼著刻度（2026-11-21 多米真機看的）
+            VStack(spacing: RencanLayout.sectionSpacing) {
                 MoveRadar(cards: digest.moveCards)
                 levelScale
             }

@@ -7,6 +7,9 @@ private enum Metrics {
     static let titleInset: CGFloat = 4
     /// 卡片的左右內距
     static let cardInset: CGFloat = 16
+    /// 頁尾（圖示、版本號）離上面「關於」那張卡再多空一段。VeggieFooter 自己上下只留 24，
+    /// 接在卡片下面太擠，像黏在一起（2026-11-21 多米真機看的，對照蒜日子約 48）
+    static let footerTopGap: CGFloat = 24
 }
 
 /// 設定頁最下面（蔬菜家族共用規格，2026-11-19 照規格重排）：「關於」一區，加上頁尾。
@@ -34,6 +37,7 @@ struct SettingsAboutSection: View {
             VeggieFooter(config: config, logo: Image("AppLogo")) { text in
                 flow.showToast(text)
             }
+            .padding(.top, Metrics.footerTopGap)
         }
         .sheet(item: $page) { page in
             AboutPageSheet(page: page, config: config)

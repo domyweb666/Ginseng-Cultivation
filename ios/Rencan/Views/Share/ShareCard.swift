@@ -9,8 +9,14 @@ private enum Metrics {
     static let outerCornerRadius: CGFloat = 22
     static let innerPadding: CGFloat = 6
     static let innerCornerRadius: CGFloat = 16
-    /// 上下各段之間
-    static let rowGap: CGFloat = 5
+    /// 米白卡面的大小寫死成「整張卡四邊各扣一個外框寬」，外框四邊才一樣寬。
+    /// 原本讓卡面自己長：裡面各段加起來比放得下的高 7 點，卡面往上下撐，上下的外框被吃到只剩 2.5 點
+    ///（2026-11-21 多米看存下來的圖發現的）。
+    static let innerSize = CGSize(
+        width: size.width - frameWidth * 2, height: size.height - frameWidth * 2
+    )
+    /// 上下各段之間。卡面內高 616：頭 36＋立繪 420＋身分 22＋數字與功法 84＋尾 32＝594，加五個間隔 20 是 614，放得下
+    static let rowGap: CGFloat = 4
     /// 最上面一列：高、印章大小與圓角、彼此間距
     static let headerHeight: CGFloat = 36
     static let headerSpacing: CGFloat = 8
@@ -25,7 +31,7 @@ private enum Metrics {
     static let cellGap: CGFloat = 4
     static let cellCornerRadius: CGFloat = 6
     static let cellPadding: CGFloat = 8
-    static let footerHeight: CGFloat = 36
+    static let footerHeight: CGFloat = 32
     /// 字級（卡是固定大小的圖，字也固定）
     static let daoLabelSize: CGFloat = 10
     static let daoNameSize: CGFloat = 22
@@ -138,7 +144,7 @@ struct ShareCard: View {
             footer
         }
         .padding(Metrics.innerPadding)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(width: Metrics.innerSize.width, height: Metrics.innerSize.height)
         .background(
             Color.rencan.cardBase,
             in: RoundedRectangle(cornerRadius: Metrics.innerCornerRadius)

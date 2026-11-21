@@ -26,8 +26,9 @@ struct LiftFormView: View {
     private static let defaultSets = 3
     /// 一組四門排兩欄（2026-11-18 多米選 B 版：三排十二格太雜，改成分頁一次只看一組，
     /// 格子夠寬，「羅馬尼亞硬舉」不會被切掉）。
+    /// 分頁列、四格之間都留 12（2026-11-21 多米真機看：原本 8 擠在一起很彆扭），跟下面重量、次數那幾張卡的間距一樣。
     private static let columns = Array(
-        repeating: GridItem(.flexible(), spacing: RencanLayout.itemSpacing), count: 2
+        repeating: GridItem(.flexible(), spacing: RencanLayout.groupSpacing), count: 2
     )
 
     var body: some View {
@@ -73,14 +74,14 @@ struct LiftFormView: View {
     }
 
     private var movePicker: some View {
-        VStack(alignment: .leading, spacing: RencanLayout.itemSpacing) {
+        VStack(alignment: .leading, spacing: RencanLayout.groupSpacing) {
             Picker("功法分組", selection: $group) {
                 ForEach(MoveGroup.allCases, id: \.self) { item in
                     Text(item.rawValue).tag(item)
                 }
             }
             .pickerStyle(.segmented)
-            LazyVGrid(columns: LiftFormView.columns, spacing: RencanLayout.itemSpacing) {
+            LazyVGrid(columns: LiftFormView.columns, spacing: RencanLayout.groupSpacing) {
                 ForEach(Tables.moves.filter { $0.group == group }, id: \.key) { item in
                     moveButton(item)
                 }
