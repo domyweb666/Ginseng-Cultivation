@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>全造型動畫質檢</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #E9E4DA; color: #222; line-height: 1.6;
+    font-family: -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif; }
+  .wrap { max-width: 1500px; margin: 0 auto; padding: 22px 16px 60px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  p { margin: 4px 0; color: #444; }
+  .bar { position: sticky; top: 0; z-index: 5; background: #fff; border-radius: 0 0 14px 14px; padding: 10px 14px; margin: 10px 0 14px;
+    display: flex; gap: 10px 18px; align-items: center; flex-wrap: wrap; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+  .bar label { font-size: 14px; color: #555; }
+  select, button { font: inherit; font-size: 15px; padding: 5px 10px; border: 1px solid #cfc7b6; border-radius: 8px; background: #F5F1E9; cursor: pointer; }
+  button.on { background: #8B6A1E; color: #fff; border-color: #8B6A1E; }
+  input[type=range] { width: 300px; }
+  #frameNo { font-variant-numeric: tabular-nums; font-weight: 700; min-width: 5em; display: inline-block; }
+  .grid { display: flex; flex-wrap: wrap; gap: 14px; }
+  .tile { background: #fff; border-radius: 12px; padding: 8px; cursor: pointer; border: 3px solid transparent; }
+  .tile.bad { border-color: #B8402F; }
+  .tile canvas { display: block; image-rendering: pixelated; border-radius: 6px; background: #777; }
+  .tile .cap { font-size: 14px; margin-top: 4px; display: flex; justify-content: space-between; gap: 8px; }
+  .tile .cap small { color: #8A8478; }
+  .tile .cap small.video { color: #8B6A1E; font-weight: 700; }
+  .list { background: #fff; border-radius: 14px; padding: 12px 16px; margin-top: 18px; }
+  .list textarea { width: 100%; min-height: 90px; font: inherit; font-size: 14px; border: 1px solid #cfc7b6; border-radius: 8px; padding: 8px; }
+  .err { color: #B8402F; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>全造型動畫質檢</h1>
+  <p>12 種造型 × 14 個境界，播的就是 app 裡的那些圖檔。看到哪一張沒去乾淨，先按「暫停」停在那一格，再點那張圖：它會被框紅，「哪一張、第幾格」會記到最下面的清單，最後整段複製貼給我。再點一次取消。</p>
+  <p>寫「影片格」的是 AI 影片縮回來的招牌動作，那一段最容易有殘留；其他格是程式動的。</p>
+  <div class="bar">
+    <span>
+      <button id="byStyle" class="on">看一種造型</button>
+      <button id="byRealm">看一個境界</button>
+    </span>
+    <select id="pick"></select>
+    <span>
+      <button id="prevPick">上一個</button>
+      <button id="nextPick">下一個</button>
+    </span>
+    <span>
+      <button id="play">暫停</button>
+      <button id="back">◀ 上一格</button>
+      <button id="fwd">下一格 ▶</button>
+    </span>
+    <span><input id="scrub" type="range" min="0" max="95" value="0"> <span id="frameNo">第 0 格</span></span>
+    <span><label>速度</label>
+      <select id="speed"><option value="150">跟 app 一樣</option><option value="400">慢</option><option value="900">很慢</option></select></span>
+    <span><label>放大</label>
+      <select id="zoom"><option value="1">1 倍</option><option value="2" selected>2 倍</option><option value="3">3 倍</option></select></span>
+  </div>
+  <div id="msg" class="err"></div>
+  <div class="grid" id="grid"></div>
+  <div class="list">
+    <b>有問題的清單</b>（點圖就會加進來）
+    <textarea id="bad" readonly placeholder="還沒有"></textarea>
+    <button id="copy">複製清單</button> <button id="clear">清空</button>
+  </div>
+</div>
+<script>
+  const ASSETS = '../../../ios/Rencan/Resources/Assets.xcassets/';
+  const GW = 168, GH = 210, COLS = 12, N = 96;
+  const STYLES = [['original', '原版'], ['ink', '水墨'], ['gold', '鎏金'], ['moon', '月夜'], ['puppet', '皮影燈籠'], ['handheld', '掌機四色'],
+    ['sticker', '貼紙'], ['chunky', '粗像素'], ['celadon', '青花瓷'], ['sunset', '赤霞夕照'], ['neon', '霓虹'], ['jade', '翠玉']];
+  const REALMS = ['煉氣', '築基', '金丹', '元嬰', '化神', '大乘', '渡劫'];
+  const CODES = [];
+  for (const [p, sex] of [['r', '男'], ['gr', '女']]) REALMS.forEach((r, i) => CODES.push([p + i, r + sex]));
+  // 影片接在第幾格、接幾格（水桶修圖實驗/B_影片/{代號}_B6.json）
+  const VIDEO = { r0: [0, 96], gr0: [0, 96], gr2: [19, 36] };
+  const videoRange = code => VIDEO[code] || [0, 44];
+
+  const $ = id => document.getElementById(id);
+  let mode = 'style', frame = 0, playing = true, timer = null, tiles = [];
+  const bad = new Map();
+
+  function src(code, style) {
+    return style === 'original'
+      ? `${ASSETS}Portraits/${code}Anim.imageset/${code}Anim.png`
+      : `${ASSETS}PortraitStyles/${code}-${style}Anim.imageset/${code}-${style}Anim.png`;
+  }
+
+  function fillPick() {
+    const items = mode === 'style' ? STYLES : CODES;
+    $('pick').innerHTML = items.map(([v, name]) => `<option value="${v}">${name}</option>`).join('');
+    if (mode === 'style') $('pick').value = 'sunset';
+  }
+
+  function build() {
+    const zoom = +$('zoom').value, pick = $('pick').value;
+    const list = mode === 'style' ? CODES.map(([code, name]) => [code, pick, name])
+      : STYLES.map(([style, name]) => [pick, style, name]);
+    $('grid').innerHTML = ''; $('msg').textContent = '';
+    tiles = list.map(([code, style, name]) => {
+      const el = document.createElement('div'); el.className = 'tile';
+      const cv = document.createElement('canvas'); cv.width = GW; cv.height = GH;
+      cv.style.width = GW * zoom + 'px'; cv.style.height = GH * zoom + 'px';
+      const cap = document.createElement('div'); cap.className = 'cap';
+      cap.innerHTML = `<span>${name}</span><small></small>`;
+      el.append(cv, cap); $('grid').append(el);
+      const img = new Image();
+      const t = { code, style, el, cv, img, tag: cap.querySelector('small'), ready: false,
+        label: `${CODES.find(c => c[0] === code)[1]}・${STYLES.find(s => s[0] === style)[1]}` };
+      img.onload = () => { t.ready = true; draw(t); };
+      img.onerror = () => { $('msg').textContent = '有圖讀不到。請用瀏覽器直接打開這個檔（要留在專案資料夾裡原本的位置）。'; };
+      img.src = src(code, style);
+      el.onclick = () => toggleBad(t);
+      return t;
+    });
+    paint();
+  }
+
+  function draw(t) {
+    if (!t.ready) return;
+    const ctx = t.cv.getContext('2d'); ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(t.img, (frame % COLS) * GW, Math.floor(frame / COLS) * GH, GW, GH, 0, 0, GW, GH);
+  }
+
+  function paint() {
+    $('scrub').value = frame; $('frameNo').textContent = `第 ${frame} 格`;
+    for (const t of tiles) {
+      draw(t);
+      const [s, n] = videoRange(t.code), isVideo = frame >= s && frame < s + n;
+      t.tag.textContent = isVideo ? '影片格' : '程式格'; t.tag.className = isVideo ? 'video' : '';
+      t.el.classList.toggle('bad', [...bad.keys()].some(k => k.startsWith(t.label + '・')));
+    }
+  }
+
+  function toggleBad(t) {
+    const key = `${t.label}・第 ${frame} 格`;
+    const old = [...bad.keys()].find(k => k.startsWith(t.label + '・'));
+    if (old) bad.delete(old); else bad.set(key, true);
+    $('bad').value = [...bad.keys()].join('\n'); paint();
+  }
+
+  function tick() { frame = (frame + 1) % N; paint(); }
+  function run() { clearInterval(timer); if (playing) timer = setInterval(tick, +$('speed').value); $('play').textContent = playing ? '暫停' : '播放'; }
+  function step(d) { playing = false; run(); frame = (frame + d + N) % N; paint(); }
+  function setMode(m) { mode = m; $('byStyle').classList.toggle('on', m === 'style'); $('byRealm').classList.toggle('on', m === 'realm'); fillPick(); build(); }
+  function movePick(d) { const p = $('pick'); p.selectedIndex = (p.selectedIndex + d + p.options.length) % p.options.length; build(); }
+
+  $('byStyle').onclick = () => setMode('style');
+  $('byRealm').onclick = () => setMode('realm');
+  $('pick').onchange = build; $('zoom').onchange = build;
+  $('prevPick').onclick = () => movePick(-1); $('nextPick').onclick = () => movePick(1);
+  $('play').onclick = () => { playing = !playing; run(); };
+  $('back').onclick = () => step(-1); $('fwd').onclick = () => step(1);
+  $('scrub').oninput = () => { playing = false; run(); frame = +$('scrub').value; paint(); };
+  $('speed').onchange = run;
+  $('copy').onclick = () => { $('bad').select(); navigator.clipboard.writeText($('bad').value); };
+  $('clear').onclick = () => { bad.clear(); $('bad').value = ''; paint(); };
+  setMode('style'); run();
+</script>
+</body>
+</html>

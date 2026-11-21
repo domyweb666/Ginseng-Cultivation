@@ -42,10 +42,9 @@ def extract(video, name):
     return files
 
 
-def to_cells(files, base, pal, pal_lab, picks=None):
-    """picks：要取影片的第幾張（從 0 起算）；沒給就是整支平均攤成 96 格。"""
-    quant = lambda rgb: pal[px.nearest(px.rgb2lab(np.clip(rgb, 0, 255).reshape(-1, 3)), pal_lab).reshape(GH, GW)].astype(np.float32)
-    first = np.asarray(Image.open(files[0]).convert('RGB')).astype(np.float32)
+def find_mapping(first, base, quant):
+    """影片第一張對到原圖的位置：回傳 (對上幾成, 橫向一格幾點, 直向一格幾點, 橫向位移, 直向位移)。
+    video_matte.py 也用這個，角色範圍才會跟像素格對在同一個位置。"""
     h, w = first.shape[:2]
     # H3 出的片子都是 1440×1792，前四支對到的都是同一組位置：先試它，原圖對得上九成就不用慢慢找（一張省好幾分鐘）
     best = None
@@ -60,6 +59,15 @@ def to_cells(files, base, pal, pal_lab, picks=None):
                     same = (np.abs(quant(sample(first, sx, sy, ox, oy)) - base).sum(-1) == 0).mean()
                     if best is None or same > best[0]:
                         best = (same, sx, sy, ox, oy)
+    return best
+
+
+def to_cells(files, base, pal, pal_lab, picks=None):
+    """picks：要取影片的第幾張（從 0 起算）；沒給就是整支平均攤成 96 格。"""
+    quant = lambda rgb: pal[px.nearest(px.rgb2lab(np.clip(rgb, 0, 255).reshape(-1, 3)), pal_lab).reshape(GH, GW)].astype(np.float32)
+    first = np.asarray(Image.open(files[0]).convert('RGB')).astype(np.float32)
+    h, w = first.shape[:2]
+    best = find_mapping(first, base, quant)
     print('  影片', w, 'x', h, '格數', len(files), '對位', tuple(round(float(v), 3) for v in best))
     _, sx, sy, ox, oy = best
 

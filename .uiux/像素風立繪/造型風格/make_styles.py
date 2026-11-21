@@ -138,13 +138,29 @@ def style_chunky(rgb, mask, palette=None):
     return np.asarray(q.convert("RGB").resize((168, 210), Image.NEAREST)).astype(np.float32)
 
 
+SPECK = 4   # 角色範圍裡不超過這麼多格的洞當成去背的雜點補起來；再大的是真的空隙
+
+
+def fill_specks(mask):
+    """只補角色範圍裡一兩格的小洞（AI 去背留下的雜點），背景色才不會從袖子裡一點一點透出來。
+    原本是所有的洞都補：手臂和身體之間、桶子提把裡、飄帶圈起來的那些空隙也被當成角色上色，
+    換成赤霞夕照這種整片換底的造型就是一塊淺色黏在身上，像沒去背乾淨（多米 2026-11-21 真機看到的）。
+    真的空隙要留著，讓造型的底色透出來。"""
+    from scipy import ndimage
+    holes = ndimage.binary_fill_holes(mask) & ~mask
+    labels, n = ndimage.label(holes)
+    if not n:
+        return mask
+    sizes = ndimage.sum(holes, labels, range(1, n + 1))
+    return mask | np.isin(labels, [i + 1 for i, size in enumerate(sizes) if size <= SPECK])
+
+
 def style_celadon(rgb, mask):
     """青花瓷：白瓷底、角色只剩鈷藍一色。
     2026-11-18 多米選甲：拿掉原本底下那條棋盤格紋。它被 app 的圓角切掉兩頭、根踩在上面，
     看起來像賽車旗不像瓷器（對照圖在 青花瓷底部對照/）。"""
     from scipy import ndimage
-    # 角色內部的小縫補起來，背景色才不會從袖子裡透出來
-    mask = ndimage.binary_fill_holes(mask)
+    mask = fill_specks(mask)
     l = lum(rgb)
     char = posterize_map(l, hexs("#0E1E4E", "#1F3B86", "#3A63B8", "#7F9FD6", "#C9D7F0", "#F4F7FC"))
     bg = posterize_map(l, hexs("#DCE3EE", "#E8EDF4", "#F1F4F9", "#F8FAFC"))
@@ -154,7 +170,7 @@ def style_celadon(rgb, mask):
 def style_sunset(rgb, mask):
     """赤霞夕照：上紫下橘一層層的晚霞、一條金色地平線，角色染暖色、外緣描金光。"""
     from scipy import ndimage
-    mask = ndimage.binary_fill_holes(mask)
+    mask = fill_specks(mask)
     h, w = mask.shape
     yy = np.mgrid[0:h, 0:w][0] / h
     sky = posterize_map(1 - yy, hexs("#F3A25A", "#E3735A", "#B9506E", "#7E3A7A", "#4A2A66", "#2A1B4A"))
@@ -170,7 +186,7 @@ def style_sunset(rgb, mask):
 def style_neon(rgb, mask):
     """霓虹：暗底、角色紫粉，外面一圈青色亮邊。"""
     from scipy import ndimage
-    mask = ndimage.binary_fill_holes(mask)
+    mask = fill_specks(mask)
     # 亮邊沿「封口後」的外形描：袖子和衣襬之間那條通到外面的細縫不描，不然袖子裡會多一條青線
     # 補 | mask：角色碰到圖邊時，closing 會把邊上那排削掉，亮邊就會蓋到角色身上
     solid = ndimage.binary_fill_holes(ndimage.binary_closing(mask, iterations=2) | mask)
@@ -190,7 +206,7 @@ def style_neon(rgb, mask):
 def style_jade(rgb, mask):
     """翠玉：整隻像綠玉雕的，深紅褐絨布底，頭上紅果換成金色像鑲金。"""
     from scipy import ndimage
-    mask = ndimage.binary_fill_holes(mask)
+    mask = fill_specks(mask)
     l = lum(rgb)
     char = posterize_map(l ** 0.85, hexs("#0D2A1F", "#1C4D36", "#2E7A55", "#4FA67A", "#8FD1A8", "#DDF5E4"))
     bg = posterize_map(l, hexs("#1A1014", "#2A1920", "#3A222B", "#4B2C36"))
