@@ -18,6 +18,8 @@ private enum Metrics {
     static let domainPadding = 0.25
     /// 日期最多標幾個，再多會擠在一起
     static let maximumDateLabels = 6
+    /// 橫軸最少幾天寬：全部量測都在同一天時，範圍才不會是 0 到 0
+    static let minimumDaySpan = 1
 }
 
 /// 圖上的一條境界門檻：畫在哪個 FFMI、左邊寫什麼（「金丹 19.5」）。
@@ -26,7 +28,9 @@ private struct FFMIChartCardLine {
     let label: String
 }
 
-/// FFMI 走勢（畫布 AnalysisRealm）：每次量測一個點，照先後等距排（跟網頁版一樣），
+/// FFMI 走勢（畫布 AnalysisRealm）：每次量測一個點，橫軸照日期排，
+/// 隔一週和隔三個月的寬度不一樣，停了多久也看得出來。
+/// （2026-11-22 分析頁審查 D1 改的；網頁版是照先後等距排。）
 /// 境界門檻畫虛線，現在這個大境界鋪一層淡底。只有一筆時不畫圖，改顯示一句話（PRD S8）。
 struct FFMIChartCard: View {
     let points: [FFMIPoint]
@@ -80,7 +84,8 @@ struct FFMIChartCard: View {
             marks
         }
         .chartXScale(
-            domain: 0...(points.count - 1), range: .plotDimension(padding: Metrics.plotPadding)
+            domain: 0...max(Metrics.minimumDaySpan, last.dayOffset),
+            range: .plotDimension(padding: Metrics.plotPadding)
         )
         .chartYScale(domain: valueDomain(lines, fallback: first.ffmi))
         .chartXAxis { dateAxis }
@@ -100,12 +105,18 @@ struct FFMIChartCard: View {
             .foregroundStyle(Color.rencan.tint)
         }
         ForEach(points.indices, id: \.self) { index in
-            LineMark(x: .value("第幾次量測", index), y: .value("FFMI", points[index].ffmi))
-                .foregroundStyle(Color.rencan.accent)
-                .lineStyle(Metrics.lineStyle)
-            PointMark(x: .value("第幾次量測", index), y: .value("FFMI", points[index].ffmi))
-                .symbol { pointSymbol(isLatest: index == points.count - 1) }
-                .annotation(position: .top) { latestLabel(index) }
+            LineMark(
+                x: .value("距第一次量測幾天", points[index].dayOffset),
+                y: .value("FFMI", points[index].ffmi)
+            )
+            .foregroundStyle(Color.rencan.accent)
+            .lineStyle(Metrics.lineStyle)
+            PointMark(
+                x: .value("距第一次量測幾天", points[index].dayOffset),
+                y: .value("FFMI", points[index].ffmi)
+            )
+            .symbol { pointSymbol(isLatest: index == points.count - 1) }
+            .annotation(position: .top) { latestLabel(index) }
         }
     }
 
@@ -131,7 +142,7 @@ struct FFMIChartCard: View {
     // MARK: 軸
 
     private var dateAxis: some AxisContent {
-        AxisMarks(values: labelIndices) { value in
+        AxisMarks(values: labelDayOffsets) { value in
             AxisValueLabel(anchor: .top) {
                 Text(dateLabel(value))
                     .font(RencanType.caption)
@@ -152,15 +163,26 @@ struct FFMIChartCard: View {
         }
     }
 
-    /// 點太多時日期會擠在一起，所以從最新那一筆往回，每隔幾筆標一個。
-    private var labelIndices: [Int] {
-        let step = (points.count + Metrics.maximumDateLabels - 1) / Metrics.maximumDateLabels
-        return stride(from: points.count - 1, through: 0, by: -max(1, step)).reversed()
+    /// 哪幾個點底下標日期（回傳它們距第一次量測幾天）。橫軸照日期排之後，兩次量測可能靠得很近，
+    /// 所以從最新那一筆往回挑：跟上一個標了日期的點至少隔「整段天數分成幾格」的一格，才再標一個。
+    private var labelDayOffsets: [Int] {
+        guard let last = points.last else { return [] }
+        let gaps = Metrics.maximumDateLabels - 1
+        let minimumGap = max(Metrics.minimumDaySpan, (last.dayOffset + gaps - 1) / gaps)
+        var labelled = [last.dayOffset]
+        var previous = last.dayOffset
+        for point in points.dropLast().reversed() where previous - point.dayOffset >= minimumGap {
+            labelled.append(point.dayOffset)
+            previous = point.dayOffset
+        }
+        return labelled.reversed()
     }
 
     private func dateLabel(_ value: AxisValue) -> String {
-        guard let index = value.as(Int.self), points.indices.contains(index) else { return "" }
-        return DayStamp.short(points[index].date, today: today)
+        guard let dayOffset = value.as(Int.self),
+            let point = points.last(where: { $0.dayOffset == dayOffset })
+        else { return "" }
+        return DayStamp.short(point.date, today: today)
     }
 
     private func thresholdLabel(_ value: AxisValue, in lines: [FFMIChartCardLine]) -> String {

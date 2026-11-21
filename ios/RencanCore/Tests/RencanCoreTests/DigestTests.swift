@@ -126,6 +126,23 @@ final class DigestSteleTests: XCTestCase {
         XCTAssertEqual(result.ffmiHistory[0].ffmi, 19.595752939622145, accuracy: 1e-9)
     }
 
+    func test走勢圖每一點帶著距第一次量測幾天() throws {
+        // 隔一週和隔三個月要畫得不一樣寬，所以橫軸用天數，不用第幾次
+        let first = weighing(71, bodyFat: 18, on: "2026-02-05")
+        let weekLater = weighing(71, bodyFat: 18, on: "2026-02-12")
+        let monthsLater = weighing(70.4, bodyFat: 14.2, on: "2026-05-12")
+        let result = try digest([monthsLater, first, weekLater])
+        XCTAssertEqual(result.ffmiHistory.map(\.dayOffset), [0, 7, 96])
+    }
+
+    func test量測的日期壞掉時走勢圖不會安靜算錯() {
+        let good = weighing(71, bodyFat: 18, on: "2026-02-05")
+        let bad = weighing(71, bodyFat: 18, on: "2026/03/05")
+        XCTAssertThrowsError(try digest([good, bad])) { error in
+            XCTAssertEqual(error as? RencanError, .invalidDate)
+        }
+    }
+
     func test日期壞掉時整份摘要丟錯誤不會安靜算錯() {
         let bad = lift(.squat, kg: 100, reps: 5, on: "2026/03/09", id: "x")
         XCTAssertThrowsError(try digest([], [bad])) { error in

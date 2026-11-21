@@ -75,6 +75,8 @@ public struct LiftPreview: Equatable {
 public struct FFMIPoint: Equatable {
     public let date: String
     public let ffmi: Double
+    /// 距第一次量測幾天（第一次是 0）。走勢圖的橫軸照它排，隔一週和隔三個月寬度才不一樣。
+    public let dayOffset: Int
 }
 
 public struct Digest: Equatable {
@@ -125,7 +127,11 @@ public struct Digest: Equatable {
                 realmIndex = top.stageRank / Tables.stages.count
             }
             let sorted = Formulas.byDate(measurements)
-            points = sorted.map { Digest.point(of: $0, heightCm: heightCm) }
+            if let earliest = sorted.first {
+                points = try sorted.map { measurement in
+                    try Digest.point(of: measurement, heightCm: heightCm, since: earliest.date)
+                }
+            }
             latest = sorted.last.map { Digest.stele(of: $0, heightCm: heightCm, sex: sex) }
         }
         breakthroughs = records
@@ -180,10 +186,16 @@ public struct Digest: Equatable {
         return Set(lifts.map(\.date).filter { $0.prefix(monthPrefixLength) == month }).count
     }
 
-    private static func point(of measurement: MeasurementEntry, heightCm: Double) -> FFMIPoint {
+    /// earliestDate 是第一次量測的日子；日期壞掉時 daysBetween 會丟 invalidDate。
+    private static func point(
+        of measurement: MeasurementEntry, heightCm: Double, since earliestDate: String
+    ) throws -> FFMIPoint {
         let leanMassKg = Formulas.leanOf(measurement)
+        let dayOffset = try Formulas.daysBetween(earliestDate, measurement.date)
         return FFMIPoint(
-            date: measurement.date, ffmi: Formulas.ffmi(leanMassKg: leanMassKg, heightCm: heightCm)
+            date: measurement.date,
+            ffmi: Formulas.ffmi(leanMassKg: leanMassKg, heightCm: heightCm),
+            dayOffset: dayOffset
         )
     }
 
