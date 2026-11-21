@@ -80,10 +80,12 @@
   let mode = 'style', frame = 0, playing = true, timer = null, tiles = [];
   const bad = new Map();
 
+  // 每次打開都重抓圖：圖檔重出之後瀏覽器會留著舊的，看起來像沒修（2026-11-21 發生過）
+  const FRESH = '?t=' + Date.now();
   function src(code, style) {
-    return style === 'original'
+    return (style === 'original'
       ? `${ASSETS}Portraits/${code}Anim.imageset/${code}Anim.png`
-      : `${ASSETS}PortraitStyles/${code}-${style}Anim.imageset/${code}-${style}Anim.png`;
+      : `${ASSETS}PortraitStyles/${code}-${style}Anim.imageset/${code}-${style}Anim.png`) + FRESH;
   }
 
   function fillPick() {
