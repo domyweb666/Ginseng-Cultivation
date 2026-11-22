@@ -78,12 +78,13 @@ final class DemoRealmUITests: RencanUITestCase {
         XCTAssertEqual(hint.value as? String, "有接到輸入框", "沒接到道號輸入框，選字中不截字不會有作用")
     }
 
-    /// 英文也是最多八個字（2026-11-22 多米要的）：欄位裡已經有「Domy」四個字，再打五個就超過。
-    /// 多的那個字不能留在欄位裡，欄位下面要出現提醒。
+    /// 英文也是最多八個字（2026-11-22 多米要的）：一次打九個英文字，多的字不能留在欄位裡，欄位下面要出現提醒。
+    /// 不能靠「原本的 Domy 加五個字」湊超過：點欄位時 Domy 可能整個被選起來，打字就把它蓋掉
+    /// （檢查線 run 45010989267 就是這樣，欄位只剩五個字）。九個字不管有沒有蓋掉都會超過。
     private func typeOverLimitEnglish(into field: XCUIElement) {
         field.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.5)).tap()
         _ = app.keyboards.firstMatch.waitForExistence(timeout: 3)
-        field.typeText("Abcde\n")
+        field.typeText("Abcdefghi\n")
         _ = waitUntil(timeout: 3) { !app.keyboards.firstMatch.exists }
         requireVisible(
             app.staticTexts.matching(identifier: "share-card-dao-name-limit"), "英文超過八個字的提醒"
