@@ -53,6 +53,8 @@ final class DemoRealmUITests: RencanUITestCase {
         field.typeText("Domy\n")
         _ = waitUntil(timeout: 3) { !app.keyboards.firstMatch.exists }
         shot("修煉卡頁-打了道號")
+        typeOverLimitEnglish(into: field)
+        shot("修煉卡頁-英文超過八個字")
         typeFullDaoName(into: field)
         XCTAssertFalse(
             app.staticTexts["share-card-dao-name-limit"].exists, "剛好八個字，不該出現字數提醒"
@@ -76,13 +78,26 @@ final class DemoRealmUITests: RencanUITestCase {
         XCTAssertEqual(hint.value as? String, "有接到輸入框", "沒接到道號輸入框，選字中不截字不會有作用")
     }
 
+    /// 英文也是最多八個字（2026-11-22 多米要的）：欄位裡已經有「Domy」四個字，再打五個就超過。
+    /// 多的那個字不能留在欄位裡，欄位下面要出現提醒。
+    private func typeOverLimitEnglish(into field: XCUIElement) {
+        field.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.5)).tap()
+        _ = app.keyboards.firstMatch.waitForExistence(timeout: 3)
+        field.typeText("Abcde\n")
+        _ = waitUntil(timeout: 3) { !app.keyboards.firstMatch.exists }
+        requireVisible(
+            app.staticTexts.matching(identifier: "share-card-dao-name-limit"), "英文超過八個字的提醒"
+        )
+        XCTAssertEqual((field.value as? String)?.count, 8, "英文道號超過八個字，多的字沒有被拿掉")
+    }
+
     /// 道號打滿八個字：卡上名字那一格會縮字，留一張圖看有沒有被截掉、擠到右邊的境界。
-    /// 欄位的字靠右，點右緣游標會在字尾，刪掉原本四個字再打八個中文字（最寬的情況）。
+    /// 欄位的字靠右，點右緣游標會在字尾，刪掉原本八個英文字再打八個中文字（最寬的情況）。
     /// 這裡不檢查打進去的字：游標萬一沒在字尾，結果會夾著英文，但一樣是八個字，看截圖就知道。
     private func typeFullDaoName(into field: XCUIElement) {
         field.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.5)).tap()
         _ = app.keyboards.firstMatch.waitForExistence(timeout: 3)
-        field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 4))
+        field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 8))
         field.typeText("太虛逍遙無極真人\n")
         _ = waitUntil(timeout: 3) { !app.keyboards.firstMatch.exists }
     }
