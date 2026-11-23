@@ -7,7 +7,9 @@ private enum Metrics {
     static let columnCount = 2
     /// 區塊標題比卡片邊再縮進一點
     static let titleInset: CGFloat = 4
-    /// 雷達圖下面的刻度條：最裡圈的點多大、往外一圈大多少、點的框線、點與字之間、兩端的「內」「外」離刻度多遠
+    /// 刻度條離下面的雷達圖多遠（不同性質的兩塊，24）
+    static let scaleRadarGap: CGFloat = 24
+    /// 雷達圖上面的刻度條：最裡圈的點多大、往外一圈大多少、點的框線、點與字之間、兩端的「內」「外」離刻度多遠
     static let scaleDotBase: CGFloat = 5
     static let scaleDotStep: CGFloat = 1.6
     static let scaleDotStroke: CGFloat = 1.5
@@ -40,16 +42,17 @@ struct GongView: View {
         VStack(alignment: .leading, spacing: RencanLayout.itemSpacing) {
             SectionTitle(text: "功法雷達")
                 .padding(.horizontal, Metrics.titleInset)
-            // 刻度條離雷達圖遠一點：原本 8，最下面那個功法名幾乎貼著刻度（2026-11-21 多米真機看的）
-            VStack(spacing: RencanLayout.sectionSpacing) {
-                MoveRadar(cards: digest.moveCards)
+            // 刻度條在圖的上面（2026-11-23 多米選四）：原本在下面，隔 8 改到隔 20，最下面那個功法名
+            // 還是懸在刻度上方，像刻度的標題。
+            VStack(spacing: Metrics.scaleRadarGap) {
                 levelScale
+                MoveRadar(cards: digest.moveCards)
             }
             .rencanCard()
         }
     }
 
-    /// 雷達圖下面講一次五圈是哪五階（軸端不寫等級，2026-11-18 丙版）。
+    /// 雷達圖上面講一次五圈是哪五階（軸端不寫等級，2026-11-18 丙版）。
     /// 原本是一句「由內到外：入門・小成・大成・圓滿・化境」，字一大就折行、「化境」掉到第二行；
     /// 改成一排刻度：點由小到大，左寫「內」右寫「外」（2026-11-19 多米選 1 號）。
     private var levelScale: some View {

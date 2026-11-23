@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>分段與刻度選項</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC&display=swap" rel="stylesheet">
+<style>
+  :root { --canvas:#F7F4EC; --surface:#fff; --accent:#916B1B; --strong:#7A5916; --soft:#F1E6CC; --tint:#FBF6EA;
+    --sep:#E5E1D8; --track:#E6E4DD; --t1:#1D1D1F; --t2:#5F5F66; --t3:#A0A0A5; --muted:#EFEBE2; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#E9E4DA; color:#222; line-height:1.6;
+    font-family:-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif; }
+  .wrap { max-width:1320px; margin:0 auto; padding:28px 16px 130px; }
+  h1 { font-size:24px; margin:0 0 6px; }
+  h2 { font-size:20px; margin:36px 0 2px; }
+  p { margin:6px 0; color:#444; max-width:820px; }
+  .row { display:flex; gap:20px; flex-wrap:wrap; margin-top:14px; align-items:flex-start; }
+  .opt { background:#fff; border-radius:18px; padding:16px; width:425px; max-width:100%; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+  .opt.sel { outline:3px solid var(--accent); }
+  .opt h3 { font-size:17px; margin:0; }
+  .tag { display:inline-block; background:var(--accent); color:#fff; border-radius:8px; padding:0 9px; margin-right:6px; }
+  .rec { font-size:13px; color:var(--strong); font-weight:700; margin-left:6px; }
+  .note { font-size:14px; color:#555; min-height:68px; margin:4px 0 10px; }
+  .pick { width:100%; margin-top:12px; font:inherit; font-size:15px; min-height:44px; border-radius:12px; border:1px solid #cfc7b6; background:#F5F1E9; cursor:pointer; }
+  .opt.sel .pick { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .scroller { overflow-x:auto; }
+  /* 手機畫面：寬 393，1px 就是 1 點 */
+  .phone { width:393px; background:var(--canvas); border-radius:22px; padding:14px 20px 20px; position:relative; }
+  .wk { font-family:"LXGW WenKai TC","Kaiti TC","DFKai-SB",serif; }
+  .sheethead { display:flex; align-items:center; height:44px; margin-bottom:8px; position:relative; justify-content:center; font-weight:600; font-size:17px; }
+  .sheethead span { position:absolute; left:0; color:var(--strong); font-weight:400; }
+  .pagehead { display:flex; justify-content:space-between; align-items:center; height:44px; margin-bottom:12px; }
+  .pagehead b { font-size:34px; font-weight:400; padding-left:4px; line-height:1; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .mv { background:#fff; border-radius:12px; min-height:56px; padding:5px 12px; line-height:1.25; display:flex; flex-direction:column; justify-content:center; }
+  .mv i { font-style:normal; font-size:17px; } .mv small { font-size:13px; color:var(--t2); }
+  .mv.on { background:var(--accent); color:#fff; } .mv.on small { color:#fff; }
+  .card { background:#fff; border-radius:20px; padding:20px; box-shadow:0 4px 9px rgba(25,22,20,.06); }
+  .card .l { font-size:13px; color:var(--t2); } .card .n { font-size:30px; color:var(--strong); line-height:1.25; }
+  .divider { border-top:2px dashed #d7cfbd; margin:18px 0; }
+  /* 分段控制 */
+  .seg { display:flex; } .seg button { flex:1; border:0; background:none; font:inherit; color:var(--t1); cursor:pointer; padding:0; position:relative; }
+  .s0 { background:var(--track); border-radius:16px; padding:2px; height:32px; } .s0 button { font-size:13px; font-weight:600; border-radius:14px; } .s0 .on { background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.1); }
+  .sA { background:var(--track); border-radius:22px; padding:3px; height:44px; } .sA button { font-size:16px; font-weight:600; border-radius:19px; } .sA .on { background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.12); }
+  .sB { background:#fff; border-radius:16px; padding:4px; height:52px; } .sB button { font-size:17px; font-weight:600; border-radius:12px; color:var(--t2); } .sB .on { background:var(--soft); color:var(--strong); }
+  .sC { gap:8px; height:44px; } .sC button { background:#fff; border-radius:22px; font-size:16px; font-weight:600; color:var(--t2); } .sC .on { background:var(--accent); color:#fff; }
+  .sD { height:48px; border-bottom:1px solid var(--sep); } .sD button { font-size:17px; color:var(--t2); } .sD .on { color:var(--strong); font-weight:700; } .sD .on::after { content:""; position:absolute; left:22%; right:22%; bottom:-1px; height:3px; border-radius:2px; background:var(--accent); }
+  .finger .seg button.on::before { content:""; position:absolute; width:44px; height:44px; border-radius:50%; left:50%; top:50%; transform:translate(-50%,-50%); background:rgba(196,55,44,.16); border:1.5px solid rgba(196,55,44,.75); pointer-events:none; z-index:2; }
+  /* 雷達 */
+  .radar { display:block; margin:0 auto; overflow:visible; }
+  .h3 { font-size:20px; font-weight:600; padding-left:4px; margin-bottom:8px; }
+  .scale { display:flex; align-items:flex-start; gap:6px; font-size:12px; color:var(--t2); font-weight:500; }
+  .scale .end { color:var(--t3); line-height:16px; }
+  .scale .mid { flex:1; display:flex; position:relative; }
+  .scale .mid::before { content:""; position:absolute; left:10%; right:10%; top:5px; height:1.5px; background:var(--sep); }
+  .scale .c { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; line-height:16px; position:relative; }
+  .scale .d { height:12px; display:flex; align-items:center; } .scale .d u { display:block; border-radius:50%; border:1.5px solid var(--accent); background:#fff; }
+  .tintbar { background:var(--tint); border:1px solid var(--soft); border-radius:14px; padding:12px 12px; }
+  .tintbar .d u { background:var(--tint); } .tintbar .mid::before { background:#e3d7b8; }
+  .line { height:1px; background:var(--sep); }
+  .measure { position:absolute; right:-2px; width:0; border-right:2px solid #C4372C; }
+  .gaplab { font-size:12px; color:#C4372C; }
+  #bar { position:fixed; left:0; right:0; bottom:0; background:#fff; border-top:1px solid #d8d0bf; padding:12px 16px; display:flex; gap:12px; justify-content:center; align-items:center; flex-wrap:wrap; }
+  #bar output { font-weight:700; } #bar button, #bar label { font:inherit; font-size:15px; min-height:44px; padding:0 16px; border-radius:12px; border:1px solid #cfc7b6; background:#F5F1E9; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>分段與刻度選項</h1>
+  <p>畫面寬 393 點，跟手機上一樣大（電腦瀏覽器縮放要在 100%）。分段可以點，兩個畫面用同一種。勾下面的「手指圈」，會在選中的那格疊一個 44 點的圈，這是蘋果建議的最小點擊範圍。</p>
+
+  <h2>一、分段：記一筆修煉的「腿／推／拉」、分析頁的「境界／功法」</h2>
+  <p>現在用系統的分段控制，高 32 點、字 13 點。系統那顆改不了高度，下面四種都要自己畫。</p>
+  <div class="row" id="seg"></div>
+
+  <h2>二、功法雷達下面的刻度</h2>
+  <p>現在「托天式」的字框底到刻度的圓點是 20 點。文字下面沒有東西擋著，看起來像刻度的標題。紅字標的是間距。</p>
+  <div class="row" id="rad"></div>
+</div>
+<div id="bar">
+  <label><input type="checkbox" id="fg"> 手指圈</label>
+  <span>你選的：<output id="out">還沒選</output></span>
+  <button id="copy">複製</button>
+</div>
+
+<script>
+const segs = [
+  ['現在', 's0', '高 32、字 13。', 12],
+  ['甲', 'sA', '長相不變，高 44、字 16。跟現在最像，換了不用重新認。分段離功法格 16。', 16, true],
+  ['乙', 'sB', '白底卡片，高 52、字 17，選中是淡金底。最好按，也最佔位置，跟下面的白卡同一套。分段離功法格 16。', 16],
+  ['丙', 'sC', '分開的膠囊，高 44、字 16，選中填金棕。很醒目，但記一筆那頁會同時有兩塊金棕（分段和選中的功法）。', 16],
+  ['丁', 'sD', '文字加底線，高 48、字 17。最輕，選中只靠底線和字色分。', 16],
+];
+const names = ['坐馬樁','抱鼎樁','探海式','架橋式','推山掌','推月掌','托天式','撐柱式','拔山式','挽弓式','攀雲梯','捧丹手'];
+const groups = { '腿':[['坐馬樁','深蹲'],['抱鼎樁','前蹲'],['探海式','羅馬尼亞硬舉'],['架橋式','臀推']],
+  '推':[['推山掌','臥推'],['推月掌','上斜臥推'],['托天式','肩推'],['撐柱式','雙槓撐體']],
+  '拉':[['拔山式','硬舉'],['挽弓式','划船'],['攀雲梯','引體向上'],['捧丹手','槓鈴彎舉']] };
+const grid = g => groups[g].map(([a,b]) => `<div class="mv ${a==='托天式'?'on':''}"><i class="wk">${a}</i><small>${b}</small></div>`).join('');
+const segHTML = (cls, items, on) => `<div class="seg ${cls}">${items.map(t => `<button class="${t===on?'on':''}">${t}</button>`).join('')}</div>`;
+
+document.getElementById('seg').innerHTML = segs.map(([id,cls,note,gap,rec]) => `
+  <div class="opt" data-g="分段" data-v="${id}"><h3><span class="tag">${id}</span>${rec?'<span class="rec">我推薦</span>':''}</h3>
+  <div class="note">${note}</div><div class="scroller"><div class="phone">
+    <div class="sheethead"><span>取消</span>記一筆修煉</div>
+    <div data-role="log">${segHTML(cls,['腿','推','拉'],'推')}</div>
+    <div class="grid" style="margin-top:${gap}px">${grid('推')}</div>
+    <div class="divider"></div>
+    <div class="pagehead"><b class="wk">分析</b></div>
+    ${segHTML(cls,['境界','功法'],'境界')}
+    <div class="card" style="margin-top:20px"><div class="l">宗門身分</div><div class="n wk">雜役弟子</div><div class="l" style="font-size:15px">挑水劈柴，先把宗門的路走熟</div></div>
+  </div></div>${id==='現在'?'':'<button class="pick">選這個</button>'}</div>`).join('');
+
+// 雷達：照 MoveRadar.swift 的 RadarLayout 算
+function radar() {
+  const n=12, W=313, fs=13, cw=fs*1.15, cp=fs*1.02, nh=cp*3, gap=6, R5=5;
+  const dir=i=>{const a=-Math.PI/2+2*Math.PI*i/n;return [Math.cos(a),Math.sin(a)]};
+  const ext=d=>Math.abs(d[0])*cw/2+Math.abs(d[1])*nh/2;
+  let r=1e9; for(let i=0;i<n;i++){const d=dir(i);if(Math.abs(d[0])<.001)continue;r=Math.min(r,(W/2-cw/2)/Math.abs(d[0])-gap-ext(d));}
+  let tall=0; for(let i=0;i<n;i++){const d=dir(i);tall=Math.max(tall,Math.abs(d[1])*(r+gap+ext(d))+nh/2);}
+  const H=Math.ceil(tall*2), cx=W/2, cy=H/2, pt=(i,q)=>{const d=dir(i);return [cx+q*d[0],cy+q*d[1]]};
+  const poly=q=>names.map((_,i)=>pt(i,q).map(v=>v.toFixed(1)).join(',')).join(' ');
+  let s='';
+  for(let k=1;k<=R5;k++) s+=`<polygon points="${poly(r*k/R5)}" fill="none" stroke="#E5E1D8"/>`;
+  names.forEach((nm,i)=>{const e=pt(i,r);s+=`<line x1="${cx}" y1="${cy}" x2="${e[0]}" y2="${e[1]}" stroke="#E5E1D8"/>`;
+    const d=dir(i),c=pt(i,r+gap+ext(d));
+    [...nm].forEach((ch,j)=>{s+=`<text x="${c[0]}" y="${c[1]-nh/2+cp*(j+.5)}" text-anchor="middle" dominant-baseline="central" font-size="13" class="wk" fill="${nm==='托天式'?'#7A5916':'#A0A0A5'}">${ch}</text>`;});});
+  const p=pt(6,r*1.2/5); s+=`<line x1="${cx}" y1="${cy}" x2="${p[0]}" y2="${p[1]}" stroke="#916B1B" stroke-width="2"/><circle cx="${cx}" cy="${cy}" r="3" fill="#916B1B"/><circle cx="${p[0]}" cy="${p[1]}" r="3" fill="#916B1B"/>`;
+  return `<svg class="radar" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${s}</svg>`;
+}
+const lv=['入門','小成','大成','圓滿','化境'];
+const scale=`<div class="scale"><span class="end">內</span><div class="mid">${lv.map((t,i)=>{const z=5+1.6*i;return `<div class="c"><div class="d"><u style="width:${z}px;height:${z}px"></u></div>${t}</div>`}).join('')}</div><span class="end">外</span></div>`;
+const gapBox=h=>`<div style="height:${h}px;display:flex;align-items:center;justify-content:flex-end"><span class="gaplab">${h}</span></div>`;
+const R=radar();
+const rads=[
+  ['現在','間距 20。', `<div class="card">${R}${gapBox(20)}${scale}</div>`],
+  ['一','只加大留白，20 改 40。改最少，卡片高 20 點。', `<div class="card">${R}${gapBox(40)}${scale}</div>`],
+  ['二','中間一條細線，上下各 24 和 16。看得出是兩塊。', `<div class="card">${R}${gapBox(24)}<div class="line"></div>${gapBox(16)}${scale}</div>`],
+  ['三','刻度放進淡金底的框，跟圖隔 24。自成一塊，最不會跟功法名混在一起。', `<div class="card">${R}${gapBox(24)}<div class="tintbar">${scale}</div></div>`, true],
+  ['四','刻度移到圖的上面，標題下面先看到五圈是什麼，再看圖。跟圖隔 24。', `<div class="card">${scale}${gapBox(24)}${R}</div>`],
+  ['五','刻度移到卡片外面，當成卡片的註解，跟卡片隔 16。', `<div class="card">${R}</div>${gapBox(16)}<div style="padding:0 16px">${scale}</div>`],
+];
+document.getElementById('rad').innerHTML = rads.map(([id,note,html,rec])=>`
+  <div class="opt" data-g="刻度" data-v="${id}"><h3><span class="tag">${id}</span>${rec?'<span class="rec">我推薦</span>':''}</h3>
+  <div class="note">${note}</div><div class="scroller"><div class="phone"><div class="h3">功法雷達</div>${html}</div></div>
+  ${id==='現在'?'':'<button class="pick">選這個</button>'}</div>`).join('');
+
+const chosen={};
+const out=document.getElementById('out');
+document.addEventListener('click',e=>{
+  const b=e.target.closest('.seg button');
+  if(b){ b.parentElement.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+    if(b.closest('[data-role=log]')) b.closest('.phone').querySelector('.grid').innerHTML=grid(b.textContent); return; }
+  const p=e.target.closest('.pick');
+  if(p){ const o=p.closest('.opt'); chosen[o.dataset.g]=o.dataset.v;
+    document.querySelectorAll(`.opt[data-g="${o.dataset.g}"]`).forEach(x=>{x.classList.toggle('sel',x===o);});
+    out.textContent=['分段','刻度'].filter(g=>chosen[g]).map(g=>`${g}選${chosen[g]}`).join('，'); }
+});
+document.getElementById('fg').onchange=e=>document.body.classList.toggle('finger',e.target.checked);
+document.getElementById('copy').onclick=async e=>{ try{ await navigator.clipboard.writeText(out.textContent); e.target.textContent='複製好了'; }catch{ e.target.textContent='直接唸給我'; } };
+</script>
+</body>
+</html>

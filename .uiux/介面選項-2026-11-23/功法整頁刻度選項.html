@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>功法整頁刻度選項</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC&display=swap" rel="stylesheet">
+<style>
+  :root { --canvas:#F7F4EC; --accent:#916B1B; --strong:#7A5916; --soft:#F1E6CC; --tint:#FBF7ED;
+    --sep:#E5E1D8; --track:#E6E4DD; --t1:#1D1D1F; --t2:#66666D; --t3:#A1A1A6; --muted:#EFEBE3; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#E9E4DA; color:#222; line-height:1.5;
+    font-family:-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif; }
+  #top { position:sticky; top:0; z-index:20; background:#fff; border-bottom:1px solid #d8d0bf; padding:12px 16px; }
+  #top h1 { font-size:19px; margin:0 0 8px; }
+  .ctl { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:8px; }
+  .ctl button { font:inherit; font-size:15px; min-height:44px; min-width:44px; padding:0 14px; border-radius:12px; border:1px solid #cfc7b6; background:#F5F1E9; cursor:pointer; }
+  .ctl button.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .ctl .lab { font-size:14px; color:#666; margin-right:2px; }
+  #note { font-size:15px; color:#444; margin-top:8px; min-height:23px; }
+  #stage { padding:20px 16px 60px; display:flex; gap:24px; justify-content:center; align-items:flex-start; }
+  body.side #stage { justify-content:flex-start; overflow-x:auto; }
+  .col { flex:none; }
+  .col h3 { font-size:16px; margin:0 0 8px; text-align:center; }
+  body.one .col:not(.show) { display:none; } body.one .col h3 { display:none; }
+  .phone { width:402px; height:874px; border-radius:46px; background:var(--canvas); position:relative; overflow:hidden; box-shadow:0 0 0 8px #2a2723, 0 14px 34px rgba(0,0,0,.25); }
+  body.full .phone { height:auto; overflow:visible; }
+  body.side .phone { zoom:.62; }
+  .sc { height:100%; overflow-y:auto; scrollbar-width:none; padding:103px 20px 116px; }
+  .sc::-webkit-scrollbar { display:none; }
+  body.full .sc { height:auto; overflow:visible; }
+  body.full .status { border-radius:46px 46px 0 0; }
+  .status { position:absolute; top:0; left:0; right:0; height:59px; padding:18px 36px 0; display:flex; justify-content:space-between; font-weight:600; font-size:16px; z-index:5; background:linear-gradient(var(--canvas) 60%, rgba(247,244,236,0)); }
+  .tab { position:absolute; left:50%; bottom:20px; transform:translateX(-50%); display:flex; padding:4px; border-radius:40px; background:rgba(250,248,243,.93); border:1px solid var(--sep); box-shadow:0 6px 12px rgba(25,22,20,.22); z-index:5; }
+  .tab div { width:88px; height:54px; border-radius:30px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:12px; font-weight:500; gap:2px; }
+  .tab svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2; }
+  .tab .on { background:var(--muted); color:var(--accent); }
+  .wk { font-family:"LXGW WenKai TC","Kaiti TC","DFKai-SB",serif; }
+  .head { display:flex; justify-content:space-between; align-items:center; min-height:44px; }
+  .head b { font-size:34px; font-weight:400; padding-left:4px; line-height:1.1; }
+  .seg { display:flex; background:var(--track); border-radius:22px; padding:3px; height:44px; margin:12px 0 20px; }
+  .seg div { flex:1; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:600; border-radius:19px; }
+  .seg .on { background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.12); }
+  .stats { display:flex; gap:8px; background:var(--tint); border:1px solid var(--soft); border-radius:20px; padding:14px; margin-bottom:20px; }
+  .stats div { flex:1; line-height:1.3; } .stats b { font-size:22px; } .stats i { font-style:normal; font-size:13px; font-weight:600; margin-left:2px; } .stats small { display:block; font-size:13px; color:var(--t2); }
+  .h3 { font-size:20px; font-weight:600; padding-left:4px; margin-bottom:8px; line-height:1.25; }
+  .card { background:#fff; border-radius:20px; padding:20px; box-shadow:0 4px 9px rgba(25,22,20,.06); }
+  .block { margin-bottom:20px; }
+  .radar { display:block; margin:0 auto; overflow:visible; }
+  .scale { display:flex; align-items:flex-start; gap:6px; font-size:12px; color:var(--t2); font-weight:500; }
+  .scale .end { color:var(--t3); line-height:16px; }
+  .scale .mid { flex:1; display:flex; position:relative; }
+  .scale .mid::before { content:""; position:absolute; left:10%; right:10%; top:5px; height:1.5px; background:var(--sep); }
+  .scale .c { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; line-height:16px; position:relative; }
+  .scale .d { height:12px; display:flex; align-items:center; } .scale .d u { display:block; border-radius:50%; border:1.5px solid var(--accent); background:#fff; }
+  .tintbar { background:var(--tint); border:1px solid var(--soft); border-radius:14px; padding:12px; }
+  .tintbar .d u { background:var(--tint); } .tintbar .mid::before { background:#e3d7b8; }
+  .canvasScale .d u { background:var(--canvas); } .canvasScale .mid::before { background:#d9d3c4; }
+  .line { height:1px; background:var(--sep); }
+  .cards { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .mc { background:#fff; border-radius:20px; padding:14px; display:flex; flex-direction:column; gap:8px; }
+  .mc .r { display:flex; justify-content:space-between; align-items:center; gap:8px; } .mc .r b { font-weight:400; font-size:20px; color:var(--strong); line-height:1.2; }
+  .chip { background:var(--soft); color:var(--strong); font-size:12px; font-weight:500; border-radius:20px; padding:4px 10px; line-height:16px; white-space:nowrap; }
+  .mc small { font-size:13px; color:var(--t2); line-height:1.3; } .mc .st { font-size:12px; color:var(--t2); font-weight:500; line-height:1.3; }
+  .bars { display:flex; gap:4px; } .bars i { flex:1; height:8px; border-radius:4px; background:var(--soft); } .bars i.f { background:var(--accent); }
+  .num b { font-size:17px; display:block; line-height:1.3; }
+  .spark { height:30px; display:block; width:100%; }
+  .rows { background:#fff; border-radius:20px; padding:0 16px; }
+  .lr { min-height:60px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--sep); font-size:13px; color:var(--t2); } .lr:first-child { border-top:0; }
+  .lr b { display:block; font-weight:400; font-size:17px; color:var(--t1); line-height:1.35; }
+  .ln { min-height:52px; display:flex; justify-content:space-between; align-items:center; font-size:17px; border-top:1px solid var(--sep); } .ln:first-child { border-top:0; } .ln span { color:var(--t3); }
+  .foot { font-size:13px; color:var(--t2); padding:8px 16px 0; }
+</style>
+</head>
+<body class="one">
+<div id="top">
+  <h1>功法整頁：雷達刻度放哪裡</h1>
+  <div class="ctl" id="opts"></div>
+  <div id="note"></div>
+  <div class="ctl">
+    <span class="lab">看法</span><button data-view="one" class="on">一支手機切換</button><button data-view="side">六支並排</button><button data-full>整頁攤開</button>
+    <span class="lab" style="margin-left:8px">資料</span><button data-data="0" class="on">你現在的（一筆）</button><button data-data="1">練了一陣子</button>
+  </div>
+</div>
+<div id="stage"></div>
+
+<script>
+const moves=[['坐馬樁','深蹲'],['抱鼎樁','前蹲'],['探海式','羅馬尼亞硬舉'],['架橋式','臀推'],['推山掌','臥推'],['推月掌','上斜臥推'],['托天式','肩推'],['撐柱式','雙槓撐體'],['拔山式','硬舉'],['挽弓式','划船'],['攀雲梯','引體向上'],['捧丹手','槓鈴彎舉']];
+const lvn=['未入門','入門','小成','大成','圓滿','化境'];
+// 每門：[分數, 1RM, 倍體重, 最下面那句, 走勢]；分數整數是等級
+const data=[
+  {stats:[1,1,0], m:{6:[1.2,23,'0.37','再加 8 公斤升小成',[23]]}, lifts:[['托天式・肩推','20 公斤 × 5 下 × 3 組','今天']]},
+  {stats:[46,9,5], m:{0:[4.3,117,'1.66','再加 24 公斤升化境',[93,99,105,111,117]],1:[2.4,62,'0.88','再加 2 公斤升大成',[55,58,62]],2:[3.2,82,'1.16','再加 24 公斤升圓滿',[70,76,82]],3:[2.8,85,'1.21','再加 3 公斤升大成',[70,80,85]],4:[3.1,73,'1.04','再加 15 公斤升圓滿',[64,67,70,73]],5:[2.3,47,'0.67','再加 10 公斤升大成',[44,47]],6:[2.6,40,'0.57','再加 6 公斤升大成',[34,37,40]],7:[1.8,86,'1.22','再加 4 公斤升小成',[80,86]],8:[3.9,140,'1.99','再加 1 公斤升圓滿',[128,134,140]],9:[2.2,56,'0.80','再加 15 公斤升大成',[50,56]],10:[2.4,86,'1.22','再加 8 公斤升大成',[82,86]],11:[1.6,23,'0.33','再加 2 公斤升小成',[20,23]]},
+   lifts:[['坐馬樁・深蹲','100 公斤 × 5 下 × 3 組','今天'],['推山掌・臥推','62.5 公斤 × 5 下 × 3 組','今天'],['拔山式・硬舉','120 公斤 × 5 下 × 3 組','11/15'],['攀雲梯・引體向上','自重加 5 公斤 × 5 下 × 3 組','11/12']]},
+];
+let di=0;
+// 照 MoveRadar.swift 的 RadarLayout 算
+function radar() {
+  const n=12, W=313, fs=13, cw=fs*1.15, cp=fs*1.02, nh=cp*3, gap=6;
+  const dir=i=>{const a=-Math.PI/2+2*Math.PI*i/n;return [Math.cos(a),Math.sin(a)]};
+  const ext=d=>Math.abs(d[0])*cw/2+Math.abs(d[1])*nh/2;
+  let r=1e9; for(let i=0;i<n;i++){const d=dir(i);if(Math.abs(d[0])<.001)continue;r=Math.min(r,(W/2-cw/2)/Math.abs(d[0])-gap-ext(d));}
+  let tall=0; for(let i=0;i<n;i++){const d=dir(i);tall=Math.max(tall,Math.abs(d[1])*(r+gap+ext(d))+nh/2);}
+  const H=Math.ceil(tall*2), cx=W/2, cy=H/2, pt=(i,q)=>{const d=dir(i);return [cx+q*d[0],cy+q*d[1]]};
+  const P=a=>a.map(v=>v.toFixed(1)).join(','), M=data[di].m;
+  let s=''; for(let k=1;k<=5;k++) s+=`<polygon points="${moves.map((_,i)=>P(pt(i,r*k/5))).join(' ')}" fill="none" stroke="#E5E1D8"/>`;
+  moves.forEach((mv,i)=>{const e=pt(i,r);s+=`<line x1="${cx}" y1="${cy}" x2="${e[0]}" y2="${e[1]}" stroke="#E5E1D8"/>`;
+    const c=pt(i,r+gap+ext(dir(i))), on=M[i]&&M[i][0]>=1;
+    [...mv[0]].forEach((ch,j)=>{s+=`<text x="${c[0]}" y="${c[1]-nh/2+cp*(j+.5)}" text-anchor="middle" dominant-baseline="central" font-size="13" class="wk" fill="${on?'#7A5916':'#A1A1A6'}">${ch}</text>`;});});
+  const q=moves.map((_,i)=>pt(i,r*(M[i]?M[i][0]:0)/5));
+  s+=`<polygon points="${q.map(P).join(' ')}" fill="#916B1B" fill-opacity=".22" stroke="#916B1B" stroke-width="2"/>`+q.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="#916B1B"/>`).join('');
+  return `<svg class="radar" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${s}</svg>`;
+}
+const scale=`<div class="scale"><span class="end">內</span><div class="mid">${lvn.slice(1).map((t,i)=>{const z=5+1.6*i;return `<div class="c"><div class="d"><u style="width:${z}px;height:${z}px"></u></div>${t}</div>`}).join('')}</div><span class="end">外</span></div>`;
+const sp=h=>`<div style="height:${h}px"></div>`;
+const opts=[
+  ['現在','跟功法名隔 20。',()=>`<div class="card">${radar()}${sp(20)}${scale}</div>`],
+  ['一','只加大留白，隔 40。',()=>`<div class="card">${radar()}${sp(40)}${scale}</div>`],
+  ['二','中間一條細線，上 24、下 16。',()=>`<div class="card">${radar()}${sp(24)}<div class="line"></div>${sp(16)}${scale}</div>`],
+  ['三','放進淡金底的框，隔 24。跟上面「累計修煉」那塊是同一種底。',()=>`<div class="card">${radar()}${sp(24)}<div class="tintbar">${scale}</div></div>`],
+  ['四','移到圖的上面，隔 24。',()=>`<div class="card">${scale}${sp(24)}${radar()}</div>`],
+  ['五','移到卡片外面當註解，隔 16，跟下面「十二門功法」隔 20。',()=>`<div class="card">${radar()}</div>${sp(16)}<div class="canvasScale" style="padding:0 16px">${scale}</div>`],
+];
+function spark(v){ if(v.length<2) return `<svg class="spark" viewBox="0 0 140 30"><circle cx="70" cy="15" r="3" fill="#916B1B"/></svg>`;
+  const a=Math.min(...v),b=Math.max(...v),p=v.map((x,i)=>`${4+132*i/(v.length-1)},${26-22*(x-a)/(b-a||1)}`);
+  return `<svg class="spark" viewBox="0 0 140 30" preserveAspectRatio="none"><polyline points="${p.join(' ')}" fill="none" stroke="#916B1B" stroke-width="2"/></svg>`; }
+function cardHTML(mv,i){ const d=data[di].m[i], l=d?Math.floor(d[0]):0;
+  return `<div class="mc"><div><div class="r"><b class="wk">${mv[0]}</b><span class="chip">${lvn[l]}</span></div><small>${mv[1]}</small></div>
+   <div class="bars">${[1,2,3,4,5].map(k=>`<i class="${k<=l?'f':''}"></i>`).join('')}</div>
+   ${d?`<div class="num"><b>1RM ${d[1]} 公斤</b><small>${d[2]} 倍體重</small></div>${spark(d[4])}`:''}<div class="st">${d?d[3]:'還沒有紀錄'}</div></div>`; }
+function page(o){ const D=data[di];
+  return `<div class="status"><span>9:41</span><span>100%</span></div><div class="sc">
+   <div class="head"><b class="wk">分析</b><svg width="22" height="26" viewBox="0 0 22 26" fill="none" stroke="#7A5916" stroke-width="1.8"><path d="M7 9H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V11a2 2 0 0 0-2-2h-3M11 16V2M6.5 6 11 1.6 15.5 6"/></svg></div>
+   <div class="seg"><div>境界</div><div class="on">功法</div></div>
+   <div class="stats"><div><b>${D.stats[0]}</b><i>天</i><small>累計修煉</small></div><div><b>${D.stats[1]}</b><i>天</i><small>這個月</small></div><div><b>${D.stats[2]}</b><i>門</i><small>練到大成</small></div></div>
+   <div class="block" data-radar><div class="h3">功法雷達</div>${o[2]()}</div>
+   <div class="block"><div class="h3">十二門功法</div><div class="cards">${moves.map(cardHTML).join('')}</div></div>
+   <div class="block"><div class="h3">最近修煉</div><div class="rows">${D.lifts.map(l=>`<div class="lr"><div><b><span class="wk">${l[0].split('・')[0]}</span>・${l[0].split('・')[1]}</b>${l[1]}</div>${l[2]}</div>`).join('')}</div></div>
+   <div><div class="rows"><div class="ln">功法等級怎麼算<span>›</span></div><div class="ln">計算依據與出處<span>›</span></div></div><div class="foot">每一筆都換算成 1RM，再除以當時體重。未入門、入門、小成、大成、圓滿、化境，共六級。</div></div>
+  </div><div class="tab"><div><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/></svg>設定</div><div><svg viewBox="0 0 24 24"><path d="M2 20 9 7l4 7 3-4 6 10z"/></svg>境界</div><div class="on"><svg viewBox="0 0 24 24"><path d="M3 3v18h18M6 15l5-5 4 3 5-7"/></svg>分析</div></div>`; }
+
+const stage=document.getElementById('stage'), bar=document.getElementById('opts'), note=document.getElementById('note');
+let cur=0, top_=null, lock=false;
+bar.innerHTML=opts.map((o,i)=>`<button data-o="${i}">${o[0]}</button>`).join('');
+function render(){
+  stage.innerHTML=opts.map((o,i)=>`<div class="col" data-i="${i}"><h3>${o[0]}</h3><div class="phone">${page(o)}</div></div>`).join('');
+  show(cur);
+  const scs=[...stage.querySelectorAll('.sc')];
+  scs.forEach(s=>s.addEventListener('scroll',()=>{ if(lock||!s.offsetParent) return; lock=true; top_=s.scrollTop; scs.forEach(x=>{if(x!==s) x.scrollTop=top_;}); setTimeout(()=>lock=false,0); }));
+  setTimeout(()=>{ if(top_===null){ const s=stage.querySelector('.col.show .sc'); top_=s.querySelector('[data-radar]').offsetTop-150; } scs.forEach(s=>s.scrollTop=top_); },0);
+}
+function show(i){ cur=i;
+  [...bar.children].forEach((b,k)=>b.classList.toggle('on',k===i));
+  stage.querySelectorAll('.col').forEach((c,k)=>c.classList.toggle('show',k===i));
+  note.textContent=opts[i][0]+'：'+opts[i][1];
+  const s=stage.querySelector('.col.show .sc'); if(s&&top_!==null) s.scrollTop=top_;
+}
+document.getElementById('top').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+  if(b.dataset.o!==undefined){ show(+b.dataset.o);
+    if(document.body.classList.contains('side')) stage.querySelector('.col.show').scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'}); }
+  if(b.dataset.view){ document.body.classList.remove('one','side'); document.body.classList.add(b.dataset.view);
+    document.querySelectorAll('[data-view]').forEach(x=>x.classList.toggle('on',x===b)); render(); }
+  if(b.dataset.full!==undefined){ document.body.classList.toggle('full'); b.classList.toggle('on'); }
+  if(b.dataset.data){ di=+b.dataset.data; document.querySelectorAll('[data-data]').forEach(x=>x.classList.toggle('on',x===b)); render(); }
+});
+render();
+</script>
+</body>
+</html>
