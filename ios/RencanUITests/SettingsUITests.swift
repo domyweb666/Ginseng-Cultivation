@@ -83,9 +83,9 @@ final class SettingsOverviewUITests: RencanUITestCase {
         requireVisible(anyElements(containing: "174"), "身高 174")
         shot("設定頁-頂")
 
-        // 一次捲不到半個螢幕，區塊變多了，捲六次才到底；捲到底那一拖會回彈，先查一次元素等畫面停下來再截。
+        // 一次捲不到半個螢幕，區塊變多了，捲七次才到底；捲到底那一拖會回彈，先查一次元素等畫面停下來再截。
         let version = element(id: "veggie-version")
-        for index in 1...6 {
+        for index in 1...7 {
             scrollDown()
             _ = version.waitForExistence(timeout: 2)
             shot("設定頁-往下捲\(index)")
@@ -112,6 +112,7 @@ final class SettingsOverviewUITests: RencanUITestCase {
         require(element(id: "settings-feedback"), "「意見回饋」那一列")
         require(element(id: "settings-share"), "「分享給朋友」那一列")
         require(element(id: "about-family"), "「蔬菜家族的其他 app」那一列")
+        require(element(id: "about-sources"), "「計算依據與出處」那一列")
         require(element(id: "about-privacy"), "「隱私權政策」那一列")
         require(element(id: "about-licenses"), "「開源授權」那一列")
     }
@@ -214,7 +215,7 @@ final class SettingsEraseUITests: RencanUITestCase {
         XCTAssertTrue(isGone, "按了「取消」，確認視窗還在")
         backToRealmFromSettings()
         seeStele()
-        requireVisible(anyElements(containing: "FFMI 20.32"), "取消之後還在的 FFMI 20.32")
+        requireVisible(anyElements(containing: "FFMI 20.33"), "取消之後還在的 FFMI 20.33")
         shot("取消之後境界頁紀錄還在")
 
         openTab("設定")
@@ -225,7 +226,7 @@ final class SettingsEraseUITests: RencanUITestCase {
         // 清完畫面整個換成第一次打開那頁（不跳小提示：提示掛在分頁上，分頁已經不在了）。
         seeText("先說你多高、男生還是女生，境界就能算。")
         shot("清除之後回到第一次打開")
-        XCTAssertEqual(anyElements(containing: "FFMI 20.32").count, 0, "清除之後 FFMI 20.32 還在")
+        XCTAssertEqual(anyElements(containing: "FFMI 20.33").count, 0, "清除之後 FFMI 20.33 還在")
     }
 
     /// 捲到「清除所有資料」、點它，等第一次確認出來。回那顆「繼續」。
@@ -256,6 +257,14 @@ final class SettingsAboutUITests: RencanUITestCase {
         let versionText = version.label
         XCTAssertTrue(versionText.contains("人蔘修煉"), "頁尾版本號沒有 app 名字：\(versionText)")
         XCTAssertTrue(versionText.contains("（"), "頁尾版本號沒有建置號：\(versionText)")
+
+        requireVisible(idQuery("about-sources"), "「計算依據與出處」那一列").tap()
+        let disclaimer = idQuery("health-sources-disclaimer")
+        requireVisible(disclaimer, "從設定打開的出處頁")
+        shot("設定打開的出處頁")
+        tapButton("關閉")
+        let isSourcesClosed = waitUntil(timeout: 5) { visibleElement(in: disclaimer) == nil }
+        XCTAssertTrue(isSourcesClosed, "按了「關閉」，出處頁沒有收回去")
 
         requireVisible(idQuery("about-licenses"), "「開源授權」那一列").tap()
         let fontRow = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "霞鶩文楷"))

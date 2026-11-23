@@ -20,14 +20,14 @@ final class FemaleRealmTests: XCTestCase {
         Formulas.realmOf(ffmi: ffmi, sex: .female).label
     }
 
-    func test女性身高160去脂46公斤的男性等值FFMI是21點85() {
-        // FFMI = 46 ÷ 1.6² + 6.1 ×（1.8 − 1.6）= 19.18875
+    func test女性身高160去脂46公斤的男性等值FFMI是21點89() {
+        // FFMI = 46 ÷ 1.6² + 6.3 ×（1.8 − 1.6）= 19.22875
         let ffmi = Formulas.ffmi(leanMassKg: 46, heightCm: heightCm)
-        XCTAssertEqual(ffmi, 46 / (1.6 * 1.6) + 6.1 * (1.8 - 1.6), accuracy: 1e-9)
-        // 男性等值 = 16.7 +（19.18875 − 14.6）÷ k = 21.8468，落在元嬰 21–22.5 的中期
+        XCTAssertEqual(ffmi, 46 / (1.6 * 1.6) + 6.3 * (1.8 - 1.6), accuracy: 1e-9)
+        // 男性等值 = 16.7 +（19.22875 − 14.6）÷ k = 21.8917，落在元嬰 21–22.5 的中期
         let equivalent = Sex.female.maleEquivalentFFMI(ffmi)
         XCTAssertEqual(equivalent, 16.7 + (ffmi - 14.6) / scale, accuracy: 1e-9)
-        XCTAssertEqual(equivalent, 21.8468, accuracy: 1e-4)
+        XCTAssertEqual(equivalent, 21.8917, accuracy: 1e-4)
         XCTAssertEqual(label(ffmi), "元嬰中期")
     }
 
@@ -135,14 +135,14 @@ final class FemaleRealmTests: XCTestCase {
     func test女性還差幾公斤先算男性等值的門檻再換回女性() throws {
         // 去脂 46、身高 160 是元嬰中期；下一期（元嬰後期）的男性等值門檻是 22。
         // 換回女性 FFMI = 14.6 +（22 − 16.7）× k = 19.3253
-        // 目標去脂體重 = leanFor(19.3253, 160) = 46.3496，減掉現在的 46，還差 0.3496
+        // 目標去脂體重 = leanFor(19.3253, 160) = 46.3496，減掉現在的 46，還差 0.2472
         let found = Formulas.nextStageGap(leanMassKg: 46, heightCm: heightCm, sex: .female)
         let gap = try XCTUnwrap(found)
         let femaleThreshold = 14.6 + (22 - 16.7) * scale
         let target = Formulas.leanFor(ffmi: femaleThreshold, heightCm: heightCm)
         XCTAssertEqual(gap.nextLabel, "元嬰後期")
         XCTAssertEqual(gap.leanNeededKg, target - 46, accuracy: 1e-9)
-        XCTAssertEqual(gap.leanNeededKg, 0.3496, accuracy: 1e-4)
+        XCTAssertEqual(gap.leanNeededKg, 0.2472, accuracy: 1e-4)
     }
 }
 
@@ -192,9 +192,9 @@ final class FemaleRulesTests: XCTestCase {
     }
 
     func test女性顯示的FFMI是她真實的FFMI不換算() throws {
-        // 55 公斤、體脂 26%：去脂 40.7，FFMI = 40.7 ÷ 1.6² + 6.1 × 0.2 = 17.1184
+        // 55 公斤、體脂 26%：去脂 40.7，FFMI = 40.7 ÷ 1.6² + 6.3 × 0.2 = 17.1584
         let result = try judge(weighing(55, bodyFat: 26), sex: .female)
-        XCTAssertEqual(result.ffmi, 40.7 / (1.6 * 1.6) + 6.1 * 0.2, accuracy: 1e-9)
+        XCTAssertEqual(result.ffmi, 40.7 / (1.6 * 1.6) + 6.3 * 0.2, accuracy: 1e-9)
     }
 
     func test女性的突破紀錄採計體脂27以下的量測男性不採計() throws {

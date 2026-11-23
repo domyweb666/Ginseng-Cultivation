@@ -13,7 +13,8 @@ private enum Metrics {
 }
 
 /// 設定頁最下面（蔬菜家族共用規格，2026-11-19 照規格重排）：「關於」一區，加上頁尾。
-/// 關於：蔬菜家族的其他 app（清單寫死在 VeggieKit，不連網；一個都沒上架就整列藏起來）、隱私權政策、開源授權。
+/// 關於：蔬菜家族的其他 app（清單寫死在 VeggieKit，不連網；一個都沒上架就整列藏起來）、
+/// 計算依據與出處、隱私權政策、開源授權。
 /// 頁尾：app 圖示、「人蔘修煉 1.0（36）」、Made by DOMYWEB、官網臉書 IG；長按版本號複製版本資訊。
 /// 原本的「權限」區拿掉了：通知搬到「一般」，健康 app 的授權本來就在「健康 app」區。
 struct SettingsAboutSection: View {
@@ -26,6 +27,7 @@ struct SettingsAboutSection: View {
     /// 關於區點進去的下一頁，用表單彈出來
     enum AboutPage: String, Identifiable {
         case family
+        case sources
         case licenses
 
         var id: String { rawValue }
@@ -53,6 +55,8 @@ struct SettingsAboutSection: View {
                     pageRow(.family, icon: "square.grid.2x2", title: VeggieText.family)
                     RowDivider()
                 }
+                pageRow(.sources, icon: "book", title: HealthSourcesText.title)
+                RowDivider()
                 if let url = config.privacyURL {
                     Link(destination: url) {
                         VeggieRow(
@@ -84,7 +88,7 @@ struct SettingsAboutSection: View {
     }
 }
 
-/// 其他 app、開源授權那兩頁：包一層導覽（授權還要再點進去看全文），左上角「關閉」。
+/// 其他 app、出處、開源授權那三頁：包一層導覽（授權還要再點進去看全文），左上角「關閉」。
 private struct AboutPageSheet: View {
     @Environment(\.dismiss) private var dismiss
     let page: SettingsAboutSection.AboutPage
@@ -110,6 +114,8 @@ private struct AboutPageSheet: View {
         switch page {
         case .family:
             VeggieFamilyView(config: config)
+        case .sources:
+            HealthSourcesView()
         case .licenses:
             VeggieLicensesView(items: VeggieLicense.rencan)
         }

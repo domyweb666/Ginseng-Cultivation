@@ -12,8 +12,6 @@ public enum BodyFatGate: Equatable {
     case stable
     /// 根基浮動：還沒超過門檻，但已經在門檻下面 2 個百分點以內。
     case wavering
-    /// 體脂偏低，提醒留意恢復與飲食。
-    case low
     /// 根基不穩：超過門檻。帶「還差幾個百分點才回到門檻」。
     case unstable(overBy: Double)
 }

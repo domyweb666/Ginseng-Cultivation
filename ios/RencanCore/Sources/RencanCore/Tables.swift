@@ -1,7 +1,9 @@
 import Foundation
 
 // 跟網頁版 index.html L203–230 一字不改的表：REALMS、STAGES、MOVES、LV、RANKS。
-// 例外：RANKS 的境界門檻與後四階的說明句（2026-11-17 多米定的，只改 app、網頁版不動）。
+// 例外：渡劫的說明句（2026-11-23 從「自然人極限」改掉，Kouri 1995 的界線是 25）、
+// FFMI 身高校正（2026-11-23 兩邊一起從 6.1 改 6.3）、
+// RANKS 的境界門檻與後四階的說明句（2026-11-17 多米定的，只改 app、網頁版不動）。
 // 網頁版是內門築基、真傳金丹、長老元嬰、太上長老化神；這裡各降一階，內門不看境界。
 //
 // 網頁版縮寫對照（規矩檔第 3 節：搬過來一律改成完整名）：
@@ -70,9 +72,8 @@ public enum Tables {
 
     /// 女性的體脂率門檻（%）。依據 ACE 體脂分級，男性 20% 對過去是 27%（女性版規則第二節）。
     public static let femaleBodyFatStableThresholdPercent: Double = 27
-    /// 體脂離門檻不到 2 個百分點算「根基浮動」；比門檻低 10 個百分點以上算偏低（網頁版 18 與 10）。
+    /// 體脂離門檻不到 2 個百分點算「根基浮動」（網頁版的 18）。
     public static let bodyFatWaveringBandPercent: Double = 2
-    public static let bodyFatLowBelowLimitPercent: Double = 10
     /// 女性換算的兩個對齊點（女性版規則第一節）：一般人 FFMI 正常範圍下緣、自然訓練極限。
     public static let maleBaselineFFMI = 16.7
     public static let femaleBaselineFFMI = 14.6
@@ -81,8 +82,9 @@ public enum Tables {
 
     /// 每一期的 FFMI 寬度（網頁版 realmOf 裡的 0.5）。
     public static let stageWidthFFMI = 0.5
-    /// FFMI 身高校正：每公尺 6.1，以 1.8 公尺為基準（網頁版 ffmi、leanFor）。
-    public static let ffmiHeightCorrectionPerMeter = 6.1
+    /// FFMI 身高校正：每公尺 6.3，以 1.8 公尺為基準（Kouri 1995 原文）。
+    /// 2026-11-23 之前是 6.1，來源查不到；送審要附出處，改成論文的數字，網頁版一起改。
+    public static let ffmiHeightCorrectionPerMeter = 6.3
     public static let ffmiReferenceHeightMeters = 1.8
     /// Epley 估計 1RM：重量 ×（1 + 次數 ÷ 30）。
     public static let epleyRepsDivisor: Double = 30
@@ -128,7 +130,7 @@ public enum Tables {
         name: "大乘", lowerFFMI: 24, upperFFMI: 25.5, summary: "天賦上限附近"
     )
     private static let realm6 = Realm(
-        name: "渡劫", lowerFFMI: 25.5, upperFFMI: 27, summary: "自然人極限"
+        name: "渡劫", lowerFFMI: 25.5, upperFFMI: 27, summary: "飛升前的最後一關"
     )
 
     private static let squat = Move(

@@ -249,8 +249,8 @@ function sectOf(days,realmI){
 }
 function realmMax(H){const bt=breakthroughs(H);return bt.length?Math.floor(bt[bt.length-1].idx/3):-1}
 
-function ffmi(lean,hcm){const h=hcm/100;return lean/(h*h)+6.1*(1.8-h)}
-function leanFor(f,hcm){const h=hcm/100;return (f-6.1*(1.8-h))*h*h}
+function ffmi(lean,hcm){const h=hcm/100;return lean/(h*h)+6.3*(1.8-h)}
+function leanFor(f,hcm){const h=hcm/100;return (f-6.3*(1.8-h))*h*h}
 function realmOf(f){
   let i=REALMS.findIndex(r=>f<r.hi); if(i<0) i=REALMS.length-1;
   const r=REALMS[i]; let s=Math.floor((f-r.lo)/0.5); s=Math.max(0,Math.min(2,s));

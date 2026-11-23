@@ -120,8 +120,6 @@ struct ShareCardContent: Hashable {
             return "穩固"
         case .wavering:
             return "浮動"
-        case .low:
-            return "偏低"
         case .unstable:
             return "不穩"
         }

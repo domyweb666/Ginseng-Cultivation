@@ -2,7 +2,8 @@ import XCTest
 
 @testable import RencanCore
 
-/// 境界、突破紀錄、天數的算法。答案都是拿網頁版 index.html 的原版程式算出來的。
+/// 境界、突破紀錄、天數的算法。答案都是拿網頁版 index.html 的程式算出來的
+/// （身高校正 2026-11-23 兩邊一起從 6.1 改成 6.3）。
 final class FormulasTests: XCTestCase {
     private let heightCm: Double = 174
 
@@ -38,14 +39,14 @@ final class FormulasTests: XCTestCase {
     func test身高174體重70點4體脂14點2是金丹中期() throws {
         let leanMassKg = 70.4 * (1 - 14.2 / 100)
         let ffmi = Formulas.ffmi(leanMassKg: leanMassKg, heightCm: heightCm)
-        XCTAssertEqual(ffmi, 20.32, accuracy: 0.005)
-        XCTAssertEqual(ffmi, 20.316852160126835, accuracy: 1e-9)
+        XCTAssertEqual(ffmi, 20.33, accuracy: 0.005)
+        XCTAssertEqual(ffmi, 20.328852160126836, accuracy: 1e-9)
         XCTAssertEqual(label(ofFFMI: ffmi), "金丹中期")
         let maybeGap = Formulas.nextStageGap(leanMassKg: leanMassKg, heightCm: heightCm)
         let gap = try XCTUnwrap(maybeGap)
         XCTAssertEqual(gap.nextLabel, "金丹後期")
-        XCTAssertEqual(gap.leanNeededKg, 0.6, accuracy: 0.05)
-        XCTAssertEqual(gap.leanNeededKg, 0.5544984, accuracy: 1e-6)
+        XCTAssertEqual(gap.leanNeededKg, 0.5, accuracy: 0.05)
+        XCTAssertEqual(gap.leanNeededKg, 0.5181672, accuracy: 1e-6)
     }
 
     func test去脂體重反推回FFMI會是同一個數字() {

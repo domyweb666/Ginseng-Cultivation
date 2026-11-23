@@ -231,6 +231,28 @@ extension RencanUITestCase {
     }
 }
 
+// MARK: 出處頁
+
+extension RencanUITestCase {
+    /// 點現在畫面上的「計算依據與出處」，看出處頁有醫療提醒和連結，截圖，再關掉。
+    /// 不點連結，點了會跳到瀏覽器。
+    func checkSourcesPage(shotName: String, scrolls: Int = 0) {
+        requireVisible(idQuery("health-sources"), "「計算依據與出處」那一列").tap()
+        let disclaimer = idQuery("health-sources-disclaimer")
+        requireVisible(disclaimer, "出處頁的醫療提醒")
+        requireVisible(anyElements(containing: "Kouri"), "出處頁的第一筆連結")
+        let linkCount = idQuery("health-source-link").count
+        XCTAssertGreaterThanOrEqual(linkCount, 12, "出處連結少了")
+        shot(shotName)
+        if scrolls > 0 {
+            scrollShots(shotName, count: scrolls)
+        }
+        tapButton("關閉")
+        let isClosed = waitUntil(timeout: 5) { visibleElement(in: disclaimer) == nil }
+        XCTAssertTrue(isClosed, "按了「關閉」，出處頁沒有收回去")
+    }
+}
+
 // MARK: 手勢與輸入
 
 extension RencanUITestCase {

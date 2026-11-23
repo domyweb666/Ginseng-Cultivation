@@ -1,6 +1,6 @@
 import XCTest
 
-// `-rencanSeed demo`：身高 174、男，三筆量測（最新 70.4 公斤、體脂 14.2% → FFMI 20.32 金丹中期）、
+// `-rencanSeed demo`：身高 174、男，三筆量測（最新 70.4 公斤、體脂 14.2% → FFMI 20.33 金丹中期）、
 // 九天十三筆修煉（今天兩筆：坐馬樁 100 公斤、推山掌 62.5 公斤）。修煉 9 天又到金丹，宗門身分是客卿。
 // 一個流程一個類別：截圖檔名的流水號是每個測試各自從 01 起算，分開才不會撞名。
 
@@ -16,7 +16,7 @@ final class DemoRealmUITests: RencanUITestCase {
     func test示範資料境界頁與分析境界段() {
         launch(["-rencanSeed", "demo"])
         seeStele(timeout: 30)
-        requireVisible(anyElements(containing: "FFMI 20.32"), "境界碑上的 FFMI 20.32")
+        requireVisible(anyElements(containing: "FFMI 20.33"), "境界碑上的 FFMI 20.33")
         require(element(id: "realm-sect"), "境界頁最上面的宗門小卡")
         shot("境界頁")
         scrollToSee(anyElements(containing: "100 公斤 × 5 下 × 3 組"), "今天的坐馬樁那一筆")
@@ -33,6 +33,7 @@ final class DemoRealmUITests: RencanUITestCase {
         require(textContaining("體脂秤誤差大"), "點開「境界怎麼算」後的說明")
         scrollDown()
         shot("分析境界段-境界怎麼算點開")
+        checkSourcesPage(shotName: "境界怎麼算-出處頁")
     }
 
     /// 修煉卡頁。2026-11-21 多米看存下來的圖，外框上下比左右窄；這裡留一張圖，在檢查線的截圖裡看四邊是不是一樣寬。
@@ -134,6 +135,7 @@ final class DemoGongUITests: RencanUITestCase {
         require(textContaining("用你那組的重量和次數"), "點開「功法等級怎麼算」後的說明")
         scrollDown()
         shot("功法段-等級怎麼算點開")
+        checkSourcesPage(shotName: "功法怎麼算-出處頁")
     }
 
     /// 點拔山式那張卡（120 公斤 × 5 下 → 1RM 140 公斤），看單一功法頁，再按「關閉」回來。
@@ -177,7 +179,7 @@ final class DemoSettingsUITests: RencanUITestCase {
 
         openTab("境界")
         seeStele()
-        requireVisible(anyElements(containing: "FFMI 20.32"), "身高改回 174 後的 FFMI 20.32")
+        requireVisible(anyElements(containing: "FFMI 20.33"), "身高改回 174 後的 FFMI 20.33")
     }
 }
 

@@ -233,15 +233,13 @@ struct SteleView: View {
         Formulas.fmt(sex.bodyFatStableThresholdPercent, digits: 0)
     }
 
-    /// 根基那一句（網頁版 index.html L357–361 的四種說法）。
+    /// 根基那一句（照網頁版 index.html L357–361，「偏低」那種 2026-11-23 拿掉）。
     private var gateText: String {
         switch stele.gate {
         case .stable:
             return "根基穩固・體脂 \(bodyFat)%"
         case .wavering:
             return "根基浮動・體脂 \(bodyFat)%"
-        case .low:
-            return "體脂 \(bodyFat)%，偏低"
         case .unstable:
             return "根基不穩・體脂 \(bodyFat)%"
         }

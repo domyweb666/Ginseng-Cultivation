@@ -21,6 +21,8 @@ struct RealmRulesCard: View {
                 if isExpanded {
                     details
                 }
+                RowDivider()
+                HealthSourcesRow()
             }
             .padding(.horizontal, Metrics.cardPadding)
             .background(
@@ -88,10 +90,12 @@ struct RealmRulesCard: View {
     }
 
     private var formulaNote: String {
-        let base = "境界看 FFMI（去脂體重 ÷ 身高²，再依身高校正），只算肌肉，不被脂肪灌水。"
+        let base =
+            "境界看 FFMI（去脂體重 ÷ 身高²，再依身高校正）。"
+            + "去脂體重是體重扣掉脂肪，包含肌肉、骨頭和水分。"
         switch sex {
         case .male:
-            return base + "每個大境界分初、中、後期，每期 \(stageWidth)，約等於 1.5 公斤肌肉。"
+            return base + "每個大境界分初、中、後期，每期 \(stageWidth)，約等於 1.5 公斤去脂體重。"
         case .female:
             return base + "每個大境界分初、中、後期。"
         }

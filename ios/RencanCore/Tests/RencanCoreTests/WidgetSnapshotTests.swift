@@ -3,7 +3,7 @@ import XCTest
 @testable import RencanCore
 
 // 小工具的快照（組塊 G，PRD S19、S20）。假資料跟 SiriReplyTests、DigestTests 同一組：
-// 身高 174 的男性，體重 70.4、體脂 14.2% 是金丹中期，距金丹後期還差 0.6 公斤肌肉。
+// 身高 174 的男性，體重 70.4、體脂 14.2% 是金丹中期，距金丹後期還差 0.5 公斤肌肉。
 // 今天固定 2026-03-11（星期三），那一週的星期一是 2026-03-09。
 
 private func weighing(
@@ -39,8 +39,8 @@ final class WidgetSnapshotTests: XCTestCase {
         XCTAssertEqual(made.stageName, "中期")
         XCTAssertEqual(made.realmText, "金丹中期")
         XCTAssertFalse(made.isUnstable)
-        XCTAssertEqual(made.detailText, "距金丹後期還差 0.6 公斤肌肉")
-        XCTAssertEqual(made.detailLines, ["距金丹後期", "還差 0.6 公斤肌肉"])
+        XCTAssertEqual(made.detailText, "距金丹後期還差 0.5 公斤肌肉")
+        XCTAssertEqual(made.detailLines, ["距金丹後期", "還差 0.5 公斤肌肉"])
         XCTAssertEqual(made.updatedAtMs, 1_000)
     }
 

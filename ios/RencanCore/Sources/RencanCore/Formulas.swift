@@ -76,7 +76,7 @@ public enum Formulas {
         return (ffmi - heightCorrection(heightMeters)) * heightMeters * heightMeters
     }
 
-    /// 身高校正項：6.1 ×（1.8 − 身高公尺）。
+    /// 身高校正項：6.3 ×（1.8 − 身高公尺）。
     private static func heightCorrection(_ heightMeters: Double) -> Double {
         Tables.ffmiHeightCorrectionPerMeter * (Tables.ffmiReferenceHeightMeters - heightMeters)
     }
@@ -133,13 +133,12 @@ public enum Formulas {
         return max(minimumStagePercent, min(fullStagePercent, raw))
     }
 
-    /// 體脂對根基的影響（網頁版 index.html L357–361）。男性：超過 20 不穩、18 到 20 浮動、
-    /// 低於 10 偏低。女性各加 7 個百分點。
+    /// 體脂對根基的影響（網頁版 index.html L357–361）。男性：超過 20 不穩、18 到 20 浮動，
+    /// 其他穩固。女性各加 7 個百分點。網頁版低於 10 的「偏低」沒找到可引用的出處，2026-11-23 拿掉。
     public static func bodyFatGate(bodyFatPercent: Double, sex: Sex) -> BodyFatGate {
         let limit = sex.bodyFatStableThresholdPercent
         if bodyFatPercent > limit { return .unstable(overBy: bodyFatPercent - limit) }
         if bodyFatPercent > limit - Tables.bodyFatWaveringBandPercent { return .wavering }
-        if bodyFatPercent < limit - Tables.bodyFatLowBelowLimitPercent { return .low }
         return .stable
     }
 

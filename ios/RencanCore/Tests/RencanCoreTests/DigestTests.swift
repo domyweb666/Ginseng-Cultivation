@@ -39,12 +39,12 @@ final class DigestSteleTests: XCTestCase {
         let result = try digest([weighing(70.4, bodyFat: 14.2, on: "2026-03-05")])
         let stele = try XCTUnwrap(result.stele)
         XCTAssertEqual(stele.standing.label, "金丹中期")
-        XCTAssertEqual(stele.ffmi, 20.316852160126835, accuracy: 1e-9)
+        XCTAssertEqual(stele.ffmi, 20.328852160126836, accuracy: 1e-9)
         XCTAssertEqual(stele.leanMassKg, 60.4032, accuracy: 1e-9)
         XCTAssertEqual(stele.gap?.nextLabel, "金丹後期")
-        XCTAssertEqual(try XCTUnwrap(stele.gap).leanNeededKg, 0.5544984, accuracy: 1e-6)
-        // 金丹中期從 20.0 到 20.5；20.3169 走了 63.37%
-        XCTAssertEqual(stele.stagePercent, 63.3704, accuracy: 1e-3)
+        XCTAssertEqual(try XCTUnwrap(stele.gap).leanNeededKg, 0.5181672, accuracy: 1e-6)
+        // 金丹中期從 20.0 到 20.5；20.3289 走了 65.77%
+        XCTAssertEqual(stele.stagePercent, 65.7704, accuracy: 1e-3)
         XCTAssertEqual(stele.gate, .stable)
         XCTAssertTrue(stele.isStable)
     }
@@ -65,16 +65,16 @@ final class DigestSteleTests: XCTestCase {
         XCTAssertEqual(result.breakthroughs, [])
     }
 
-    func test男性體脂19是根基浮動9是偏低15是穩固() {
+    func test男性體脂19是根基浮動9和15都是穩固() {
         XCTAssertEqual(Formulas.bodyFatGate(bodyFatPercent: 19, sex: .male), .wavering)
-        XCTAssertEqual(Formulas.bodyFatGate(bodyFatPercent: 9, sex: .male), .low)
+        XCTAssertEqual(Formulas.bodyFatGate(bodyFatPercent: 9, sex: .male), .stable)
         XCTAssertEqual(Formulas.bodyFatGate(bodyFatPercent: 15, sex: .male), .stable)
         XCTAssertEqual(Formulas.bodyFatGate(bodyFatPercent: 20, sex: .male), .wavering)
     }
 
-    func test女性體脂26是根基浮動16是偏低22是穩固28是不穩() {
+    func test女性體脂26是根基浮動16和22都是穩固28是不穩() {
         XCTAssertEqual(Formulas.bodyFatGate(bodyFatPercent: 26, sex: .female), .wavering)
-        XCTAssertEqual(Formulas.bodyFatGate(bodyFatPercent: 16, sex: .female), .low)
+        XCTAssertEqual(Formulas.bodyFatGate(bodyFatPercent: 16, sex: .female), .stable)
         XCTAssertEqual(Formulas.bodyFatGate(bodyFatPercent: 22, sex: .female), .stable)
         XCTAssertEqual(Formulas.bodyFatGate(bodyFatPercent: 28, sex: .female), .unstable(overBy: 1))
     }
@@ -111,8 +111,8 @@ final class DigestSteleTests: XCTestCase {
         let result = try digest([measurement], sex: .female, heightCm: 160)
         let stele = try XCTUnwrap(result.stele)
         XCTAssertEqual(stele.standing.label, "元嬰中期")
-        XCTAssertEqual(stele.ffmi, 19.18875, accuracy: 1e-9)
-        XCTAssertEqual(try XCTUnwrap(stele.gap).leanNeededKg, 0.3496, accuracy: 1e-4)
+        XCTAssertEqual(stele.ffmi, 19.22875, accuracy: 1e-9)
+        XCTAssertEqual(try XCTUnwrap(stele.gap).leanNeededKg, 0.2472, accuracy: 1e-4)
         XCTAssertEqual(stele.gate, .stable)
     }
 
@@ -121,9 +121,9 @@ final class DigestSteleTests: XCTestCase {
         let second = weighing(70.4, bodyFat: 14.2, on: "2026-03-05")
         let result = try digest([second, first])
         XCTAssertEqual(result.breakthroughs.map(\.label), ["金丹初期", "金丹中期"])
-        XCTAssertEqual(result.breakthroughs[1].ffmi, 20.316852160126835, accuracy: 1e-9)
+        XCTAssertEqual(result.breakthroughs[1].ffmi, 20.328852160126836, accuracy: 1e-9)
         XCTAssertEqual(result.ffmiHistory.map(\.date), ["2026-02-05", "2026-03-05"])
-        XCTAssertEqual(result.ffmiHistory[0].ffmi, 19.595752939622145, accuracy: 1e-9)
+        XCTAssertEqual(result.ffmiHistory[0].ffmi, 19.60775293962214, accuracy: 1e-9)
     }
 
     func test走勢圖每一點帶著距第一次量測幾天() throws {

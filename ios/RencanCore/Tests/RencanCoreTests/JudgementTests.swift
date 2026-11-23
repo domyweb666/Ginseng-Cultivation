@@ -153,7 +153,7 @@ final class MeasurementJudgementTests: XCTestCase {
         let result = try judge(weighing(80, bodyFat: 24, on: "2026-03-05"), before: [])
         XCTAssertEqual(result.outcome, .unstable)
         XCTAssertEqual(result.standing.label, "金丹中期")
-        XCTAssertEqual(result.ffmi, 20.4479, accuracy: 1e-4)
+        XCTAssertEqual(result.ffmi, 20.4599, accuracy: 1e-4)
     }
 
     func test根基不穩不動宗門身分() throws {

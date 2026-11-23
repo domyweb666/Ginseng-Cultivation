@@ -91,14 +91,14 @@
           {
             "date": "2026-03-01",
             "lean": 62.32,
-            "ffmi": 20.94996089311666,
+            "ffmi": 20.96196089311666,
             "realmIndex": 2,
             "stageIndex": 2,
             "label": "金丹後期",
             "nextFFMI": 21,
             "fromFFMI": 20.5,
             "nextLabel": "元嬰初期",
-            "leanNeeded": 0.15149840000000125
+            "leanNeeded": 0.11516720000000191
           }
         ],
         "breakthroughs": [],
@@ -716,86 +716,86 @@
           {
             "date": "2025-09-06",
             "lean": 58.449999999999996,
-            "ffmi": 19.671720702866956,
+            "ffmi": 19.683720702866957,
             "realmIndex": 2,
             "stageIndex": 0,
             "label": "金丹初期",
             "nextFFMI": 20,
             "fromFFMI": 19.5,
             "nextLabel": "金丹中期",
-            "leanNeeded": 0.9938983999999991
+            "leanNeeded": 0.9575671999999997
           },
           {
             "date": "2025-10-04",
             "lean": 59.303999999999995,
-            "ffmi": 19.95379231074118,
+            "ffmi": 19.96579231074118,
             "realmIndex": 2,
             "stageIndex": 0,
             "label": "金丹初期",
             "nextFFMI": 20,
             "fromFFMI": 19.5,
             "nextLabel": "金丹中期",
-            "leanNeeded": 0.13989839999999987
+            "leanNeeded": 0.10356720000000053
           },
           {
             "date": "2025-11-01",
             "lean": 56.985,
-            "ffmi": 19.18783908045977,
+            "ffmi": 19.19983908045977,
             "realmIndex": 1,
             "stageIndex": 2,
             "label": "築基後期",
             "nextFFMI": 19.5,
             "fromFFMI": 19,
             "nextLabel": "金丹初期",
-            "leanNeeded": 0.9450983999999991
+            "leanNeeded": 0.9087672000000069
           },
           {
             "date": "2025-12-06",
             "lean": 60.6,
-            "ffmi": 20.38185414189457,
+            "ffmi": 20.393854141894572,
             "realmIndex": 2,
             "stageIndex": 1,
             "label": "金丹中期",
             "nextFFMI": 20.5,
             "fromFFMI": 20,
             "nextLabel": "金丹後期",
-            "leanNeeded": 0.35769840000000386
+            "leanNeeded": 0.3213671999999903
           },
           {
             "date": "2026-01-03",
             "lean": 60.634,
-            "ffmi": 20.39308415906989,
+            "ffmi": 20.40508415906989,
             "realmIndex": 2,
             "stageIndex": 1,
             "label": "金丹中期",
             "nextFFMI": 20.5,
             "fromFFMI": 20,
             "nextLabel": "金丹後期",
-            "leanNeeded": 0.32369840000000494
+            "leanNeeded": 0.2873671999999914
           },
           {
             "date": "2026-02-07",
             "lean": 60.2508,
-            "ffmi": 20.266515259611573,
+            "ffmi": 20.278515259611574,
             "realmIndex": 2,
             "stageIndex": 1,
             "label": "金丹中期",
             "nextFFMI": 20.5,
             "fromFFMI": 20,
             "nextLabel": "金丹後期",
-            "leanNeeded": 0.7068984000000071
+            "leanNeeded": 0.6705671999999936
           },
           {
             "date": "2026-03-07",
             "lean": 60.403200000000005,
-            "ffmi": 20.316852160126835,
+            "ffmi": 20.328852160126836,
             "realmIndex": 2,
             "stageIndex": 1,
             "label": "金丹中期",
             "nextFFMI": 20.5,
             "fromFFMI": 20,
             "nextLabel": "金丹後期",
-            "leanNeeded": 0.5544984
+            "leanNeeded": 0.5181671999999864
           }
         ],
         "breakthroughs": [
@@ -1306,62 +1306,62 @@
           {
             "date": "2025-11-01",
             "lean": 62.321999999999996,
-            "ffmi": 19.791864916045952,
+            "ffmi": 19.795864916045954,
             "realmIndex": 2,
             "stageIndex": 0,
             "label": "金丹初期",
             "nextFFMI": 20,
             "fromFFMI": 19.5,
             "nextLabel": "金丹中期",
-            "leanNeeded": 0.6594552000000107
+            "leanNeeded": 0.6467816000000042
           },
           {
             "date": "2025-12-01",
             "lean": 61.6,
-            "ffmi": 19.563989647771745,
+            "ffmi": 19.567989647771746,
             "realmIndex": 2,
             "stageIndex": 0,
             "label": "金丹初期",
             "nextFFMI": 20,
             "fromFFMI": 19.5,
             "nextLabel": "金丹中期",
-            "leanNeeded": 1.3814552000000049
+            "leanNeeded": 1.3687815999999984
           },
           {
             "date": "2026-01-10",
             "lean": 66.4,
-            "ffmi": 21.07894988006565,
+            "ffmi": 21.08294988006565,
             "realmIndex": 3,
             "stageIndex": 0,
             "label": "元嬰初期",
             "nextFFMI": 21.5,
             "fromFFMI": 21,
             "nextLabel": "元嬰中期",
-            "leanNeeded": 1.3340551999999946
+            "leanNeeded": 1.321381599999981
           },
           {
             "date": "2026-02-01",
             "lean": 60.075,
-            "ffmi": 19.08267415730337,
+            "ffmi": 19.08667415730337,
             "realmIndex": 1,
             "stageIndex": 2,
             "label": "築基後期",
             "nextFFMI": 19.5,
             "fromFFMI": 19,
             "nextLabel": "金丹初期",
-            "leanNeeded": 1.3222552000000007
+            "leanNeeded": 1.3095816000000013
           },
           {
             "date": "2026-03-01",
             "lean": 62.9,
-            "ffmi": 19.974291377351342,
+            "ffmi": 19.978291377351344,
             "realmIndex": 2,
             "stageIndex": 0,
             "label": "金丹初期",
             "nextFFMI": 20,
             "fromFFMI": 19.5,
             "nextLabel": "金丹中期",
-            "leanNeeded": 0.08145520000000772
+            "leanNeeded": 0.06878160000000122
           }
         ],
         "breakthroughs": [
@@ -1860,14 +1860,14 @@
           {
             "date": "2026-02-10",
             "lean": 58.48,
-            "ffmi": 20.255441860465115,
+            "ffmi": 20.271441860465117,
             "realmIndex": 2,
             "stageIndex": 1,
             "label": "金丹中期",
             "nextFFMI": 20.5,
             "fromFFMI": 20,
             "nextLabel": "金丹後期",
-            "leanNeeded": 0.7235008000000036
+            "leanNeeded": 0.6761663999999925
           }
         ],
         "breakthroughs": [
@@ -3357,26 +3357,26 @@
           {
             "date": "2025-08-01",
             "lean": 49.8,
-            "ffmi": 17.8418339100346,
+            "ffmi": 17.8618339100346,
             "realmIndex": 0,
             "stageIndex": 2,
             "label": "煉氣後期",
             "nextFFMI": 18,
             "fromFFMI": 17.5,
             "nextLabel": "築基初期",
-            "leanNeeded": 0.45709999999999695
+            "leanNeeded": 0.39930000000000376
           },
           {
             "date": "2026-01-05",
             "lean": 51.117999999999995,
-            "ffmi": 18.2978892733564,
+            "ffmi": 18.3178892733564,
             "realmIndex": 1,
             "stageIndex": 0,
             "label": "築基初期",
             "nextFFMI": 18.5,
             "fromFFMI": 18,
             "nextLabel": "築基中期",
-            "leanNeeded": 0.5841000000000065
+            "leanNeeded": 0.5263000000000062
           }
         ],
         "breakthroughs": [
@@ -7608,19 +7608,19 @@
           {
             "date": "2024-06-01",
             "lean": 68.64,
-            "ffmi": 25.051727891156467,
+            "ffmi": 25.07572789115647,
             "realmIndex": 5,
             "stageIndex": 2,
             "label": "大乘後期",
             "nextFFMI": 25.5,
             "fromFFMI": 25,
             "nextLabel": "渡劫初期",
-            "leanNeeded": 1.2652031999999878
+            "leanNeeded": 1.1974655999999868
           },
           {
             "date": "2025-01-01",
             "lean": 73.4,
-            "ffmi": 26.738235827664404,
+            "ffmi": 26.762235827664405,
             "realmIndex": 6,
             "stageIndex": 2,
             "label": "渡劫後期",
@@ -7632,7 +7632,7 @@
           {
             "date": "2026-03-01",
             "lean": 79.6,
-            "ffmi": 28.93494784580499,
+            "ffmi": 28.958947845804992,
             "realmIndex": 6,
             "stageIndex": 2,
             "label": "渡劫後期",
@@ -10005,14 +10005,14 @@
           {
             "date": "2026-03-03",
             "lean": 54.56,
-            "ffmi": 14.503573407202218,
+            "ffmi": 14.483573407202218,
             "realmIndex": 0,
             "stageIndex": 0,
             "label": "煉氣初期",
             "nextFFMI": 16.5,
             "fromFFMI": 16.5,
             "nextLabel": "煉氣初期",
-            "leanNeeded": 7.207099999999997
+            "leanNeeded": 7.279299999999992
           }
         ],
         "breakthroughs": [
@@ -10160,26 +10160,26 @@
           {
             "date": "2026-01-01",
             "lean": 54.612,
-            "ffmi": 20.822981759020088,
+            "ffmi": 20.851981759020088,
             "realmIndex": 2,
             "stageIndex": 2,
             "label": "金丹後期",
             "nextFFMI": 21,
             "fromFFMI": 20.5,
             "nextLabel": "元嬰初期",
-            "leanNeeded": 0.48485738749999996
+            "leanNeeded": 0.4054256625000008
           },
           {
             "date": "2026-03-01",
             "lean": 54.249,
-            "ffmi": 20.69045284818503,
+            "ffmi": 20.71945284818503,
             "realmIndex": 2,
             "stageIndex": 2,
             "label": "金丹後期",
             "nextFFMI": 21,
             "fromFFMI": 20.5,
             "nextLabel": "元嬰初期",
-            "leanNeeded": 0.8478573874999995
+            "leanNeeded": 0.7684256625000003
           }
         ],
         "breakthroughs": [

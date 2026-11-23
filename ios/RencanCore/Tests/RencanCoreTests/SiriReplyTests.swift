@@ -156,19 +156,19 @@ final class SiriRealmReplyTests: XCTestCase {
 
     func test金丹中期回境界FFMI與還差幾公斤肌肉() throws {
         let text = try reply([weighing(70.4, bodyFat: 14.2, on: "2026-03-05")])
-        XCTAssertEqual(text, "金丹中期，FFMI 20.32，距金丹後期還差 0.6 公斤肌肉。")
+        XCTAssertEqual(text, "金丹中期，FFMI 20.33，距金丹後期還差 0.5 公斤肌肉。")
     }
 
     func test下一期跨大境界時講新境界的名字() throws {
         let text = try reply([weighing(73, bodyFat: 15, on: "2026-03-05")])
-        XCTAssertEqual(text, "金丹後期，FFMI 20.86，距元嬰初期還差 0.4 公斤肌肉。")
+        XCTAssertEqual(text, "金丹後期，FFMI 20.87，距元嬰初期還差 0.4 公斤肌肉。")
     }
 
     func test用的是日期最新的那一筆量測() throws {
         let older = weighing(73, bodyFat: 15, on: "2026-01-05")
         let newer = weighing(70.4, bodyFat: 14.2, on: "2026-03-05")
         let text = try reply([newer, older])
-        XCTAssertEqual(text, "金丹中期，FFMI 20.32，距金丹後期還差 0.6 公斤肌肉。")
+        XCTAssertEqual(text, "金丹中期，FFMI 20.33，距金丹後期還差 0.5 公斤肌肉。")
     }
 
     func test還沒量過回尚未入道() throws {
@@ -184,24 +184,24 @@ final class SiriRealmReplyTests: XCTestCase {
 
     func test體脂24回根基不穩與要降到20以下() throws {
         let text = try reply([weighing(80, bodyFat: 24, on: "2026-03-05")])
-        XCTAssertEqual(text, "金丹中期，FFMI 20.45。根基不穩，體脂降到 20% 以下境界才生效。")
+        XCTAssertEqual(text, "金丹中期，FFMI 20.46。根基不穩，體脂降到 20% 以下境界才生效。")
     }
 
     func test渡劫後期回已是最高的一期() throws {
         let top = weighing(90, bodyFat: 11, on: "2026-03-05", leanMassKg: 80)
-        XCTAssertEqual(try reply([top]), "渡劫後期，FFMI 26.79，已是最高的一期。")
+        XCTAssertEqual(try reply([top]), "渡劫後期，FFMI 26.80，已是最高的一期。")
     }
 
     func test女性用女性的境界與還差幾公斤() throws {
         let measurement = weighing(60, bodyFat: 23, on: "2026-03-05", leanMassKg: 46)
         let text = try reply([measurement], sex: .female, heightCm: 160)
-        XCTAssertEqual(text, "元嬰中期，FFMI 19.19，距元嬰後期還差 0.3 公斤肌肉。")
+        XCTAssertEqual(text, "元嬰中期，FFMI 19.23，距元嬰後期還差 0.2 公斤肌肉。")
     }
 
     func test女性體脂28回根基不穩與要降到27以下() throws {
         let measurement = weighing(60, bodyFat: 28, on: "2026-03-05", leanMassKg: 46)
         let text = try reply([measurement], sex: .female, heightCm: 160)
-        XCTAssertEqual(text, "元嬰中期，FFMI 19.19。根基不穩，體脂降到 27% 以下境界才生效。")
+        XCTAssertEqual(text, "元嬰中期，FFMI 19.23。根基不穩，體脂降到 27% 以下境界才生效。")
     }
 
     func test資料壞掉時回讀不出來與原因() {

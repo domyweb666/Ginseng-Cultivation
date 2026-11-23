@@ -24,6 +24,8 @@ struct GongRulesCard: View {
                 if isExpanded {
                     details
                 }
+                RowDivider()
+                HealthSourcesRow()
             }
             .padding(.horizontal, Metrics.cardInset)
             .background(

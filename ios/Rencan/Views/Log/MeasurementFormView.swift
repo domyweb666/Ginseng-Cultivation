@@ -69,9 +69,10 @@ struct MeasurementFormView: View {
                         .foregroundStyle(Color.rencan.strong)
                         .accessibilityIdentifier("health-fill-note")
                 }
-                Text("體脂秤有給去脂體重就填，比用體脂率換算準。")
+                Text("體脂秤有給去脂體重就填，會直接用那個數字；沒填就用體脂率換算。")
                     .font(RencanType.footnote)
                     .foregroundStyle(Color.rencan.textSecondary)
+                sourcesRow
                 datePicker
                 preview
                 if let errorMessage {
@@ -131,6 +132,16 @@ struct MeasurementFormView: View {
                 .frame(width: RencanLayout.unitWidth, alignment: .leading)
         }
         .frame(minHeight: RencanLayout.formRowHeight)
+    }
+
+    /// 出處放在欄位正下方，不用捲就看得到：2026-11-23 審查點名這張表單的計算沒有出處（1.4.1）。
+    private var sourcesRow: some View {
+        HealthSourcesRow()
+            .padding(.horizontal, RencanLayout.sectionSpacing)
+            .background(
+                Color.rencan.surface,
+                in: RoundedRectangle(cornerRadius: RencanLayout.cardCornerRadius)
+            )
     }
 
     private var datePicker: some View {
