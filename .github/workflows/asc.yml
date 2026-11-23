@@ -9,13 +9,13 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "check 只查；fill 填文字；media 傳截圖與錄影；submit 送審"
+        description: "check 只查；fill 填文字；media 傳截圖與錄影；submit 送審；prepare 只換建置與備註"
         required: true
         default: check
         type: choice
-        options: [check, fill, media, submit]
+        options: [check, fill, media, submit, prepare]
       build:
-        description: "submit 用的建置號（空白＝最新處理好的那個）"
+        description: "submit、prepare 用的建置號（submit 空白＝最新處理好的那個）"
         required: false
         default: ""
 

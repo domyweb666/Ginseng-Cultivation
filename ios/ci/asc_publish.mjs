@@ -6,6 +6,8 @@
 //   media   傳商品頁截圖（store/6.9/*.jpg，照檔名順序）與送審錄影（store/review.mp4，附在審核資料）。
 //           同一格已經有的先換掉。
 //   submit  選建置（BUILD_NUMBER，沒給就挑最新一個處理好的）、把內購送審、建一筆送審並送出。
+//   prepare 被退件後重送用：只換建置（BUILD_NUMBER 一定要給）和送審備註，不碰其他欄位，也不送出；
+//           送出在網頁的送審單按「重新提交至 App 審查」（2026-11-24 加）。
 // 跑幾次都一樣：已經有的照 json 更新，不會多建。出錯就停，不跳過。
 // 用法（環境變數）：ASC_KEY_ID、ASC_ISSUER_ID、ASC_KEY_P8_PATH、BUNDLE_ID、MODE、
 //   REVIEW_CONTACT_JSON（fill 用，GitHub secret，審核聯絡人；repo 公開，不進版控）、BUILD_NUMBER（submit 選用）
@@ -13,7 +15,7 @@ import { createHash } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
 import { ascClient, env } from "./asc_api.mjs";
 
-const MODES = ["fill", "media", "submit"];
+const MODES = ["fill", "media", "submit", "prepare"];
 const MAX = { subtitle: 30, keywords: 100, promotionalText: 170, description: 4000, notes: 4000 };
 
 const mode = env("MODE");
@@ -40,6 +42,7 @@ console.log(`版本 ${version.attributes.versionString}（${version.id}）狀態
 if (mode === "fill") await fill();
 if (mode === "media") await media();
 if (mode === "submit") await submit();
+if (mode === "prepare") await prepare();
 
 /// 從文稿裡找開頭是 start 的 ``` 區塊，回傳區塊內文。找不到就停，免得送出空的描述。
 function codeBlockStarting(text, start) {
@@ -306,6 +309,28 @@ async function media() {
     video,
   );
   console.log("截圖與送審錄影傳好了，Apple 處理完才會顯示");
+}
+
+// ---------- prepare ----------
+
+async function prepare() {
+  const wanted = env("BUILD_NUMBER");
+  const builds = await call(
+    "GET",
+    `/v1/builds?filter[app]=${app.id}&filter[version]=${encodeURIComponent(wanted)}&filter[processingState]=VALID&limit=5`,
+  );
+  const build = builds.data[0];
+  if (!build) throw new Error(`找不到處理好的建置 ${wanted}`);
+  await patch("appStoreVersions", version.id, undefined, {
+    build: { data: { type: "builds", id: build.id } },
+  });
+  const detail = await call("GET", `/v1/appStoreVersions/${version.id}/appStoreReviewDetail`);
+  await patch("appStoreReviewDetails", detail.data.id, { notes: reviewNotes });
+  const linked = await call("GET", `/v1/appStoreVersions/${version.id}/build`);
+  const after = await call("GET", `/v1/appStoreVersions/${version.id}/appStoreReviewDetail`);
+  if (linked.data?.attributes.version !== wanted) throw new Error("建置沒有換成功");
+  if (after.data.attributes.notes !== reviewNotes) throw new Error("送審備註沒有換成功");
+  console.log(`建置 ${linked.data.attributes.version}，送審備註 ${after.data.attributes.notes.length} 字`);
 }
 
 // ---------- submit ----------
