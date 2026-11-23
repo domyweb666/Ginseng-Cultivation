@@ -14,13 +14,17 @@ final class ShellUITests: RencanUITestCase {
         XCTAssertTrue(tabs.matching(named("境界")).firstMatch.isSelected, "打開時選中的不是境界")
         shot("境界頁")
 
-        // 分析頁：切到功法段（分段的按鈕在 segmentedControls 裡，跟分頁列的「境界」分開找）
+        // 分析頁：切到功法段（分段是 app 自己畫的，靠識別碼 segment- 跟分頁列的「境界」分開找）
         openTab("分析")
-        let segments = app.segmentedControls.buttons
-        requireVisible(segments.matching(named("功法")), "分析頁分段的「功法」").tap()
+        let gong = app.buttons.matching(identifier: "segment-功法")
+        let realm = app.buttons.matching(identifier: "segment-境界")
+        let gongSegment = requireVisible(gong, "分析頁分段的「功法」")
+        XCTAssertGreaterThanOrEqual(gongSegment.frame.height, 44, "分段不到 44 點高")
+        gongSegment.tap()
         seeText("十二門功法")
         shot("分析頁功法段")
-        requireVisible(segments.matching(named("境界")), "分析頁分段的「境界」").tap()
+        XCTAssertTrue(gong.firstMatch.isSelected, "點了「功法」，它沒有變成選中")
+        requireVisible(realm, "分析頁分段的「境界」").tap()
 
         // 設定頁
         openTab("設定")

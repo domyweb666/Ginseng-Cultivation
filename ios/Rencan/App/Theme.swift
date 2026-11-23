@@ -207,6 +207,13 @@ enum RencanLayout {
     static let minimumTextScale: CGFloat = 0.7
     /// 次要按鈕的高度
     static let secondaryButtonHeight: CGFloat = 48
+    /// 分段控制：高度照 iOS 的 44pt 下限，選中那格的白底比外框四邊各縮 3
+    static let segmentHeight: CGFloat = 44
+    static let segmentInset: CGFloat = 3
+    static let segmentShadowRadius: CGFloat = 3
+    static let segmentShadowY: CGFloat = 1
+    /// 分段控制離它切換的內容多遠（同一張表單裡）
+    static let segmentGap: CGFloat = 16
     /// 記一筆表單上功法格子的高度
     static let moveButtonHeight: CGFloat = 56
     /// 量體組成表單：數字欄的寬與高、單位的寬、一列的高

@@ -133,6 +133,67 @@ struct RoundStepperButton: View {
     }
 }
 
+/// 分段控制：長相照系統那顆，高度 44、字大一號（2026-11-23 多米選甲版：系統那顆只有 32 高，
+/// 太扁不好按，而且改不了高度）。整格都按得到，選中的白底滑過去；開了減少動態效果就直接換。
+/// 記一筆的腿推拉、分析頁的境界功法共用。
+struct RencanSegmentedControl<Option>: View
+where Option: Hashable & RawRepresentable, Option.RawValue == String {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Namespace private var namespace
+    let title: String
+    let options: [Option]
+    @Binding var selection: Option
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(options, id: \.self) { option in
+                segment(option)
+            }
+        }
+        .background(Color.rencan.separator, in: Capsule())
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(title)
+    }
+
+    private func segment(_ option: Option) -> some View {
+        let isSelected = option == selection
+        return Button {
+            withAnimation(reduceMotion ? nil : .easeOut(duration: RencanLayout.fadeSeconds)) {
+                selection = option
+            }
+        } label: {
+            Text(option.rawValue)
+                .font(RencanType.callout)
+                .foregroundStyle(Color.rencan.textPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(RencanLayout.minimumTextScale)
+                .frame(maxWidth: .infinity, minHeight: RencanLayout.segmentHeight)
+                .background {
+                    if isSelected {
+                        thumb
+                    }
+                }
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityIdentifier("segment-" + option.rawValue)
+    }
+
+    /// 選中那格的白底。
+    private var thumb: some View {
+        Capsule()
+            .fill(Color.rencan.surface)
+            .shadow(
+                color: Color.rencan.shadow.opacity(RencanLayout.shadowOpacity),
+                radius: RencanLayout.segmentShadowRadius,
+                y: RencanLayout.segmentShadowY
+            )
+            .padding(RencanLayout.segmentInset)
+            .matchedGeometryEffect(id: "thumb", in: namespace)
+    }
+}
+
 /// 列與列之間的細線。
 struct RowDivider: View {
     var body: some View {

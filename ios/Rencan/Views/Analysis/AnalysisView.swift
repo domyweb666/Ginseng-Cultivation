@@ -56,11 +56,8 @@ struct AnalysisView: View {
     }
 
     private var segmentPicker: some View {
-        Picker("分析類別", selection: $segment) {
-            ForEach(Segment.allCases) { item in
-                Text(item.rawValue).tag(item)
-            }
-        }
-        .pickerStyle(.segmented)
+        RencanSegmentedControl(
+            title: "分析類別", options: Segment.allCases, selection: $segment
+        )
     }
 }
