@@ -21,7 +21,7 @@ final class ShellUITests: RencanUITestCase {
         let gongSegment = requireVisible(gong, "分析頁分段的「功法」")
         XCTAssertGreaterThanOrEqual(gongSegment.frame.height, 44, "分段不到 44 點高")
         gongSegment.tap()
-        seeText("十二門功法")
+        seeText("功法雷達")
         shot("分析頁功法段")
         XCTAssertTrue(gong.firstMatch.isSelected, "點了「功法」，它沒有變成選中")
         requireVisible(realm, "分析頁分段的「境界」").tap()

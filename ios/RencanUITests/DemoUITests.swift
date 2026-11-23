@@ -122,8 +122,12 @@ final class DemoGongUITests: RencanUITestCase {
         seeStele(timeout: 30)
         openAnalysis()
         tapVisibleButton("功法")
-        seeText("十二門功法")
+        seeText("功法雷達")
         shot("功法段-頂")
+        // 刻度在雷達圖下面 40（2026-11-23），第一屏會被分頁列蓋到一點，捲一下截整張卡。
+        scrollDown()
+        seeText("十二門功法")
+        shot("功法段-雷達與刻度")
 
         openMoveDetail()
         scrollShots("功法段", count: 4)
