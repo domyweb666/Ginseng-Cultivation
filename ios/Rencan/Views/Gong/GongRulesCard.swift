@@ -85,10 +85,11 @@ struct GongRulesCard: View {
         return method + formula + "再除以當天體重。引體向上、雙槓撐體把自身體重算進去。"
     }
 
-    /// 六個等級與門檻的來歷。男性那句照網頁版；女性的係數照女性版規則第三節。
+    /// 六個等級與門檻的來歷。男性那句 2026-11-23 改掉（網頁版寫「參考一般成年男性的力量標準」，
+    /// 查不到是哪一份）；女性的係數照女性版規則第三節。
     private var levelsText: String {
         let ladder = "等級：" + Tables.levelNames.joined(separator: " → ")
-        guard sex == .female else { return ladder + "，門檻參考一般成年男性的力量標準。" }
+        guard sex == .female else { return ladder + "。門檻是 app 訂的遊戲設定。" }
         let lower = "。女性的門檻另外訂：深蹲、前蹲、硬舉、羅馬尼亞硬舉是男性的七成，"
         let upper = "臥推、上斜臥推、肩推、划船、彎舉是六成，臀推跟男性一樣，"
         return ladder + lower + upper + "引體向上、雙槓撐體自重做得到一下就算入門。"
