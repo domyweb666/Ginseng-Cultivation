@@ -53,6 +53,7 @@ struct RencanSecondaryButtonStyle: ButtonStyle {
 /// 底部分頁列：浮在底部的半透明膠囊，三格由左到右是設定、境界、分析，選中那格墊一塊淺灰、字變產品色。
 /// 樣子照 iOS 26 原生的浮動分頁列（2026-11-18 為了能左右滑改成自己畫，見 PagesView）。
 struct RencanTabBar: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Binding var page: RencanPage
 
     /// 一格的寬高、膠囊的內距
@@ -86,6 +87,8 @@ struct RencanTabBar: View {
             item(.realm, title: "境界", symbol: "mountain.2")
             item(.analysis, title: "分析", symbol: "chart.xyaxis.line")
         }
+        .background(alignment: .leading) { thumb }
+        .animation(slide, value: page)
         .padding(Self.barPadding)
         .background(.regularMaterial, in: Capsule())
         .overlay(Capsule().strokeBorder(Color.rencan.separator))
@@ -96,10 +99,23 @@ struct RencanTabBar: View {
         )
     }
 
+    /// 選中那格的淺灰底。三格共用一塊、墊在字的後面，點的和左右滑的都會滑過去。
+    private var thumb: some View {
+        Capsule()
+            .fill(Color.rencan.surfaceMuted)
+            .frame(width: Self.itemWidth, height: Self.itemHeight)
+            .offset(x: Self.itemWidth * CGFloat(page.rawValue))
+    }
+
+    /// 開了減少動態效果就直接換。
+    private var slide: Animation? {
+        reduceMotion ? nil : .easeInOut(duration: RencanLayout.fadeSeconds)
+    }
+
     private func item(_ target: RencanPage, title: String, symbol: String) -> some View {
         let isSelected = page == target
         return Button {
-            withAnimation(.easeInOut(duration: RencanLayout.fadeSeconds)) {
+            withAnimation(slide) {
                 page = target
             }
         } label: {
@@ -112,11 +128,6 @@ struct RencanTabBar: View {
             }
             .foregroundStyle(isSelected ? Color.rencan.accent : Color.rencan.textPrimary)
             .frame(width: Self.itemWidth, height: Self.itemHeight)
-            .background {
-                if isSelected {
-                    Capsule().fill(Color.rencan.surfaceMuted)
-                }
-            }
             .contentShape(Capsule())
         }
         .buttonStyle(.plain)

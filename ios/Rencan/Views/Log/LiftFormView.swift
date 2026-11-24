@@ -185,13 +185,15 @@ struct LiftFormView: View {
     }
 
     private func submit() {
+        // 存好之後表單還在往下收，這時再按到「記下」不能再存一筆。
+        guard flow.sheet != nil else { return }
         let draft = LiftDraft(move: moveKey, kg: kg, reps: reps, sets: sets, day: day)
         do {
             let judgement = try store.addLift(draft, digest: digest)
             flow.sheet = nil
             if let celebration = Celebration.make(for: judgement, move: move) {
+                // 這條路不震：慶祝畫面出來時自己震，這裡再震就是兩次。
                 flow.celebration = celebration
-                HapticsService.success()
             } else {
                 flow.showToast(Celebration.toast(for: judgement, move: move))
                 HapticsService.light()

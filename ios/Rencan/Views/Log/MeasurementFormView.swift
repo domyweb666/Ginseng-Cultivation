@@ -231,6 +231,8 @@ struct MeasurementFormView: View {
     }
 
     private func submit(replacing: Bool) {
+        // 存好之後表單還在往下收，這時再按到「結算境界」不能再送一次。
+        guard flow.sheet != nil else { return }
         guard let draft, let sex = digest.sex else {
             errorMessage = "體重和體脂率要填數字"
             return
@@ -242,8 +244,8 @@ struct MeasurementFormView: View {
             flow.page = .realm
             let style = purchases.effective(settingsRows.first?.portraitStyle ?? .original)
             if let celebration = Celebration.make(for: judgement, sex: sex, style: style) {
+                // 這條路不震：慶祝畫面出來時自己震，這裡再震就是兩次。
                 flow.celebration = celebration
-                HapticsService.success()
             } else {
                 flow.showToast(Celebration.toast(for: judgement, sex: sex))
                 HapticsService.light()

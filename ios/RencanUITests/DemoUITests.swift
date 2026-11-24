@@ -180,10 +180,28 @@ final class DemoSettingsUITests: RencanUITestCase {
         shot("設定頁-身高175")
         tapVisibleButton("身高減一公分")
         requireVisible(anyElements(containing: "174"), "減回來的身高 174")
+        holdHeightPlus()
 
         openTab("境界")
         seeStele()
         requireVisible(anyElements(containing: "FFMI 20.33"), "身高改回 174 後的 FFMI 20.33")
+    }
+
+    /// 身高每走一格都存檔重畫，要確認按住時走得下去，不會停在第一格（2026-11-25 手感審查 #2）。
+    /// 走完一格一格按回 174。
+    private func holdHeightPlus() {
+        app.buttons["身高加一公分"].firstMatch.press(forDuration: 1.5)
+        let query = app.descendants(matching: .any).matching(
+            NSPredicate(format: "label MATCHES %@", "1[0-9]{2}[^0-9]*公分")
+        )
+        let text = requireVisible(query, "身高的數字").label
+        let height = Int(text.prefix(3)) ?? 0
+        shot("設定頁-按住身高加")
+        XCTAssertGreaterThan(height, 175, "按住「身高加一公分」1.5 秒，身高只到 \(text)")
+        for _ in 174..<max(height, 175) {
+            tapVisibleButton("身高減一公分")
+        }
+        requireVisible(anyElements(containing: "174"), "按回來的身高 174")
     }
 }
 

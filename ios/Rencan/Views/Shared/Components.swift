@@ -129,6 +129,8 @@ struct RoundStepperButton: View {
         }
         // 自己畫了圓底：不設 plain 的話，手機開「按鈕形狀」時系統會在外面再墊一圈米色。
         .buttonStyle(.plain)
+        // 按一下走一格，按住一直走：第一次記硬舉 100 公斤要從 20 走 32 格。
+        .buttonRepeatBehavior(.enabled)
         .accessibilityLabel(label)
     }
 }

@@ -75,3 +75,43 @@ final class LogPreviewUITests: RencanUITestCase {
         XCTAssertTrue(isShown, "預覽沒有變成「\(text)」，現在是：\(preview.label)")
     }
 }
+
+/// 加減鈕按住會一直走（2026-11-25 手感審查 #2）。震動與「會不會快到停不住」只有真機驗得到。
+final class LogHoldUITests: RencanUITestCase {
+    func test加減鈕按住連續走() {
+        launch(["-rencanSeed", "profile"])
+        seeText("還沒量過體組成", timeout: 30)
+        tapVisibleButton("記一筆修煉")
+        require(app.buttons["記下"], "記一筆表單的「記下」按鈕")
+        waitForText("次數 5")
+
+        app.buttons["次數加一"].press(forDuration: 1.5)
+        let reps = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "次數 "))
+        let count = Int(reps.firstMatch.label.dropFirst(3)) ?? 0
+        XCTAssertGreaterThan(count, 6, "按住「次數加一」1.5 秒，次數只到 \(count)")
+
+        app.buttons["重量加 2.5 公斤"].press(forDuration: 2)
+        shot("按住次數1點5秒重量2秒")
+    }
+}
+
+/// 連點兩下「記下」：只存一筆，第二下也不會把剛出現的慶祝點掉（2026-11-25 手感審查）。
+final class LogDoubleTapUITests: RencanUITestCase {
+    func test連點記下只存一筆() {
+        launch(["-rencanSeed", "demo"])
+        seeStele(timeout: 30)
+        tapVisibleButton("記一筆修煉")
+        let submit = require(app.buttons["記下"], "記一筆表單的「記下」按鈕")
+        tapButton("腿")
+        tapButton("坐馬樁・深蹲")
+        tapButton("重量加 2.5 公斤")
+
+        submit.doubleTap()
+        passCelebration(heading: "功法精進", shotName: "連點記下的慶祝", sheetButton: submit)
+        let detail = "102.5 公斤 × 5 下 × 3 組"
+        scrollToSee(anyElements(containing: detail), "今天的修煉裡剛記的那一筆")
+        shot("連點記下之後")
+        let rows = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", detail))
+        XCTAssertEqual(rows.count, 1, "連點兩下「記下」，存成 \(rows.count) 筆")
+    }
+}

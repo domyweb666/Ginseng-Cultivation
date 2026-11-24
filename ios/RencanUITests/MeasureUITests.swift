@@ -48,3 +48,20 @@ final class MeasureUITests: RencanUITestCase {
         )
     }
 }
+
+/// 連點兩下「結算境界」：慶祝照常出現，不會再跳出「蓋掉同一天」的確認（2026-11-25 手感審查）。
+final class MeasureDoubleTapUITests: RencanUITestCase {
+    func test連點結算只送一次() {
+        launch(["-rencanSeed", "profile"])
+        seeText("還沒量過體組成", timeout: 30)
+        tapVisibleButton("手動輸入體組成")
+        let submit = require(app.buttons["結算境界"], "體組成表單的「結算境界」按鈕")
+        typeNumber("70", into: "weight")
+        typeNumber("15", into: "bodyfat")
+
+        submit.doubleTap()
+        passCelebration(heading: "踏入仙途", shotName: "連點結算的慶祝", sheetButton: submit)
+        XCTAssertEqual(app.alerts.count + app.sheets.count, 0, "連點兩下「結算境界」跳出了確認")
+        seeStele()
+    }
+}
