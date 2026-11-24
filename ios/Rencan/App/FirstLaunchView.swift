@@ -214,11 +214,14 @@ enum FirstLaunchText {
 /// 身高的加減鈕：一次一公分，按住會連續加減。第一次打開與設定頁共用。
 struct HeightStepper: View {
     @Binding var heightCm: Double
+    /// 加減了幾格。按鈕只動這個數，真正改身高在 onChange：設定頁每走一格就存檔重畫，按住時系統一直叫
+    /// 按下去那一刻的動作，裡面的身高是舊的，會停在第一格（2026-11-25 檢查線實測）。
+    @State private var steps = 0
 
     var body: some View {
         HStack {
             RoundStepperButton(systemImage: "minus", label: "身高減一公分") {
-                heightCm = max(Tables.heightRangeCm.lowerBound, heightCm - 1)
+                steps -= 1
             }
             Spacer()
             HStack(alignment: .firstTextBaseline, spacing: RencanLayout.chipVerticalPadding) {
@@ -232,8 +235,12 @@ struct HeightStepper: View {
             .accessibilityElement(children: .combine)
             Spacer()
             RoundStepperButton(systemImage: "plus", label: "身高加一公分") {
-                heightCm = min(Tables.heightRangeCm.upperBound, heightCm + 1)
+                steps += 1
             }
+        }
+        .onChange(of: steps) { old, new in
+            let range = Tables.heightRangeCm
+            heightCm = min(range.upperBound, max(range.lowerBound, heightCm + Double(new - old)))
         }
     }
 }
