@@ -15,6 +15,11 @@ public struct WidgetDayCount: Equatable {
     /// 「本週」或「累計」。
     public let caption: String
     public let days: Int
+
+    public init(caption: String, days: Int) {
+        self.caption = caption
+        self.days = days
+    }
 }
 
 public struct WidgetSnapshot: Codable, Equatable {
