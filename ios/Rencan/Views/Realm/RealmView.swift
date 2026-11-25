@@ -62,7 +62,8 @@ struct RealmView: View {
     }
 
     /// 宗門身分的小卡，放在境界碑上面（2026-11-17 多米選的）：身分、晉升進度、下一步。
-    /// 下一步用短句（digest.sect.shortNext），由寬到窄試三種排法，句子永遠不會在右邊被拆成兩行
+    /// 右邊用短句（digest.sectLineText：下一步，或回來的人看到的「都還在」），
+    /// 由寬到窄試三種排法，句子永遠不會在右邊被拆成兩行
     /// （2026-11-18 多米看真機說被拆了）：一行排完 → 進度條換到第二行 → 句子也換到標題下面。
     /// 文字與百分比都是 Formulas.sectOf 算好的（digest.sect），這裡只排版。
     private var sectLine: some View {
@@ -94,7 +95,7 @@ struct RealmView: View {
         }
         .rencanCard(verticalPadding: RencanLayout.panelPadding)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("宗門身分：\(digest.sect.title)。\(digest.sect.next)")
+        .accessibilityLabel("宗門身分：\(digest.sect.title)。\(digest.sectLineSpoken)")
         .accessibilityIdentifier("realm-sect")
     }
 
@@ -106,7 +107,7 @@ struct RealmView: View {
     }
 
     private var sectNext: some View {
-        Text(digest.sect.shortNext)
+        Text(digest.sectLineText)
             .font(RencanType.footnote)
             .foregroundStyle(Color.rencan.textSecondary)
     }

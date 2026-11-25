@@ -105,6 +105,17 @@ public struct Digest: Equatable {
         moveCards.filter { $0.level >= Digest.accomplishedLevel }.count
     }
 
+    /// 境界頁宗門小卡右邊那句。停了一陣子回來、還沒練的人，第一屏先看到天數都還在；練一筆就換回下一步
+    /// （2026-11-25 多米定）。
+    public var sectLineText: String {
+        isReturnDue ? "\(trainDays) 天修煉都還在" : sect.shortNext
+    }
+
+    /// 宗門小卡給旁白唸的那句，跟畫面上看到的是同一件事。
+    public var sectLineSpoken: String {
+        isReturnDue ? "\(trainDays) 天修煉都還在" : sect.next
+    }
+
     /// 日期壞掉時丟 RencanError.invalidDate，畫面要顯示錯誤，不能整頁空白。
     public init(
         measurements: [MeasurementEntry], lifts: [LiftEntry], heightCm: Double?, sex: Sex?,

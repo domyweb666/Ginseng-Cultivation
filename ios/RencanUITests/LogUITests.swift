@@ -91,11 +91,15 @@ final class LogPreviewUITests: RencanUITestCase {
 }
 
 /// 回來還沒記、再記一筆（2026-11-25）：`-rencanSeed away` 是示範資料，修煉全部往前推 40 天。
-/// 境界頁不放「本週 0 天」，「今天的修煉」寫累計的 9 天都還在；照上次的數字記一筆就是「出關」。
+/// 境界頁第一屏的宗門小卡寫「9 天修煉都還在」，不放「本週 0 天」；照上次的數字記一筆就是「出關」。
 final class AwayUITests: RencanUITestCase {
     func test隔40天回來記一筆是出關() {
         launch(["-rencanSeed", "away"])
         seeStele(timeout: 30)
+        let stillHere = "9 天修煉都還在"
+        let sect = requireVisible(idQuery("realm-sect"), "第一屏的宗門小卡")
+        XCTAssertTrue(sect.label.contains(stillHere), "宗門小卡是：\(sect.label)")
+        shot("第一屏-天數都還在")
         scrollDown()
         scrollDown()
         seeText("你的 9 天修煉都還在，練一門就出關。")
@@ -116,6 +120,8 @@ final class AwayUITests: RencanUITestCase {
         scrollToSee(anyElements(containing: "62.5 公斤 × 5 下 × 3 組"), "今天的修煉裡剛記的那一筆")
         requireVisible(anyElements(containing: "本週"), "記了一筆之後回來的「本週」")
         shot("出關之後的境界頁")
+        let next = element(id: "realm-sect").label
+        XCTAssertTrue(next.contains("轉為正式真傳弟子"), "記完之後宗門小卡沒換回下一步：\(next)")
     }
 }
 

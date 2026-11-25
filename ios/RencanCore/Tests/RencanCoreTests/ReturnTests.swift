@@ -215,6 +215,19 @@ final class ReturnDueTests: XCTestCase {
         XCTAssertEqual(result.weekCount, 0)
     }
 
+    func test回來還沒練宗門小卡寫天數都還在() throws {
+        let result = try digest(["2026-02-18", "2026-02-10"])
+        XCTAssertEqual(result.sectLineText, "2 天修煉都還在")
+        XCTAssertEqual(result.sectLineSpoken, "2 天修煉都還在")
+    }
+
+    func test今天練了宗門小卡換回下一步() throws {
+        // 累計 2 天，外門要 8 天
+        let result = try digest(["2026-02-18", "2026-03-11"])
+        XCTAssertEqual(result.sectLineText, "再 6 天升外門")
+        XCTAssertEqual(result.sectLineSpoken, result.sect.next)
+    }
+
     func test離最晚那筆20天是假的() throws {
         XCTAssertFalse(try digest(["2026-02-19"]).isReturnDue)
     }
