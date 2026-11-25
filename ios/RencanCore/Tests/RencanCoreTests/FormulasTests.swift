@@ -11,7 +11,7 @@ final class FormulasTests: XCTestCase {
         Formulas.realmOf(ffmi: ffmi).label
     }
 
-    /// 五筆量測：第一筆體脂 22% 不穩；之後去脂 58.22、60.4032、59.5、61.92。
+    /// 五筆量測：第一筆體脂 22% 不穩；之後去脂 58.22、60.4032、59.5、62.5。
     private func fiveMeasurements() -> [MeasurementEntry] {
         let first = MeasurementEntry(
             id: "2026-01-05", date: "2026-01-05", weightKg: 72, bodyFatPercent: 22, createdAtMs: 1
@@ -129,9 +129,9 @@ final class FormulasTests: XCTestCase {
         let records = try Formulas.breakthroughs(
             measurements: fiveMeasurements(), heightCm: heightCm
         )
-        // 三月、四月的平均都還在金丹初期；六月往回 90 天只剩四月，兩次平均到金丹中期。
+        // 三月、四月的平均都還在金丹初期；六月往回 90 天只剩四月，兩次平均 61 到金丹後期。
         XCTAssertEqual(records.map(\.date), ["2026-02-05", "2026-06-05"])
-        XCTAssertEqual(records.map(\.label), ["金丹初期", "金丹中期"])
+        XCTAssertEqual(records.map(\.label), ["金丹初期", "金丹後期"])
         XCTAssertEqual(records.map(\.stageRank), [6, 7])
     }
 
