@@ -1,6 +1,6 @@
-# Handoff: 出關、引氣入體、「上次」三件在 work/return 做完；1.0（40）等 Apple
+# Handoff: TestFlight 1.1（41）已出（手感、境界、出關），等多米真機；1.0（40）等 Apple
 
-> 產出時間：2026-11-25。分支 `work/return`（從 `work/realm-average` 開出來，境界平均與手感三點都在裡面）。都沒併 main、沒出 TestFlight。
+> 產出時間：2026-11-25。分支 `work/return`（從 `work/realm-average` 開出來，境界平均與手感三點都在裡面）。都沒併 main。TestFlight 1.1（41）已上傳。
 > 上一份交接備份在 `.vibe/handoff/archive/HANDOFF-2026-11-25-境界平均.md`。
 
 ## 🆕 2026-11-25 出關等三件（多米點頭：「三件都做」）
@@ -15,8 +15,12 @@
 
 ## ⏭️ 接手要做的
 
-1. 等 Apple 審 1.0（40）。過審後填 `appStoreID`（6834035687），手感、境界、出關一起併 main 出 1.1。併 main、出 TestFlight 都要多米說。
-2. 多米真機驗：手感三點、境界重算後的突破紀錄、出關與引氣入體的震動。
+1. **等多米真機回饋 TestFlight 1.1（41）**：手感三點、境界重算後的突破紀錄、「上次」、小工具天數。出關與引氣入體他的資料不一定碰得到，別叫他刪紀錄。
+   - 從 work/return（e1c2396）手動觸發 `ios.yml` 出的，run 45580322014，Apple 處理完是 VALID，測試說明已填。沒查測試群組看不看得到，等多米說。
+   - 版號在 work/return 改成 1.1：1.0 過審會自動發佈，之後不收 1.0 的新建置。main 還是 1.0。
+   - `ios.yml` 沒限 main（檔頭寫只在 main 跑，安全檢查報告疑慮第 2 條），已跟多米講，等他說要不要限。
+2. 等 Apple 審 1.0（40）。2026-11-25 用 asc.yml check 查，還是 WAITING_FOR_REVIEW。過審後填 `appStoreID`（6834035687）、併 main 出 1.1。併 main 要多米說。
+3. 萬一 1.0 又被退要重送：`asc.yml` 一定要帶建置號，空白會選到 1.1（41）。
 
 以下是同一天稍早的交接，仍然有效。
 
