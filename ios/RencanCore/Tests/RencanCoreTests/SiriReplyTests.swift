@@ -17,7 +17,7 @@ private func weighing(
 }
 
 private func lift(
-    _ move: MoveKey, kg: Double, reps: Int = 5, sets: Int = 1, on date: String = "2026-02-01"
+    _ move: MoveKey, kg: Double, reps: Int = 5, sets: Int = 1, on date: String = "2026-01-20"
 ) -> LiftEntry {
     LiftEntry(id: date + move.rawValue, date: date, move: move, kg: kg, reps: reps, sets: sets)
 }
@@ -96,15 +96,44 @@ final class SiriLogReplyTests: XCTestCase {
         XCTAssertEqual(text, "已記下坐馬樁 60 公斤 5 下，修煉 +1。量過體重才算得出等級。")
     }
 
+    func test第一筆修煉回引氣入體() throws {
+        let text = try reply(lift(.squat, kg: 60), before: [], measurements: body)
+        XCTAssertEqual(text, "已記下坐馬樁 60 公斤 5 下，引氣入體。估計 1RM 70 公斤，這一組算小成。")
+    }
+
+    func test沒量過體重的第一筆回引氣入體與一句提醒() throws {
+        let text = try reply(lift(.squat, kg: 60), before: [], measurements: [])
+        XCTAssertEqual(text, "已記下坐馬樁 60 公斤 5 下，引氣入體。量過體重才算得出等級。")
+    }
+
+    func test隔21天回出關() throws {
+        let back = lift(.squat, kg: 60, on: "2026-01-24")
+        let text = try reply(back, before: squatDays(3), measurements: body)
+        XCTAssertEqual(text, "已記下坐馬樁 60 公斤 5 下，出關。估計 1RM 70 公斤，這一組算小成。")
+    }
+
+    func test出關同時功法突破只講突破() throws {
+        let back = lift(.squat, kg: 80, on: "2026-01-24")
+        let text = try reply(back, before: squatDays(3), measurements: body)
+        XCTAssertEqual(text, "已記下坐馬樁 80 公斤 5 下，功法突破。估計 1RM 93 公斤，升到大成。")
+    }
+
+    func test沒量過體重破紀錄回功法精進與一句提醒() throws {
+        let text = try reply(lift(.squat, kg: 62.5), before: squatDays(3), measurements: [])
+        XCTAssertEqual(text, "已記下坐馬樁 62.5 公斤 5 下，功法精進。量過體重才算得出等級。")
+    }
+
     func test引體向上徒手寫自重回幾倍體重() throws {
-        let text = try reply(lift(.pull, kg: 0, reps: 8), before: [], measurements: body)
+        let pull = lift(.pull, kg: 0, reps: 8)
+        let text = try reply(pull, before: squatDays(3), measurements: body)
         XCTAssertEqual(
             text, "已記下攀雲梯自重 8 下，這門功法開練了。相當於 1.27 倍體重的拉力，這一組算小成。"
         )
     }
 
     func test引體向上加重寫自重加幾公斤() throws {
-        let text = try reply(lift(.pull, kg: 5, reps: 8), before: [], measurements: body)
+        let pull = lift(.pull, kg: 5, reps: 8)
+        let text = try reply(pull, before: squatDays(3), measurements: body)
         let tail = "相當於 1.36 倍體重的拉力，這一組算大成。"
         XCTAssertEqual(text, "已記下攀雲梯自重加 5 公斤 8 下，這門功法開練了。" + tail)
     }

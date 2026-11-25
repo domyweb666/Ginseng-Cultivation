@@ -128,6 +128,43 @@ final class WidgetSnapshotTests: XCTestCase {
         }
     }
 
+    // MARK: 本週 0 天換成累計
+
+    private func count(_ caption: String, _ days: Int) -> WidgetDayCount {
+        WidgetDayCount(caption: caption, days: days)
+    }
+
+    func test這一週練過寫本週() throws {
+        let made = try snapshot(lifts: [squat(on: "2026-03-02"), squat(on: "2026-03-09")])
+        XCTAssertEqual(try made.dayCount(today: today), count("本週", 1))
+    }
+
+    func test這一週還沒練以前練過寫累計() throws {
+        let made = try snapshot(lifts: [squat(on: "2026-03-02"), squat(on: "2026-02-01")])
+        XCTAssertEqual(made.trainDays, 2)
+        XCTAssertEqual(try made.dayCount(today: today), count("累計", 2))
+    }
+
+    func test跨到下一週沒打開app自己從本週換成累計() throws {
+        let lifts = [squat(on: "2026-03-02"), squat(on: "2026-03-09"), squat(on: "2026-03-11")]
+        let made = try snapshot(lifts: lifts)
+        XCTAssertEqual(try made.dayCount(today: "2026-03-15"), count("本週", 2))
+        XCTAssertEqual(try made.dayCount(today: "2026-03-16"), count("累計", 3))
+    }
+
+    func test從沒修煉過照舊寫本週0天() throws {
+        XCTAssertEqual(try snapshot().dayCount(today: today), count("本週", 0))
+        XCTAssertEqual(try WidgetSnapshot.empty.dayCount(today: today), count("本週", 0))
+    }
+
+    func test舊版快照沒有累計照樣讀得進來照舊寫本週() throws {
+        let old = #"{"isUnstable":false,"weekDays":["2026-03-09"],"updatedAtMs":1000}"#
+        let made = try WidgetSnapshot.decode(Data(old.utf8))
+        XCTAssertNil(made.trainDays)
+        XCTAssertEqual(try made.dayCount(today: today), count("本週", 1))
+        XCTAssertEqual(try made.dayCount(today: "2026-03-16"), count("本週", 0))
+    }
+
     // MARK: 存與讀
 
     func test存下去再讀回來一模一樣() throws {

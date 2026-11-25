@@ -91,6 +91,8 @@ public struct Digest: Equatable {
     public let trainDays: Int
     public let weekCount: Int
     public let monthCount: Int
+    /// 離最晚那筆修煉滿 21 天了，今天練一門就是出關。一筆都沒記過是 false。
+    public let isReturnDue: Bool
     public let sect: SectStatus
     /// 還沒量過，或還沒填身高、選性別時為 nil。
     public let stele: SteleDigest?
@@ -117,6 +119,7 @@ public struct Digest: Equatable {
         trainDays = days
         weekCount = try Formulas.weekCount(lifts: lifts, today: today)
         monthCount = Digest.monthCount(lifts: lifts, today: today)
+        isReturnDue = try Formulas.isReturn(on: today, after: lifts)
         var realmIndex = Tables.noRealmIndex
         var records: [Breakthrough] = []
         var points: [FFMIPoint] = []

@@ -83,7 +83,7 @@ final class StoreService {
 
     // MARK: 修煉
 
-    /// 存一筆修煉，回這次是哪一種（宗門晉升、開練、功法突破、功法精進、修煉 +1）。
+    /// 存一筆修煉，回這次是哪一種（LiftOutcome 的七種）。
     /// digest 是存這筆之前的畫面摘要，判定要拿存前的狀態比。
     func addLift(_ draft: LiftDraft, digest: Digest) throws -> LiftJudgement {
         guard let heightCm = digest.heightCm, let sex = digest.sex else {

@@ -147,9 +147,12 @@ struct RealmView: View {
         .rencanCard(cornerRadius: RencanLayout.heroCornerRadius)
     }
 
+    /// 這一週還沒練、以前練過時不放「本週 0 天」，只留累計（2026-11-25 多米定）。新手照舊三格。
     private var stats: some View {
         StatPanel {
-            StatCell(value: String(digest.weekCount), unit: "天", caption: "本週")
+            if digest.weekCount > 0 || digest.trainDays == 0 {
+                StatCell(value: String(digest.weekCount), unit: "天", caption: "本週")
+            }
             StatCell(value: String(digest.trainDays), unit: "天", caption: "累計修煉")
             VStack(alignment: .leading, spacing: 0) {
                 Text(digest.sect.title)

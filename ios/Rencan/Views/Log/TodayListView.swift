@@ -18,7 +18,7 @@ struct TodayListView: View {
             SectionTitle(text: "今天的修煉")
                 .padding(.horizontal, RencanLayout.chipVerticalPadding)
             if lifts.isEmpty {
-                Text("今天還沒記。練完記最重那一組就好，三十秒。")
+                Text(emptyText)
                     .font(RencanType.subheadline)
                     .foregroundStyle(Color.rencan.textSecondary)
                     .rencanCard()
@@ -26,6 +26,13 @@ struct TodayListView: View {
                 rows
             }
         }
+    }
+
+    /// 今天還沒記時的那句話。離上次滿 21 天的人回來，先看到累計的天數還在（2026-11-25 多米定），
+    /// 不寫停了幾天。
+    private var emptyText: String {
+        guard digest.isReturnDue else { return "今天還沒記。練完記最重那一組就好，三十秒。" }
+        return "你的 \(digest.trainDays) 天修煉都還在，練一門就出關。"
     }
 
     /// 一張卡，裡面一列一筆。

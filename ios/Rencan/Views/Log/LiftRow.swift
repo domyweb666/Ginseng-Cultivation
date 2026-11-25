@@ -58,4 +58,10 @@ enum LiftText {
         }
         return (record.kg == 0 ? "自重" : "自重加 \(kg(record.kg)) 公斤") + tail
     }
+
+    /// 「上次 10 月 3 日・60 公斤 × 5 下 × 3 組」；今天記的寫「上次 今天・…」。
+    static func last(_ record: LiftRecord, today: String) -> String {
+        let day = record.day == today ? "今天" : DayStamp.monthDay(record.day, today: today)
+        return "上次 \(day)・" + detail(of: record)
+    }
 }

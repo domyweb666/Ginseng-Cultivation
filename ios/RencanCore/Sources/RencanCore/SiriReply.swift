@@ -78,17 +78,21 @@ public enum SiriReply {
         return Formulas.fmt(value, digits: isWhole ? 0 : 1)
     }
 
-    /// 這次是哪一種，照判定規則白話表的五種結果。
+    /// 這次是哪一種，照判定規則白話表的七種結果。
     private static func outcomeText(_ judgement: LiftJudgement) -> String {
         switch judgement.outcome {
         case .sectPromotion:
             return "宗門晉升為\(judgement.sectAfter.title)"
-        case .firstRecord:
-            return "這門功法開練了"
+        case .firstLift:
+            return "引氣入體"
         case .levelUp:
             return "功法突破"
         case .personalBest:
             return "功法精進"
+        case .returned:
+            return "出關"
+        case .firstRecord:
+            return "這門功法開練了"
         case .logged:
             return "修煉 +1"
         }

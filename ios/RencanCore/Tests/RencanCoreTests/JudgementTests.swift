@@ -34,7 +34,8 @@ private func februarySquatDays(_ count: Int) -> [LiftEntry] {
     }
 }
 
-/// 白話表第一張：記一筆修煉，由上往下五選一。
+/// 白話表第一張：記一筆修煉，由上往下七選一。引氣入體、出關、沒量過體重的精進在 ReturnTests。
+/// 新的那筆一律在最後一筆之後 21 天以內，不會混進出關。
 final class LiftJudgementTests: XCTestCase {
     private let body = [weighing(70, bodyFat: 18, on: "2025-12-01")]
 
@@ -45,7 +46,7 @@ final class LiftJudgementTests: XCTestCase {
     }
 
     func test第1列這筆讓修煉天數到8天升外門是宗門晉升() throws {
-        let result = try judge(lift(.squat, kg: 60, on: "2026-02-01"), before: squatDays(7))
+        let result = try judge(lift(.squat, kg: 60, on: "2026-01-20"), before: squatDays(7))
         XCTAssertEqual(result.outcome, .sectPromotion)
         XCTAssertEqual(result.trainDaysAfter, 8)
         XCTAssertEqual(result.sectAfter.title, "外門弟子")
@@ -59,40 +60,40 @@ final class LiftJudgementTests: XCTestCase {
     }
 
     func test宗門晉升排在功法突破前面() throws {
-        let result = try judge(lift(.squat, kg: 80, on: "2026-02-01"), before: squatDays(7))
+        let result = try judge(lift(.squat, kg: 80, on: "2026-01-20"), before: squatDays(7))
         XCTAssertEqual(result.outcome, .sectPromotion)
         XCTAssertTrue(result.isLevelUp)
     }
 
-    func test第2列這門功法以前一筆都沒有是開練() throws {
-        let result = try judge(lift(.bench, kg: 40, on: "2026-02-01"), before: squatDays(3))
+    func test第6列這門功法以前一筆都沒有是開練() throws {
+        let result = try judge(lift(.bench, kg: 40, on: "2026-01-20"), before: squatDays(3))
         XCTAssertEqual(result.outcome, .firstRecord)
         XCTAssertEqual(result.level, 1)
     }
 
     func test第3列比值跨過下一階門檻是功法突破() throws {
-        let result = try judge(lift(.squat, kg: 80, on: "2026-02-01"), before: squatDays(3))
+        let result = try judge(lift(.squat, kg: 80, on: "2026-01-20"), before: squatDays(3))
         XCTAssertEqual(result.outcome, .levelUp)
         XCTAssertEqual(result.level, 3)
         XCTAssertTrue(result.isLevelUp)
     }
 
     func test第4列估計1RM比歷來最高還高是功法精進() throws {
-        let result = try judge(lift(.squat, kg: 62.5, on: "2026-02-01"), before: squatDays(3))
+        let result = try judge(lift(.squat, kg: 62.5, on: "2026-01-20"), before: squatDays(3))
         XCTAssertEqual(result.outcome, .personalBest)
         XCTAssertEqual(try XCTUnwrap(result.gainKg), 2.9166666666666714, accuracy: 1e-6)
         XCTAssertFalse(result.isLevelUp)
     }
 
-    func test第5列以上都不是就是修煉加1() throws {
-        let result = try judge(lift(.squat, kg: 55, on: "2026-02-01"), before: squatDays(3))
+    func test第7列以上都不是就是修煉加1() throws {
+        let result = try judge(lift(.squat, kg: 55, on: "2026-01-20"), before: squatDays(3))
         XCTAssertEqual(result.outcome, .logged)
         XCTAssertNil(result.gainKg)
     }
 
     func test體重掉了比值變高但1RM沒變不放精進() throws {
         let before = [lift(.squat, kg: 60, on: "2026-01-05", bodyweightKg: 72)]
-        let new = lift(.squat, kg: 60, on: "2026-02-01", bodyweightKg: 70.5)
+        let new = lift(.squat, kg: 60, on: "2026-01-20", bodyweightKg: 70.5)
         let result = try judge(new, before: before)
         XCTAssertEqual(result.outcome, .logged)
         XCTAssertNil(result.gainKg)
@@ -100,7 +101,7 @@ final class LiftJudgementTests: XCTestCase {
 
     func test體重掉了讓比值跨過門檻照樣是功法突破() throws {
         let before = [lift(.squat, kg: 60, on: "2026-01-05", bodyweightKg: 72)]
-        let new = lift(.squat, kg: 60, on: "2026-02-01", bodyweightKg: 69)
+        let new = lift(.squat, kg: 60, on: "2026-01-20", bodyweightKg: 69)
         let result = try judge(new, before: before)
         XCTAssertEqual(result.outcome, .levelUp)
         XCTAssertEqual(result.level, 2)
@@ -108,25 +109,27 @@ final class LiftJudgementTests: XCTestCase {
 
     func test引體向上體重變重做一樣多下也算功法精進() throws {
         let before = [lift(.pull, kg: 0, on: "2026-01-05", bodyweightKg: 70)]
-        let new = lift(.pull, kg: 0, on: "2026-02-01", bodyweightKg: 72)
+        let new = lift(.pull, kg: 0, on: "2026-01-20", bodyweightKg: 72)
         let result = try judge(new, before: before)
         XCTAssertEqual(result.outcome, .personalBest)
         XCTAssertEqual(try XCTUnwrap(result.gainKg), 2.3333333333333286, accuracy: 1e-6)
     }
 
-    func test從沒量過體重記修煉只算修煉加1() throws {
+    func test從沒量過體重跨過門檻的重量不算突破只算精進() throws {
+        // 80 ×（1 + 5 ÷ 30）= 93.3333，比 70 多 23.3333；沒體重算不出比值，不會有突破
         let result = try Judgement.liftOutcome(
-            new: lift(.squat, kg: 80, on: "2026-02-01"), before: squatDays(3), measurements: [],
+            new: lift(.squat, kg: 80, on: "2026-01-20"), before: squatDays(3), measurements: [],
             heightCm: heightCm
         )
-        XCTAssertEqual(result.outcome, .logged)
+        XCTAssertEqual(result.outcome, .personalBest)
+        XCTAssertEqual(try XCTUnwrap(result.gainKg), 23.3333333, accuracy: 1e-6)
         XCTAssertNil(result.calc)
         XCTAssertNil(result.level)
     }
 
     func test從沒量過體重但天數到了照樣宗門晉升() throws {
         let result = try Judgement.liftOutcome(
-            new: lift(.squat, kg: 60, on: "2026-02-01"), before: squatDays(7), measurements: [],
+            new: lift(.squat, kg: 60, on: "2026-01-20"), before: squatDays(7), measurements: [],
             heightCm: heightCm
         )
         XCTAssertEqual(result.outcome, .sectPromotion)

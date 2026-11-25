@@ -85,6 +85,8 @@ public enum Tables {
     /// 境界看最近幾次量測的平均、最多往回看幾天（2026-11-25 多米定，規則在 RealmAverage.swift）。
     public static let realmAverageCount = 3
     public static let realmAverageWindowDays = 90
+    /// 隔了這麼多天（含）再練就是出關。21 沒有出處，是 2026-11-25 挑的，要改只改這裡。
+    public static let returnGapDays = 21
     /// FFMI 身高校正：每公尺 6.3，以 1.8 公尺為基準（Kouri 1995 原文）。
     /// 2026-11-23 之前是 6.1，來源查不到；送審要附出處，改成論文的數字，網頁版一起改。
     public static let ffmiHeightCorrectionPerMeter = 6.3

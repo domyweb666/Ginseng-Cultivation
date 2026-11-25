@@ -2,7 +2,7 @@ import RencanCore
 import SwiftUI
 
 /// 記一筆修煉的彈出表單（照畫布 LogSheet）：功法先選腿、推、拉分頁，下面兩欄四格，重量、次數、組數、日期，
-/// 下面即時預覽這一組算出來的等級。欄位先帶上次那門功法的數字。
+/// 下面即時預覽這一組算出來的等級。欄位先帶上次那門功法的數字，功法格下面一行寫上次是哪天、多少。
 /// 存檔失敗時紅字留在表單裡，內容不清掉，絕不說「已記下」（PRD S24）。
 struct LiftFormView: View {
     @Environment(AppFlow.self) private var flow
@@ -79,11 +79,25 @@ struct LiftFormView: View {
             RencanSegmentedControl(
                 title: "功法分組", options: MoveGroup.allCases, selection: $group
             )
-            LazyVGrid(columns: LiftFormView.columns, spacing: RencanLayout.groupSpacing) {
-                ForEach(Tables.moves.filter { $0.group == group }, id: \.key) { item in
-                    moveButton(item)
+            VStack(alignment: .leading, spacing: RencanLayout.groupSpacing) {
+                LazyVGrid(columns: LiftFormView.columns, spacing: RencanLayout.groupSpacing) {
+                    ForEach(Tables.moves.filter { $0.group == group }, id: \.key) { item in
+                        moveButton(item)
+                    }
                 }
+                lastLine
             }
+        }
+    }
+
+    /// 選中的功法上次是哪天、多少。欄位一加減就看不到上次的數字了，所以另外寫一行（2026-11-25）。
+    @ViewBuilder
+    private var lastLine: some View {
+        if let last = lastRecord(of: moveKey) {
+            Text(LiftText.last(last, today: digest.today))
+                .font(RencanType.footnote)
+                .foregroundStyle(Color.rencan.textSecondary)
+                .accessibilityIdentifier("lift-last")
         }
     }
 
@@ -171,9 +185,14 @@ struct LiftFormView: View {
         fill(for: moveKey)
     }
 
+    /// 這門功法上次記的那一筆；「上次」那行跟帶入的數字都用它。
+    private func lastRecord(of key: MoveKey) -> LiftRecord? {
+        lifts.last { $0.move == key.rawValue }
+    }
+
     private func fill(for key: MoveKey) {
         let isBodyweightMove = Tables.moves.first { $0.key == key }?.usesBodyweight == true
-        guard let last = lifts.last(where: { $0.move == key.rawValue }) else {
+        guard let last = lastRecord(of: key) else {
             kg = isBodyweightMove ? 0 : LiftFormView.defaultKg
             reps = LiftFormView.defaultReps
             sets = LiftFormView.defaultSets

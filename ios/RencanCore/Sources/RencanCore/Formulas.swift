@@ -289,6 +289,12 @@ public enum Formulas {
         return counted.sorted()
     }
 
+    /// day 離最晚那筆修煉有沒有滿 21 天（含）。一筆都沒有、或 day 比最晚那筆早（補登）都是 false。
+    public static func isReturn(on day: String, after lifts: [LiftEntry]) throws -> Bool {
+        guard let latest = lifts.map(\.date).max() else { return false }
+        return try daysBetween(latest, day) >= Tables.returnGapDays
+    }
+
     public static func daysBetween(_ from: String, _ until: String) throws -> Int {
         try dayNumber(of: until) - dayNumber(of: from)
     }

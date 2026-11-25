@@ -1,25 +1,30 @@
 import Foundation
 
-// 慶祝判定（片 B3）：記一筆修煉是五選一，量一次體組成是四選一。
+// 慶祝判定（片 B3）：記一筆修煉是七選一，量一次體組成是四選一。
 // 規則照 .vibe/標準清單.md 的兩張「判定規則白話表」，由上往下第一個成立的就是答案。
 // 底子是網頁版 index.html L520–569 的 onLift、onMeas；跟網頁版不一樣的幾處：
 //   1. 功法精進改看估計 1RM 有沒有比這門功法歷來最高的還高（網頁版看比值，減重也會放）。
 //   2. 體脂超過門檻是獨立的一種結果「根基不穩」（網頁版只是換一句提示）。
-//   3. 沒有任何體重可用時只判宗門晉升，其餘一律修煉 +1（網頁版用 65 公斤硬算）。
+//   3. 沒有任何體重可用時不算等級與突破，精進直接比公斤數（網頁版用 65 公斤硬算）。
 //   4. 境界看最近三次的平均、只升不降（RealmAverage.swift）。
 //   5. 男女的體脂門檻、功法門檻、境界換算不同，由 sex 決定（片 B5，.vibe/女性版規則.md）。
+//   6. 多了引氣入體與出關（2026-11-25 多米定，由來在 .vibe/研究對照-2026-11-25.md）。
 // 這裡只回答「這次是哪一種」和畫面要寫的數字，不碰畫面、震動、資料庫。
 
-/// 記一筆修煉的五種結果。
+/// 記一筆修煉的七種結果。
 public enum LiftOutcome: Equatable {
     /// 宗門晉升：這筆讓宗門身分變了。全螢幕煙火。
     case sectPromotion
-    /// 開練：這門功法以前一筆都沒有。小提示。
-    case firstRecord
+    /// 引氣入體：第一筆修煉，以前一筆都沒有。全螢幕煙火。
+    case firstLift
     /// 功法突破：比值跨過下一階門檻。全螢幕煙火。
     case levelUp
     /// 功法精進：估計 1RM 比這門功法歷來最高的還高。全螢幕煙火。
     case personalBest
+    /// 出關：比歷來最晚那筆晚 21 天以上（含）。全螢幕煙火。
+    case returned
+    /// 開練：這門功法以前一筆都沒有。小提示。
+    case firstRecord
     /// 修煉 +1。小提示。
     case logged
 }
@@ -34,6 +39,8 @@ public struct LiftJudgement: Equatable {
     public let isLevelUp: Bool
     /// 比歷來最高的估計 1RM 多幾公斤；沒有更高時為 nil。
     public let gainKg: Double?
+    /// 這筆是不是出關後的第一筆。結果是晉升、突破、精進時也會是 true，畫面多寫一行。
+    public let isReturn: Bool
     public let trainDaysAfter: Int
     public let sectAfter: SectStatus
 }
@@ -74,8 +81,9 @@ public enum Judgement {
 
     /// 這筆修煉跟同一門功法以前的紀錄比起來怎麼樣。
     private struct MoveProgress {
-        let calc: LiftCalc
-        let level: Int
+        /// 這個和 level 在從沒量過體重時是 nil。
+        let calc: LiftCalc?
+        let level: Int?
         let isFirst: Bool
         let isLevelUp: Bool
         let gainKg: Double?
@@ -97,30 +105,41 @@ public enum Judgement {
         let progress = moveProgress(
             new: lift, before: lifts, measurements: measurements, sex: sex
         )
-        let outcome = pick(isSectChanged: sectAfter.title != sectBefore.title, progress: progress)
+        let isReturn = try Formulas.isReturn(on: lift.date, after: lifts)
+        let outcome = pick(
+            isSectChanged: sectAfter.title != sectBefore.title, isFirstLift: lifts.isEmpty,
+            isReturn: isReturn, progress: progress
+        )
         return LiftJudgement(
-            outcome: outcome, calc: progress?.calc, level: progress?.level,
-            isLevelUp: progress?.isLevelUp ?? false, gainKg: progress?.gainKg,
+            outcome: outcome, calc: progress.calc, level: progress.level,
+            isLevelUp: progress.isLevelUp, gainKg: progress.gainKg, isReturn: isReturn,
             trainDaysAfter: daysAfter, sectAfter: sectAfter
         )
     }
 
-    /// 白話表由上往下：宗門晉升、開練、功法突破、功法精進、修煉 +1。
-    private static func pick(isSectChanged: Bool, progress: MoveProgress?) -> LiftOutcome {
+    /// 白話表由上往下：宗門晉升、引氣入體、功法突破、功法精進、出關、開練、修煉 +1。
+    private static func pick(
+        isSectChanged: Bool, isFirstLift: Bool, isReturn: Bool, progress: MoveProgress
+    ) -> LiftOutcome {
         if isSectChanged { return .sectPromotion }
-        // 從沒量過體重：等級與精進都算不出來，只算修煉 +1。
-        guard let progress else { return .logged }
-        if progress.isFirst { return .firstRecord }
+        if isFirstLift { return .firstLift }
         if progress.isLevelUp { return .levelUp }
         if progress.gainKg != nil { return .personalBest }
-        return .logged
+        if isReturn { return .returned }
+        return progress.isFirst ? .firstRecord : .logged
     }
 
     private static func moveProgress(
         new lift: LiftEntry, before lifts: [LiftEntry], measurements: [MeasurementEntry],
         sex: Sex
-    ) -> MoveProgress? {
-        guard let calc = Formulas.liftCalc(lift, measurements: measurements) else { return nil }
+    ) -> MoveProgress {
+        guard let calc = Formulas.liftCalc(lift, measurements: measurements) else {
+            // 開練那句要寫目前哪一階，沒體重寫不出來，所以這門第一筆不算開練，是修煉 +1。
+            return MoveProgress(
+                calc: nil, level: nil, isFirst: false, isLevelUp: false,
+                gainKg: unweighedGainKg(new: lift, before: lifts)
+            )
+        }
         let level = Formulas.moveLevel(move: calc.move, ratio: calc.ratio, sex: sex)
         let earlier = lifts.filter { $0.move == lift.move }.compactMap {
             Formulas.liftCalc($0, measurements: measurements)
@@ -139,6 +158,20 @@ public enum Judgement {
             calc: calc, level: level, isFirst: false, isLevelUp: level > previousLevel,
             gainKg: gainKg > epsilon ? gainKg : nil
         )
+    }
+
+    /// 從沒量過體重時的精進：估計 1RM 直接拿槓上的公斤數比。
+    /// 自重功法沒體重算不出 1RM、這門以前沒紀錄就沒得比，這兩種都是 nil。
+    private static func unweighedGainKg(
+        new lift: LiftEntry, before lifts: [LiftEntry]
+    ) -> Double? {
+        let move = Tables.moves.first { $0.key == lift.move }
+        guard let move, !move.usesBodyweight else { return nil }
+        let earlier = lifts.filter { $0.move == lift.move }
+        let best = earlier.map { Formulas.e1rm(loadKg: $0.kg, reps: $0.reps) }.max()
+        guard let best else { return nil }
+        let gainKg = Formulas.e1rm(loadKg: lift.kg, reps: lift.reps) - best
+        return gainKg > epsilon ? gainKg : nil
     }
 
     /// 量一次體組成是哪一種。measurements 是存這筆之前的全部量測。

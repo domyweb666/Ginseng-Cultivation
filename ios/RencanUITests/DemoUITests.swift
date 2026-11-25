@@ -207,6 +207,7 @@ final class DemoSettingsUITests: RencanUITestCase {
 
 /// `-rencanSeed realm0` 到 `realm6`：七個境界各一筆量測，看深色卡的七個底色、印章、立繪。
 /// `-rencanSeed unstable`：金丹但體脂 24%，看根基不穩那一行與灰掉的進度條。
+/// `-rencanSeed gateAfter`：突破過金丹、最新體脂 24%，白卡要寫「才能再突破」。
 final class SteleCardsUITests: RencanUITestCase {
     func test七個境界的深色卡與根基不穩() {
         let realmNames = ["煉氣", "築基", "金丹", "元嬰", "化神", "大乘", "渡劫"]
@@ -224,6 +225,12 @@ final class SteleCardsUITests: RencanUITestCase {
         shot("深色卡-根基不穩")
         scrollToSee(anyElements(containing: "以下境界才生效"), "白卡上降體脂的那一句")
         shot("根基不穩-白卡")
+
+        launch(["-rencanSeed", "gateAfter"])
+        seeStele(timeout: 30)
+        scrollDown()
+        requireVisible(anyElements(containing: "以下才能再突破"), "白卡上「才能再突破」的那一句")
+        shot("突破過又根基不穩-白卡")
     }
 }
 

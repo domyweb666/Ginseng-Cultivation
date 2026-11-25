@@ -10,6 +10,8 @@ import SwiftData
 ///   -rencanSeed female     身高 160、女，加一筆量測
 ///   -rencanSeed realm0     身高 174、男，一筆落在煉氣中段的量測；realm1 到 realm6 是築基到渡劫
 ///   -rencanSeed unstable   身高 174、男，金丹但體脂 24%（根基不穩）
+///   -rencanSeed away       demo 的資料，修煉全部往前推 40 天，量測照舊（回來還沒記）
+///   -rencanSeed gateAfter  身高 174、男，先突破到金丹，最新一筆體脂 24%（境界照舊、才能再突破）
 ///   -rencanPlayPortrait    境界碑的立繪照播動畫（測試模式預設不播）
 ///   -rencanHoldCelebration 全螢幕慶祝不自己關，等測試點掉（XCUITest 用；Limrun 走流程不帶）
 ///   -rencanOwn ink,celadon 假商店裡先算已經買了這幾種造型；all 是全套（PurchaseService）
@@ -81,13 +83,13 @@ enum UITestSupport {
                 try services.store.saveProfile(heightCm: 160, sex: .female)
                 context.insert(measurement(60, 23, daysAgo: 3, lean: 46))
             case "demo":
-                try services.store.saveProfile(heightCm: 174, sex: .male)
-                context.insert(measurement(71, 17, daysAgo: 70, lean: nil))
-                context.insert(measurement(70.8, 15.2, daysAgo: 40, lean: nil))
-                context.insert(measurement(70.4, 14.2, daysAgo: 9, lean: nil))
-                for record in demoLifts() {
-                    context.insert(record)
-                }
+                try seedDemo(liftsDaysBack: 0, into: services)
+            case "away":
+                try seedDemo(liftsDaysBack: 40, into: services)
+            case "gateAfter":
+                try services.store.saveProfile(heightCm: seedHeightCm, sex: .male)
+                context.insert(measurement(70.4, 14.2, daysAgo: 40, lean: nil))
+                context.insert(measurement(80, 24, daysAgo: 1, lean: nil))
             case "unstable":
                 try services.store.saveProfile(heightCm: seedHeightCm, sex: .male)
                 context.insert(realmMeasurement(realmIndex: 2, bodyFat: 24))
@@ -100,6 +102,18 @@ enum UITestSupport {
                 context.insert(realmMeasurement(realmIndex: realmIndex, bodyFat: 12))
             }
             try context.save()
+        }
+
+        /// 示範資料。liftsDaysBack 把修煉全部往前推幾天，量測不動。
+        private static func seedDemo(liftsDaysBack: Int, into services: AppServices) throws {
+            let context = services.container.mainContext
+            try services.store.saveProfile(heightCm: 174, sex: .male)
+            context.insert(measurement(71, 17, daysAgo: 70, lean: nil))
+            context.insert(measurement(70.8, 15.2, daysAgo: 40, lean: nil))
+            context.insert(measurement(70.4, 14.2, daysAgo: 9, lean: nil))
+            for record in demoLifts(daysBack: liftsDaysBack) {
+                context.insert(record)
+            }
         }
 
         /// -rencanStyle 帶的造型代碼認得就設上去；認不得照原版，不報錯（跟 UserSettings 一樣）。
@@ -134,13 +148,13 @@ enum UITestSupport {
             )
         }
 
-        /// 九天、四門功法，重量慢慢加；最後兩筆在今天。
-        private static func demoLifts() -> [LiftRecord] {
+        /// 九天、四門功法，重量慢慢加；最後兩筆在今天（daysBack 是 0 的時候）。
+        private static func demoLifts(daysBack: Int) -> [LiftRecord] {
             var records: [LiftRecord] = []
             func add(_ move: MoveKey, _ kg: Double, daysAgo: Int) {
                 let record = LiftRecord(
-                    day: DayStamp.day(offsetFromToday: -daysAgo), move: move, kg: kg, reps: 5,
-                    sets: 3, bodyweightKg: nil, source: .manual,
+                    day: DayStamp.day(offsetFromToday: -daysAgo - daysBack), move: move, kg: kg,
+                    reps: 5, sets: 3, bodyweightKg: nil, source: .manual,
                     createdAt: Date(timeIntervalSinceNow: Double(records.count - 100))
                 )
                 records.append(record)

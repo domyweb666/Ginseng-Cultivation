@@ -5,6 +5,7 @@ import WidgetKit
 // 小工具（組塊 G，PRD S19、S20；藍圖 a18）。
 // 只讀主 app 存在 App Group 的那一份快照，不碰資料庫、不自己算境界。
 // 主畫面小的：境界加本週天數。中的：多一句還差幾公斤肌肉。鎖定畫面圓形：只有本週天數。
+// 這一週還沒練、以前練過的人，天數改寫累計（WidgetSnapshot.dayCount）。
 // 鎖定畫面不放境界與任何身體數字。
 
 /// 小工具畫的一格：某一天看到的樣子。
@@ -12,16 +13,19 @@ struct RencanEntry: TimelineEntry {
     let date: Date
     /// 讀不到快照（從沒打開過 app，或快照讀不懂）時是 nil。
     let snapshot: WidgetSnapshot?
-    /// 以這一格的日期來看，這一週修煉了幾天。算不出來是 nil。
-    let weekCount: Int?
+    /// 以這一格的日期來看，要寫的天數。算不出來是 nil。
+    let dayCount: WidgetDayCount?
 
     /// 加小工具時預覽用的樣子。
-    static let sample = RencanEntry(date: Date(), snapshot: WidgetSnapshot.empty, weekCount: 0)
+    static let sample = RencanEntry(
+        date: Date(), snapshot: WidgetSnapshot.empty,
+        dayCount: WidgetDayCount(caption: WidgetDayCount.weekCaption, days: 0)
+    )
 }
 
 /// 讀快照、排時間線。
 struct RencanProvider: TimelineProvider {
-    /// 一次排幾天：今天加後面六天，每天午夜換一格，跨週時天數會自己歸零。
+    /// 一次排幾天：今天加後面六天，每天午夜換一格，跨週時會自己從本週換成累計。
     private static let daysAhead = 7
 
     func placeholder(in context: Context) -> RencanEntry {
@@ -53,15 +57,15 @@ struct RencanProvider: TimelineProvider {
 
     private static func entry(at date: Date, snapshot: WidgetSnapshot?) -> RencanEntry {
         guard let snapshot else {
-            return RencanEntry(date: date, snapshot: nil, weekCount: nil)
+            return RencanEntry(date: date, snapshot: nil, dayCount: nil)
         }
-        var count: Int?
+        var count: WidgetDayCount?
         do {
-            count = try snapshot.weekCount(today: WidgetDay.string(from: date))
+            count = try snapshot.dayCount(today: WidgetDay.string(from: date))
         } catch {
             count = nil
         }
-        return RencanEntry(date: date, snapshot: snapshot, weekCount: count)
+        return RencanEntry(date: date, snapshot: snapshot, dayCount: count)
     }
 }
 

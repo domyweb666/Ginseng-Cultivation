@@ -3,9 +3,19 @@ import Foundation
 // 小工具看的那一小份資料（組塊 G，PRD S19、S20；藍圖 a18）。
 // 主 app 每次存檔後從 Digest 抄一份放進 App Group，小工具只讀這一份，不碰資料庫、不自己算境界。
 // 裡面不放體重、體脂率、FFMI：小工具會出現在主畫面與鎖定畫面，只放境界名、還差幾公斤肌肉、
-// 這一週有修煉的日期。
+// 這一週有修煉的日期、累計修煉幾天。
 // 本週天數不直接存數字：存的是這一週的日期，小工具拿「它畫的那一天」再數一次，
-// 跨到下一週沒打開 app，天數也會自己歸零。
+// 跨到下一週沒打開 app，天數也會自己歸零；歸零之後改寫累計幾天（2026-11-25 多米定）。
+
+/// 小工具上的天數：本週的還是累計的，幾天。
+public struct WidgetDayCount: Equatable {
+    public static let weekCaption = "本週"
+    static let totalCaption = "累計"
+
+    /// 「本週」或「累計」。
+    public let caption: String
+    public let days: Int
+}
 
 public struct WidgetSnapshot: Codable, Equatable {
     /// App Group 的代號，跟兩個 target 的 entitlements 寫的是同一個。
@@ -20,7 +30,7 @@ public struct WidgetSnapshot: Codable, Equatable {
     /// 從沒打開過 app、讀不到快照時用的那一份。
     public static let empty = WidgetSnapshot(
         realmName: nil, stageName: nil, isUnstable: false, nextLabel: nil, kgToNext: nil,
-        weekDays: [], updatedAtMs: 0
+        weekDays: [], trainDays: 0, updatedAtMs: 0
     )
 
     /// 大境界的名字，例如「金丹」；還沒入道是 nil。
@@ -35,12 +45,14 @@ public struct WidgetSnapshot: Codable, Equatable {
     public let kgToNext: Double?
     /// 寫快照那一週有修煉的日期（yyyy-MM-dd，不重複，由早到晚）。
     public let weekDays: [String]
+    /// 累計修煉幾天。2026-11-25 以前寫的快照沒有這一格，讀進來是 nil。
+    public let trainDays: Int?
     /// 寫快照的時間（1970 起算的毫秒）。
     public let updatedAtMs: Int
 
     public init(
         realmName: String?, stageName: String?, isUnstable: Bool, nextLabel: String?,
-        kgToNext: Double?, weekDays: [String], updatedAtMs: Int
+        kgToNext: Double?, weekDays: [String], trainDays: Int?, updatedAtMs: Int
     ) {
         self.realmName = realmName
         self.stageName = stageName
@@ -48,6 +60,7 @@ public struct WidgetSnapshot: Codable, Equatable {
         self.nextLabel = nextLabel
         self.kgToNext = kgToNext
         self.weekDays = weekDays
+        self.trainDays = trainDays
         self.updatedAtMs = updatedAtMs
     }
 
@@ -65,6 +78,7 @@ public struct WidgetSnapshot: Codable, Equatable {
             nextLabel: digest.stele?.gap?.nextLabel,
             kgToNext: digest.stele?.gap?.leanNeededKg,
             weekDays: days,
+            trainDays: digest.trainDays,
             updatedAtMs: updatedAtMs
         )
     }
@@ -94,6 +108,16 @@ public struct WidgetSnapshot: Codable, Equatable {
     /// 以 today 這一天來看，這一週修煉了幾天。快照是上週寫的話會是 0。
     public func weekCount(today: String) throws -> Int {
         try Formulas.daysThisWeek(weekDays, today: today).count
+    }
+
+    /// 以 today 這一天來看要寫的天數：這一週練過就寫本週，還沒練就寫累計。
+    /// 累計也是 0（新手）、或舊版快照沒有累計，照舊寫本週 0 天。
+    public func dayCount(today: String) throws -> WidgetDayCount {
+        let week = try weekCount(today: today)
+        guard week == 0, let trainDays, trainDays > 0 else {
+            return WidgetDayCount(caption: WidgetDayCount.weekCaption, days: week)
+        }
+        return WidgetDayCount(caption: WidgetDayCount.totalCaption, days: trainDays)
     }
 
     // MARK: 存與讀

@@ -26,6 +26,23 @@ private enum Metrics {
     static let unknownCount = "–"
 }
 
+/// 天數寫成字，三個尺寸共用。
+extension RencanEntry {
+    /// 「本週」或「累計」；讀不到天數時照舊寫本週。
+    fileprivate var countCaption: String {
+        dayCount?.caption ?? WidgetDayCount.weekCaption
+    }
+
+    fileprivate var countText: String {
+        dayCount.map { String($0.days) } ?? Metrics.unknownCount
+    }
+
+    /// 讀螢幕的功能唸的整句。
+    fileprivate var countSpoken: String {
+        "\(countCaption)修煉 \(countText) 天"
+    }
+}
+
 /// 三個尺寸共用的入口，點下去一律開到境界頁（DeepLink 只認固定頁名）。
 struct RencanWidgetView: View {
     @Environment(\.widgetFamily) private var family
@@ -64,13 +81,9 @@ struct RencanWidgetView: View {
     }
 }
 
-/// 小的那一塊，也是中的左半邊：境界在上，本週天數在下。
+/// 小的那一塊，也是中的左半邊：境界在上，天數在下。
 private struct RealmColumnView: View {
     let entry: RencanEntry
-
-    private var countText: String {
-        entry.weekCount.map { String($0) } ?? Metrics.unknownCount
-    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Metrics.lineSpacing) {
@@ -89,10 +102,10 @@ private struct RealmColumnView: View {
             }
             Spacer(minLength: 0)
             HStack(alignment: .firstTextBaseline, spacing: Metrics.lineSpacing) {
-                Text("本週")
+                Text(entry.countCaption)
                     .font(.caption)
                     .foregroundStyle(Metrics.palette.textSecondary)
-                Text(countText)
+                Text(entry.countText)
                     .font(.title.weight(.bold))
                     .foregroundStyle(Metrics.palette.textPrimary)
                 Text("天")
@@ -100,7 +113,7 @@ private struct RealmColumnView: View {
                     .foregroundStyle(Metrics.palette.textSecondary)
             }
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("本週修煉 " + countText + " 天")
+            .accessibilityLabel(entry.countSpoken)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -134,22 +147,18 @@ private struct DetailColumnView: View {
     }
 }
 
-/// 鎖定畫面的圓形：只有本週天數，不放境界與身體數字。
+/// 鎖定畫面的圓形：只有天數，不放境界與身體數字。
 private struct WeekCircleView: View {
     let entry: RencanEntry
 
-    private var countText: String {
-        entry.weekCount.map { String($0) } ?? Metrics.unknownCount
-    }
-
     var body: some View {
         VStack(spacing: 0) {
-            Text(countText)
+            Text(entry.countText)
                 .font(.title2.weight(.bold))
-            Text("本週")
+            Text(entry.countCaption)
                 .font(.caption2)
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("本週修煉 " + countText + " 天")
+        .accessibilityLabel(entry.countSpoken)
     }
 }

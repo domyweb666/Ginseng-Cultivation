@@ -49,6 +49,23 @@ final class MeasureUITests: RencanUITestCase {
     }
 }
 
+/// 量過不只一次的人（示範資料），表單預覽要寫「境界看近 3 次的平均」：
+/// 今天這筆加上 9 天前、40 天前，三筆都在 90 天內、體脂都在門檻以內。欄位已經帶了上次的數字，不用打。
+final class MeasureAverageUITests: RencanUITestCase {
+    func test預覽寫看近三次的平均() {
+        launch(["-rencanSeed", "demo"])
+        seeStele(timeout: 30)
+        scrollDown()
+        tapVisibleButton("手動輸入")
+        require(app.buttons["結算境界"], "體組成表單的「結算境界」按鈕")
+        let preview = require(element(id: "measurement-preview"), "結算後的預覽")
+        let text = preview.label
+        XCTAssertTrue(text.contains("境界看近 3 次的平均"), "預覽沒寫看近三次的平均：\(text)")
+        requireVisible(idQuery("measurement-preview"), "畫面上的預覽")
+        shot("預覽近三次平均")
+    }
+}
+
 /// 連點兩下「結算境界」：慶祝照常出現，不會再跳出「蓋掉同一天」的確認（2026-11-25 手感審查）。
 final class MeasureDoubleTapUITests: RencanUITestCase {
     func test連點結算只送一次() {

@@ -26,10 +26,8 @@ enum HealthLinkText {
         }
     }
 
-    /// 太久沒量的提醒。天數不是身體數據，可以寫出來。
-    static func stale(days: Int) -> String {
-        "\(days) 天沒量了，量一次看看境界有沒有動。"
-    }
+    /// 太久沒量的提醒。不寫幾天（2026-11-25 多米定）。
+    static let stale = "好一陣子沒量了，量一次看看境界有沒有動。"
 }
 
 /// 體組成來源列（照畫布 Main）：這筆數字哪來的、哪天量的，右邊是手動輸入。
@@ -134,7 +132,7 @@ struct SourceRow: View {
     /// 健康 app 讀不出來那句比「太久沒量」優先。
     private var note: String? {
         if status == .failed { return HealthLinkText.failed }
-        return isStale ? HealthLinkText.stale(days: elapsedDays) : nil
+        return isStale ? HealthLinkText.stale : nil
     }
 }
 

@@ -5,11 +5,12 @@ import RencanCore
 /// 這裡只把判定結果寫成畫面上的字，文案照網頁版 index.html 的 celebrate 呼叫與設計畫布 Celebrate。
 struct Celebration: Identifiable, Equatable {
     let id = UUID()
-    /// 最上面那行小字：踏入仙途、境界突破、大境界突破、宗門晉升、功法突破、功法精進。
+    /// 最上面那行小字：踏入仙途、境界突破、大境界突破、宗門晉升、第一筆修煉、功法突破、
+    /// 功法精進、回來修煉。
     let heading: String
-    /// 立繪的資源名；功法精進沒有圖。
+    /// 立繪的資源名；記修煉的慶祝只有宗門晉升有圖。
     let portrait: String?
-    /// 大字：境界名、宗門身分、等級名。
+    /// 大字：境界名、宗門身分、等級名、引氣入體、精進、出關。
     let title: String
     /// 大字旁邊的小一號字：期別。
     let stage: String?
@@ -26,34 +27,40 @@ struct Celebration: Identifiable, Equatable {
 extension Celebration {
     /// 記一筆修煉之後要不要放煙火。開練與修煉 +1 回 nil，改用小提示。
     static func make(for judgement: LiftJudgement, move: Move) -> Celebration? {
-        let strength = strengthText(judgement.calc, move: move)
+        let moveText = "\(move.artName)・\(move.name)"
+        let daysText = "累計修煉 \(judgement.trainDaysAfter) 天"
+        // 不是出關時是空字串，畫面不佔位置。
+        let returnText = judgement.isReturn ? "出關後的第一筆" : ""
         switch judgement.outcome {
         case .sectPromotion:
-            var extra = judgement.sectAfter.note
-            if judgement.isLevelUp, let level = judgement.level {
-                extra = "\(move.artName)也同時突破至\(Tables.levelNames[level])"
-            } else if judgement.gainKg != nil {
-                extra = "\(move.artName)也破了紀錄"
-            }
+            let extra = promotionText(judgement, move: move)
             return Celebration(
                 heading: "宗門晉升", portrait: RencanPortrait.elder,
                 title: judgement.sectAfter.title, stage: nil,
-                lines: ["累計修煉 \(judgement.trainDaysAfter) 天", extra], particleCount: 150
+                lines: [daysText, extra, returnText], particleCount: 150
+            )
+        case .firstLift:
+            return Celebration(
+                heading: "第一筆修煉", portrait: nil, title: "引氣入體", stage: nil,
+                lines: [moveText, daysText, firstLevelText(judgement.level)], particleCount: 120
             )
         case .levelUp:
+            let strength = strengthText(judgement.calc, move: move)
             return Celebration(
                 heading: "功法突破", portrait: nil,
                 title: Tables.levelNames[judgement.level ?? 0], stage: nil,
-                lines: ["\(move.artName)・\(move.name)", strength], particleCount: 130
+                lines: [moveText, strength, returnText], particleCount: 130
             )
         case .personalBest:
-            var record = "新紀錄：" + strength
-            if !move.usesBodyweight, let gainKg = judgement.gainKg {
-                record += "，比歷來最高多 \(Formulas.fmt(gainKg, digits: 1)) 公斤"
-            }
+            let record = recordText(judgement, move: move)
             return Celebration(
                 heading: "功法精進", portrait: nil, title: "精進", stage: nil,
-                lines: ["\(move.artName)・\(move.name)", record], particleCount: 90
+                lines: [moveText, record, returnText], particleCount: 90
+            )
+        case .returned:
+            return Celebration(
+                heading: "回來修煉", portrait: nil, title: "出關", stage: nil,
+                lines: [daysText, moveText], particleCount: 120
             )
         case .firstRecord, .logged:
             return nil
@@ -115,6 +122,32 @@ extension Celebration {
         guard judgement.outcome == .unstable else { return "境界結算：" + label }
         let limit = Formulas.fmt(sex.bodyFatStableThresholdPercent, digits: 0)
         return "境界結算：\(label)（體脂超過 \(limit)%，暫不認證）"
+    }
+
+    /// 宗門晉升的第二行：同一筆也突破或破紀錄就講那個，沒有就是新身分的說明。
+    private static func promotionText(_ judgement: LiftJudgement, move: Move) -> String {
+        if judgement.isLevelUp, let level = judgement.level {
+            return "\(move.artName)也同時突破至\(Tables.levelNames[level])"
+        }
+        guard judgement.gainKg == nil else { return "\(move.artName)也破了紀錄" }
+        return judgement.sectAfter.note
+    }
+
+    /// 引氣入體的最後一行。
+    private static func firstLevelText(_ level: Int?) -> String {
+        guard let level else { return "量過體重才算得出等級" }
+        return "目前\(Tables.levelNames[level])"
+    }
+
+    /// 功法精進破了多少。從沒量過體重的人沒有比值可寫，只寫多幾公斤。
+    private static func recordText(_ judgement: LiftJudgement, move: Move) -> String {
+        var gainText = ""
+        if !move.usesBodyweight, let gainKg = judgement.gainKg {
+            gainText = "比歷來最高多 \(Formulas.fmt(gainKg, digits: 1)) 公斤"
+        }
+        guard let calc = judgement.calc else { return "估計 1RM " + gainText }
+        let record = "新紀錄：" + strengthText(calc, move: move)
+        return gainText.isEmpty ? record : record + "，" + gainText
     }
 
     private static func strengthText(_ calc: LiftCalc?, move: Move) -> String {
