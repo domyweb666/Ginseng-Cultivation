@@ -185,9 +185,11 @@ struct LiftFormView: View {
         fill(for: moveKey)
     }
 
-    /// 這門功法上次記的那一筆；「上次」那行跟帶入的數字都用它。
+    /// 這門功法日期最晚的那一筆（同一天取後記的）；「上次」那行跟帶入的數字都用它。
+    /// 不看誰最後記：後來才補登的舊日期不是「上次」。
     private func lastRecord(of key: MoveKey) -> LiftRecord? {
-        lifts.last { $0.move == key.rawValue }
+        lifts.filter { $0.move == key.rawValue }
+            .max { ($0.day, $0.createdAt) < ($1.day, $1.createdAt) }
     }
 
     private func fill(for key: MoveKey) {
