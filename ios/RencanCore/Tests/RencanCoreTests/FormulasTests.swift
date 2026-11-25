@@ -132,7 +132,7 @@ final class FormulasTests: XCTestCase {
         // 三月、四月的平均都還在金丹初期；六月往回 90 天只剩四月，兩次平均 61 到金丹後期。
         XCTAssertEqual(records.map(\.date), ["2026-02-05", "2026-06-05"])
         XCTAssertEqual(records.map(\.label), ["金丹初期", "金丹後期"])
-        XCTAssertEqual(records.map(\.stageRank), [6, 7])
+        XCTAssertEqual(records.map(\.stageRank), [6, 8])
     }
 
     func test突破紀錄第一筆是入道起點而且之後寫出距上一階幾天() throws {
