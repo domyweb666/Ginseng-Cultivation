@@ -164,11 +164,12 @@ final class SiriRealmReplyTests: XCTestCase {
         XCTAssertEqual(text, "金丹後期，FFMI 20.87，距元嬰初期還差 0.4 公斤肌肉。")
     }
 
-    func test用的是日期最新的那一筆量測() throws {
+    func testFFMI照最新一筆而境界不降差距看平均() throws {
+        // 前一筆是金丹後期；兩次去脂平均 61.2266，到元嬰初期的 62.4351 還差 1.2
         let older = weighing(73, bodyFat: 15, on: "2026-01-05")
         let newer = weighing(70.4, bodyFat: 14.2, on: "2026-03-05")
         let text = try reply([newer, older])
-        XCTAssertEqual(text, "金丹中期，FFMI 20.33，距金丹後期還差 0.5 公斤肌肉。")
+        XCTAssertEqual(text, "金丹後期，FFMI 20.33，距元嬰初期還差 1.2 公斤肌肉。")
     }
 
     func test還沒量過回尚未入道() throws {
@@ -185,6 +186,12 @@ final class SiriRealmReplyTests: XCTestCase {
     func test體脂24回根基不穩與要降到20以下() throws {
         let text = try reply([weighing(80, bodyFat: 24, on: "2026-03-05")])
         XCTAssertEqual(text, "金丹中期，FFMI 20.46。根基不穩，體脂降到 20% 以下境界才生效。")
+    }
+
+    func test突破過的人體脂超標回才能再突破境界照舊() throws {
+        let older = weighing(70.4, bodyFat: 14.2, on: "2026-02-05")
+        let text = try reply([older, weighing(80, bodyFat: 24, on: "2026-03-05")])
+        XCTAssertEqual(text, "金丹中期，FFMI 20.46。根基不穩，體脂降到 20% 以下才能再突破。")
     }
 
     func test渡劫後期回已是最高的一期() throws {

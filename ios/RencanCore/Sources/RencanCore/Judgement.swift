@@ -2,11 +2,12 @@ import Foundation
 
 // 慶祝判定（片 B3）：記一筆修煉是五選一，量一次體組成是四選一。
 // 規則照 .vibe/標準清單.md 的兩張「判定規則白話表」，由上往下第一個成立的就是答案。
-// 底子是網頁版 index.html L520–569 的 onLift、onMeas；跟網頁版不一樣的三處：
+// 底子是網頁版 index.html L520–569 的 onLift、onMeas；跟網頁版不一樣的幾處：
 //   1. 功法精進改看估計 1RM 有沒有比這門功法歷來最高的還高（網頁版看比值，減重也會放）。
 //   2. 體脂超過門檻是獨立的一種結果「根基不穩」（網頁版只是換一句提示）。
 //   3. 沒有任何體重可用時只判宗門晉升，其餘一律修煉 +1（網頁版用 65 公斤硬算）。
-//   4. 男女的體脂門檻、功法門檻、境界換算不同，由 sex 決定（片 B5，.vibe/女性版規則.md）。
+//   4. 境界看最近三次的平均、只升不降（RealmAverage.swift）。
+//   5. 男女的體脂門檻、功法門檻、境界換算不同，由 sex 決定（片 B5，.vibe/女性版規則.md）。
 // 這裡只回答「這次是哪一種」和畫面要寫的數字，不碰畫面、震動、資料庫。
 
 /// 記一筆修煉的五種結果。
@@ -53,7 +54,13 @@ public enum MeasurementOutcome: Equatable {
 
 public struct MeasurementJudgement: Equatable {
     public let outcome: MeasurementOutcome
+    /// 這一次自己的 FFMI。
     public let ffmi: Double
+    /// 最近三次平均的 FFMI，境界照它算。
+    public let averageFFMI: Double
+    /// 平均了幾次。
+    public let averageCount: Int
+    /// 存完這筆之後境界碑上的境界。
     public let standing: RealmStanding
     /// 距上一階幾天；只有境界突破、大境界突破時有值。
     public let daysSincePrevious: Int?
@@ -140,17 +147,25 @@ public enum Judgement {
         lifts: [LiftEntry], heightCm: Double, sex: Sex
     ) throws -> MeasurementJudgement {
         let leanMassKg = Formulas.leanOf(measurement)
-        let ffmi = Formulas.ffmi(leanMassKg: leanMassKg, heightCm: heightCm)
-        let standing = Formulas.realmOf(ffmi: ffmi, sex: sex)
+        // 同一天的那筆會被這筆蓋掉，算「存完之後」要先拿掉。
+        let after = measurements.filter { $0.date != measurement.date } + [measurement]
+        let average = try Formulas.leanAverage(of: measurement, among: after, sex: sex)
+        let averageFFMI = Formulas.ffmi(leanMassKg: average.leanMassKg, heightCm: heightCm)
+        let topAfter = try Formulas.breakthroughs(
+            measurements: after, heightCm: heightCm, sex: sex
+        ).last
+        let standing = Formulas.shownStanding(top: topAfter, averageFFMI: averageFFMI, sex: sex)
         func judged(
             _ outcome: MeasurementOutcome, days: Int? = nil, promoted: String? = nil
         ) -> MeasurementJudgement {
             MeasurementJudgement(
-                outcome: outcome, ffmi: ffmi, standing: standing, daysSincePrevious: days,
-                promotedSectTitle: promoted
+                outcome: outcome,
+                ffmi: Formulas.ffmi(leanMassKg: leanMassKg, heightCm: heightCm),
+                averageFFMI: averageFFMI, averageCount: average.count, standing: standing,
+                daysSincePrevious: days, promotedSectTitle: promoted
             )
         }
-        guard measurement.bodyFatPercent <= sex.bodyFatStableThresholdPercent else {
+        guard Formulas.isWithinBodyFatLimit(measurement, sex: sex) else {
             return judged(.unstable)
         }
         let history = try Formulas.breakthroughs(

@@ -32,6 +32,7 @@ private enum Metrics {
 /// 下面一張白卡（距下一期還差多少肌肉、三期進度）。
 /// 深色卡的底色跟著境界換，深淺色模式長一樣。
 /// 體脂超過門檻時照樣顯示境界，但標「根基不穩」、進度條灰掉（PRD S7）。
+/// 境界不會降（2026-11-25）：突破過的人體脂超標，講的是「才能再突破」，原本的境界還在。
 struct SteleView: View {
     @Environment(AppFlow.self) private var flow
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -233,6 +234,10 @@ struct SteleView: View {
         Formulas.fmt(sex.bodyFatStableThresholdPercent, digits: 0)
     }
 
+    private var gateEffect: String {
+        stele.hasBreakthrough ? "才能再突破" : "境界才生效"
+    }
+
     /// 根基那一句（照網頁版 index.html L357–361，「偏低」那種 2026-11-23 拿掉）。
     private var gateText: String {
         switch stele.gate {
@@ -249,7 +254,7 @@ struct SteleView: View {
     private var progress: some View {
         VStack(alignment: .leading, spacing: RencanLayout.itemSpacing) {
             if case .unstable(let overBy) = stele.gate {
-                Text("降到 \(limit)% 以下境界才生效，還差 \(Formulas.fmt(overBy, digits: 1))%")
+                Text("降到 \(limit)% 以下\(gateEffect)，還差 \(Formulas.fmt(overBy, digits: 1))%")
                     .font(RencanType.subheadline)
                     .foregroundStyle(Color.rencan.destructive)
             } else if let gap = stele.gap {

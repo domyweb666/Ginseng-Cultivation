@@ -18,11 +18,15 @@ public enum BodyFatGate: Equatable {
 
 /// 境界碑要顯示的全部數字。
 public struct SteleDigest: Equatable {
+    /// 日期最新的那一筆。leanMassKg、ffmi、gate 都是這一筆自己的數字。
     public let measurement: MeasurementEntry
     public let leanMassKg: Double
     /// 使用者真實的 FFMI（女性不換算）。
     public let ffmi: Double
+    /// 曾到過的最高一期，不會降（RealmAverage.swift）。gap、stagePercent 拿最近三次的平均去比它。
     public let standing: RealmStanding
+    /// 有沒有任何一次突破；沒有的話 standing 是還沒認證的境界。
+    public let hasBreakthrough: Bool
     public let gate: BodyFatGate
     /// 距下一期還差多少肌肉；已是渡劫後期為 nil。
     public let gap: StageGap?
@@ -130,7 +134,7 @@ public struct Digest: Equatable {
                     try Digest.point(of: measurement, heightCm: heightCm, since: earliest.date)
                 }
             }
-            latest = sorted.last.map { Digest.stele(of: $0, heightCm: heightCm, sex: sex) }
+            latest = try Digest.stele(sorted, top: records.last, heightCm: heightCm, sex: sex)
         }
         breakthroughs = records
         ffmiHistory = points
@@ -197,15 +201,24 @@ public struct Digest: Equatable {
         )
     }
 
-    static func stele(of measurement: MeasurementEntry, heightCm: Double, sex: Sex) -> SteleDigest {
+    /// sorted 照日期排好；top 是最高的那次突破。還沒量過回 nil。
+    private static func stele(
+        _ sorted: [MeasurementEntry], top: Breakthrough?, heightCm: Double, sex: Sex
+    ) throws -> SteleDigest? {
+        guard let measurement = sorted.last else { return nil }
         let leanMassKg = Formulas.leanOf(measurement)
-        let ffmi = Formulas.ffmi(leanMassKg: leanMassKg, heightCm: heightCm)
-        let standing = Formulas.realmOf(ffmi: ffmi, sex: sex)
+        let average = try Formulas.leanAverage(of: measurement, among: sorted, sex: sex)
+        let averageFFMI = Formulas.ffmi(leanMassKg: average.leanMassKg, heightCm: heightCm)
+        let standing = Formulas.shownStanding(top: top, averageFFMI: averageFFMI, sex: sex)
         return SteleDigest(
-            measurement: measurement, leanMassKg: leanMassKg, ffmi: ffmi, standing: standing,
+            measurement: measurement, leanMassKg: leanMassKg,
+            ffmi: Formulas.ffmi(leanMassKg: leanMassKg, heightCm: heightCm), standing: standing,
+            hasBreakthrough: top != nil,
             gate: Formulas.bodyFatGate(bodyFatPercent: measurement.bodyFatPercent, sex: sex),
-            gap: Formulas.nextStageGap(leanMassKg: leanMassKg, heightCm: heightCm, sex: sex),
-            stagePercent: Formulas.stageProgressPercent(ffmi: ffmi, standing: standing)
+            gap: Formulas.nextStageGap(
+                from: standing, leanMassKg: average.leanMassKg, heightCm: heightCm, sex: sex
+            ),
+            stagePercent: Formulas.stageProgressPercent(ffmi: averageFFMI, standing: standing)
         )
     }
 

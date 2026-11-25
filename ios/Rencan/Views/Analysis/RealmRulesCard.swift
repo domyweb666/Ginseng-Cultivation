@@ -102,7 +102,9 @@ struct RealmRulesCard: View {
     }
 
     private var scaleNote: String {
-        "體脂秤誤差大，建議每月固定一天，早上起床如廁後、空腹量，看趨勢不看單次。"
+        "體脂秤誤差大，所以境界看 \(Tables.realmAverageWindowDays) 天內"
+            + "最近 \(Tables.realmAverageCount) 次的平均，升上去就不會掉。"
+            + "建議每月固定一天，早上起床如廁後、空腹量。"
     }
 
     private var sectNote: String {
@@ -112,6 +114,6 @@ struct RealmRulesCard: View {
 
     private var guestNote: String {
         "到了金丹但天數不夠，先當客卿；天數超過 100 天但還沒築基，會成為執事。"
-            + "量測偶爾失準掉下來，身分也不會降。"
+            + "身分跟境界一樣，升上去就不會掉。"
     }
 }

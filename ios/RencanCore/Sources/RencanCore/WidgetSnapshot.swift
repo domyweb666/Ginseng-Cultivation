@@ -81,7 +81,7 @@ public struct WidgetSnapshot: Codable, Equatable {
     /// （2026-11-16 在模擬器上看到的），所以這裡先分好。
     public var detailLines: [String] {
         guard realmName != nil else { return ["先量一次體組成"] }
-        if isUnstable { return ["根基不穩", "體脂降下來才生效"] }
+        if isUnstable { return ["根基不穩", "體脂降下來才能突破"] }
         guard let nextLabel, let kgToNext else { return ["已是最高的一期"] }
         return ["距\(nextLabel)", "還差 \(Formulas.fmt(kgToNext, digits: 1)) 公斤肌肉"]
     }

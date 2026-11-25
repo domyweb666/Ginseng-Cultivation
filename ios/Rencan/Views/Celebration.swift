@@ -76,7 +76,8 @@ extension Celebration {
         for judgement: MeasurementJudgement, sex: Sex, style: PortraitStyle
     ) -> Celebration? {
         let standing = judgement.standing
-        let ffmi = "FFMI \(Formulas.fmt(judgement.ffmi, digits: 2))"
+        // 境界照最近三次的平均算，慶祝寫那個數字，跟突破紀錄同一個。
+        let ffmi = "FFMI \(Formulas.fmt(judgement.averageFFMI, digits: 2))"
         var lines: [String] = []
         let heading: String
         let particleCount: Int

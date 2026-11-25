@@ -332,6 +332,11 @@ private struct MeasurementPreview: View {
             }
             Text("FFMI \(Formulas.fmt(judgement.ffmi, digits: 2))" + leanText)
                 .font(RencanType.subheadline)
+            if judgement.averageCount > 1 {
+                Text("境界看近 \(judgement.averageCount) 次的平均，升上去就不會掉。")
+                    .font(RencanType.footnote)
+                    .foregroundStyle(Color.rencan.textSecondary)
+            }
             if judgement.outcome == .unstable {
                 Text("體脂超過 \(limit)%，根基不穩：這次會記下，但不算突破。")
                     .font(RencanType.footnote)

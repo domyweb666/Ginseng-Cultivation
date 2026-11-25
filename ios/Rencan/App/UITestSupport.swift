@@ -82,8 +82,8 @@ enum UITestSupport {
                 context.insert(measurement(60, 23, daysAgo: 3, lean: 46))
             case "demo":
                 try services.store.saveProfile(heightCm: 174, sex: .male)
-                context.insert(measurement(71, 18, daysAgo: 70, lean: nil))
-                context.insert(measurement(70.8, 16, daysAgo: 40, lean: nil))
+                context.insert(measurement(71, 17, daysAgo: 70, lean: nil))
+                context.insert(measurement(70.8, 15.2, daysAgo: 40, lean: nil))
                 context.insert(measurement(70.4, 14.2, daysAgo: 9, lean: nil))
                 for record in demoLifts() {
                     context.insert(record)

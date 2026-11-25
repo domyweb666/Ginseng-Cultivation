@@ -75,8 +75,8 @@ final class WidgetSnapshotTests: XCTestCase {
         let made = try snapshot(measurements: [weighing(80, bodyFat: 24, on: "2026-03-05")])
         XCTAssertEqual(made.realmText, "金丹中期")
         XCTAssertTrue(made.isUnstable)
-        XCTAssertEqual(made.detailText, "根基不穩，體脂降下來才生效")
-        XCTAssertEqual(made.detailLines, ["根基不穩", "體脂降下來才生效"])
+        XCTAssertEqual(made.detailText, "根基不穩，體脂降下來才能突破")
+        XCTAssertEqual(made.detailLines, ["根基不穩", "體脂降下來才能突破"])
     }
 
     func test渡劫後期沒有下一期() throws {

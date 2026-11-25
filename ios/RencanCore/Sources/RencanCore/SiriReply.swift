@@ -44,7 +44,8 @@ public enum SiriReply {
         let head = "\(stele.standing.label)，FFMI \(Formulas.fmt(stele.ffmi, digits: 2))"
         if case .unstable = stele.gate {
             let limit = Formulas.fmt(sex.bodyFatStableThresholdPercent, digits: 0)
-            return head + "。根基不穩，體脂降到 \(limit)% 以下境界才生效。"
+            let effect = stele.hasBreakthrough ? "才能再突破" : "境界才生效"
+            return head + "。根基不穩，體脂降到 \(limit)% 以下\(effect)。"
         }
         guard let gap = stele.gap else { return head + "，已是最高的一期。" }
         let needed = Formulas.fmt(gap.leanNeededKg, digits: 1)

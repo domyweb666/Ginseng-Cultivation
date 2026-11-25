@@ -116,12 +116,14 @@ final class DigestSteleTests: XCTestCase {
         XCTAssertEqual(stele.gate, .stable)
     }
 
-    func test突破紀錄帶著那次量測的FFMI而且走勢圖每筆量測一點() throws {
+    func test突破紀錄帶著那次平均的FFMI而且走勢圖每筆量測一點() throws {
         let first = weighing(71, bodyFat: 18, on: "2026-02-05")
-        let second = weighing(70.4, bodyFat: 14.2, on: "2026-03-05")
+        let second = weighing(71, bodyFat: 14, on: "2026-03-05")
         let result = try digest([second, first])
         XCTAssertEqual(result.breakthroughs.map(\.label), ["金丹初期", "金丹中期"])
-        XCTAssertEqual(result.breakthroughs[1].ffmi, 20.328852160126836, accuracy: 1e-9)
+        // 去脂 58.22 與 61.06 的平均是 59.64
+        let average = 59.64 / (1.74 * 1.74) + 6.3 * 0.06
+        XCTAssertEqual(result.breakthroughs[1].ffmi, average, accuracy: 1e-9)
         XCTAssertEqual(result.ffmiHistory.map(\.date), ["2026-02-05", "2026-03-05"])
         XCTAssertEqual(result.ffmiHistory[0].ffmi, 19.60775293962214, accuracy: 1e-9)
     }

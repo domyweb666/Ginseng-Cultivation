@@ -47,6 +47,8 @@ extension HealthSourceTopic {
     private static let realm = HealthSourceTopic(
         title: "境界門檻",
         note: "七個境界怎麼切是這個 app 自己訂的遊戲設定，沒有醫學意義。"
+            + "用 \(Tables.realmAverageWindowDays) 天內最近 \(Tables.realmAverageCount) 次量測的"
+            + "去脂體重平均、升上去不會掉，也是 app 訂的規則。"
             + "訂的時候參考了三個研究：沒用類固醇的男運動員 FFMI 最高約 25；"
             + "正常體重成人的 FFMI 下緣是男 16.7、女 14.6；女大學運動員的上緣是 23.9。"
             + "女性先換算成男性等值再查表，上限取比較保守的 22，這個數字也是 app 訂的。",

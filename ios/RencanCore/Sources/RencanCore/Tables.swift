@@ -82,6 +82,9 @@ public enum Tables {
 
     /// 每一期的 FFMI 寬度（網頁版 realmOf 裡的 0.5）。
     public static let stageWidthFFMI = 0.5
+    /// 境界看最近幾次量測的平均、最多往回看幾天（2026-11-25 多米定，規則在 RealmAverage.swift）。
+    public static let realmAverageCount = 3
+    public static let realmAverageWindowDays = 90
     /// FFMI 身高校正：每公尺 6.3，以 1.8 公尺為基準（Kouri 1995 原文）。
     /// 2026-11-23 之前是 6.1，來源查不到；送審要附出處，改成論文的數字，網頁版一起改。
     public static let ffmiHeightCorrectionPerMeter = 6.3

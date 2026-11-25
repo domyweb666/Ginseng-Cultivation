@@ -185,15 +185,17 @@ final class MeasurementJudgementTests: XCTestCase {
     }
 
     func test第3列期別比歷來最高還高是境界突破() throws {
-        let new = weighing(70.4, bodyFat: 14.2, on: "2026-03-05")
-        let result = try judge(new, before: [foundationLate, coreEarly])
+        let new = weighing(71, bodyFat: 14, on: "2026-03-05")
+        let result = try judge(new, before: [coreEarly])
         XCTAssertEqual(result.outcome, .breakthrough)
         XCTAssertEqual(result.standing.label, "金丹中期")
         XCTAssertEqual(result.daysSincePrevious, 28)
     }
 
     func test第3列跨到新的大境界是大境界突破() throws {
-        let result = try judge(coreEarly, before: [foundationLate])
+        // 去脂 57.4 與 59.04 的平均是 58.22，金丹初期
+        let new = weighing(72, bodyFat: 18, on: "2026-02-05")
+        let result = try judge(new, before: [foundationLate])
         XCTAssertEqual(result.outcome, .majorBreakthrough)
         XCTAssertEqual(result.standing.label, "金丹初期")
         XCTAssertEqual(result.daysSincePrevious, 31)
@@ -210,6 +212,7 @@ final class MeasurementJudgementTests: XCTestCase {
         let new = weighing(70, bodyFat: 18, on: "2026-03-05")
         let result = try judge(new, before: [coreEarly])
         XCTAssertEqual(result.outcome, .settled)
+        XCTAssertEqual(result.standing.label, "金丹初期", "這次量到築基後期，境界不降")
         XCTAssertNil(result.daysSincePrevious)
     }
 

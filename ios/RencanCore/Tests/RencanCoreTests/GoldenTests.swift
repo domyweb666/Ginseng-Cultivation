@@ -4,6 +4,7 @@ import XCTest
 
 /// 黃金集：同一份假資料，iOS 版算出來的要跟網頁版原版程式一樣（小數比到第 6 位）。
 /// 宗門身分不在這裡比：2026-11-17 起 app 的宗門境界門檻跟網頁版不一樣，答案在 SectTests。
+/// 突破紀錄與最高境界也不比：2026-11-25 起境界看最近三次的平均，答案在 RealmAverageTests。
 /// 假資料與答案在 Fixtures/web-export.json，由 .vibe/tools/golden_build.mjs 跑網頁版
 /// index.html 的原版程式產生，不准手改。每一組在測什麼，看那個檔裡每組的 name。
 final class GoldenTests: XCTestCase {
@@ -106,7 +107,6 @@ final class GoldenTests: XCTestCase {
         let group = try XCTUnwrap(found, "黃金集沒有第 \(number) 組")
         XCTAssertEqual(group.lifts.count, group.export.lift.count, "\(group.name)：有不認得的功法")
         checkStandings(group)
-        try checkBreakthroughs(group)
         try checkCounts(group, today: file.today)
         try checkLifts(group)
     }
@@ -133,27 +133,12 @@ final class GoldenTests: XCTestCase {
         }
     }
 
-    private func checkBreakthroughs(_ group: GoldenGroup) throws {
-        let note = "\(group.name)：突破紀錄"
-        let records = try Formulas.breakthroughs(
-            measurements: group.measurements, heightCm: group.heightCm
-        )
-        let answers = group.expected.breakthroughs
-        XCTAssertEqual(records.map(\.date), answers.map(\.date), note)
-        XCTAssertEqual(records.map(\.stageRank), answers.map(\.stageRank), note)
-        XCTAssertEqual(records.map(\.label), answers.map(\.label), note)
-        XCTAssertEqual(records.map(\.isFirst), answers.map(\.first), note)
-        XCTAssertEqual(records.map(\.daysSincePrevious), answers.map(\.days), note)
-    }
-
     private func checkCounts(_ group: GoldenGroup, today: String) throws {
-        let note = "\(group.name)：天數與最高境界"
+        let note = "\(group.name)：天數"
         let days = Formulas.trainDays(lifts: group.lifts)
         let week = try Formulas.weekCount(lifts: group.lifts, today: today)
-        let top = try Formulas.realmMax(measurements: group.measurements, heightCm: group.heightCm)
         XCTAssertEqual(days, group.expected.trainDays, note)
         XCTAssertEqual(week, group.expected.weekCount, note)
-        XCTAssertEqual(top, group.expected.realmMax, note)
     }
 
     private func checkLifts(_ group: GoldenGroup) throws {

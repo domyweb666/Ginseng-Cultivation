@@ -11,7 +11,7 @@ final class FormulasTests: XCTestCase {
         Formulas.realmOf(ffmi: ffmi).label
     }
 
-    /// 五筆量測：第一筆體脂 22% 不穩；之後金丹初期、金丹中期、金丹中期（沒更高）、元嬰初期。
+    /// 五筆量測：第一筆體脂 22% 不穩；之後去脂 58.22、60.4032、59.5、61.92。
     private func fiveMeasurements() -> [MeasurementEntry] {
         let first = MeasurementEntry(
             id: "2026-01-05", date: "2026-01-05", weightKg: 72, bodyFatPercent: 22, createdAtMs: 1
@@ -129,17 +129,18 @@ final class FormulasTests: XCTestCase {
         let records = try Formulas.breakthroughs(
             measurements: fiveMeasurements(), heightCm: heightCm
         )
-        XCTAssertEqual(records.map(\.date), ["2026-02-05", "2026-03-05", "2026-06-05"])
-        XCTAssertEqual(records.map(\.label), ["金丹初期", "金丹中期", "元嬰初期"])
-        XCTAssertEqual(records.map(\.stageRank), [6, 7, 9])
+        // 三月、四月的平均都還在金丹初期；六月往回 90 天只剩四月，兩次平均到金丹中期。
+        XCTAssertEqual(records.map(\.date), ["2026-02-05", "2026-06-05"])
+        XCTAssertEqual(records.map(\.label), ["金丹初期", "金丹中期"])
+        XCTAssertEqual(records.map(\.stageRank), [6, 7])
     }
 
     func test突破紀錄第一筆是入道起點而且之後寫出距上一階幾天() throws {
         let records = try Formulas.breakthroughs(
             measurements: fiveMeasurements(), heightCm: heightCm
         )
-        XCTAssertEqual(records.map(\.isFirst), [true, false, false])
-        XCTAssertEqual(records.map(\.daysSincePrevious), [0, 28, 92])
+        XCTAssertEqual(records.map(\.isFirst), [true, false])
+        XCTAssertEqual(records.map(\.daysSincePrevious), [0, 120])
     }
 
     func test體脂超過20的量測不算突破() throws {
@@ -150,10 +151,10 @@ final class FormulasTests: XCTestCase {
         XCTAssertEqual(records, [])
     }
 
-    func test曾到過元嬰最高境界就是元嬰() throws {
+    func test曾到過金丹最高境界就是金丹() throws {
         let top = try Formulas.realmMax(measurements: fiveMeasurements(), heightCm: heightCm)
-        XCTAssertEqual(top, 3)
-        XCTAssertEqual(Tables.realms[top].name, "元嬰")
+        XCTAssertEqual(top, 2)
+        XCTAssertEqual(Tables.realms[top].name, "金丹")
     }
 
     func test還沒有穩固量測時最高境界是尚未入道() throws {

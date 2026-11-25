@@ -16,6 +16,8 @@ import Foundation
 //      不帶 sex 的版本在 WebParity.swift，只給測試對網頁版用。
 //   8. 宗門六階的境界門檻比網頁版各降一階（2026-11-17 多米定的，只改 app），
 //      所以 sectOf 的結果跟網頁版不一樣；客卿、執事的規則照舊。細節在 Sect.swift 檔頭。
+//   9. 境界看最近三次的平均、只升不降（2026-11-25 多米定），所以 breakthroughs、realmMax
+//      跟網頁版不一樣。細節在 RealmAverage.swift 檔頭。
 
 /// realmOf 的結果：在哪個大境界、哪一期、下一期與這一期的 FFMI 門檻。
 public struct RealmStanding: Equatable {
@@ -48,7 +50,7 @@ public struct Breakthrough: Equatable {
     public let isFirst: Bool
     /// 距上一階幾天；第一筆是 0。
     public let daysSincePrevious: Int
-    /// 那次量測的 FFMI（使用者真實的數字，女性不換算）。
+    /// 那次最近三次平均的 FFMI（女性不換算）。
     public let ffmi: Double
 }
 
@@ -119,6 +121,15 @@ public enum Formulas {
     /// 女性的下一期門檻已經在 realmOf 換回她自己的 FFMI，所以這裡的算法男女一樣。
     public static func nextStageGap(leanMassKg: Double, heightCm: Double, sex: Sex) -> StageGap? {
         let standing = realmOf(ffmi: ffmi(leanMassKg: leanMassKg, heightCm: heightCm), sex: sex)
+        return nextStageGap(
+            from: standing, leanMassKg: leanMassKg, heightCm: heightCm, sex: sex
+        )
+    }
+
+    /// 從某一期算到它的下一期。境界不降，現在的去脂體重可能比 standing 那一期的起點還低。
+    static func nextStageGap(
+        from standing: RealmStanding, leanMassKg: Double, heightCm: Double, sex: Sex
+    ) -> StageGap? {
         guard let nextFFMI = standing.nextFFMI else { return nil }
         // 網頁版用「門檻再多一點點」去查下一期叫什麼名字。
         let nextStanding = realmOf(ffmi: nextFFMI + nextStageProbe, sex: sex)
@@ -142,19 +153,18 @@ public enum Formulas {
         return .stable
     }
 
-    /// 突破紀錄：照日期排，只採計體脂在門檻以下的量測，每次到達更高的期別記一筆。
+    /// 突破紀錄：照日期排，只採計體脂在門檻以下的量測，最近三次的平均到達更高的期別就記一筆。
     public static func breakthroughs(
         measurements: [MeasurementEntry], heightCm: Double, sex: Sex
     ) throws -> [Breakthrough] {
-        let stable = byDate(measurements).filter {
-            $0.bodyFatPercent <= sex.bodyFatStableThresholdPercent
-        }
+        let stable = byDate(measurements).filter { isWithinBodyFatLimit($0, sex: sex) }
         var result: [Breakthrough] = []
         var highestRank = -1
         var previousDate: String?
-        for measurement in stable {
-            let measuredFFMI = ffmi(leanMassKg: leanOf(measurement), heightCm: heightCm)
-            let standing = realmOf(ffmi: measuredFFMI, sex: sex)
+        for (index, measurement) in stable.enumerated() {
+            let average = try leanAverage(of: measurement, earlier: stable[..<index])
+            let averageFFMI = ffmi(leanMassKg: average.leanMassKg, heightCm: heightCm)
+            let standing = realmOf(ffmi: averageFFMI, sex: sex)
             guard standing.stageRank > highestRank else { continue }
             var daysSincePrevious = 0
             if let previousDate {
@@ -164,7 +174,7 @@ public enum Formulas {
                 Breakthrough(
                     date: measurement.date, stageRank: standing.stageRank, label: standing.label,
                     isFirst: highestRank < 0, daysSincePrevious: daysSincePrevious,
-                    ffmi: measuredFFMI
+                    ffmi: averageFFMI
                 )
             )
             highestRank = standing.stageRank

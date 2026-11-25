@@ -7,6 +7,7 @@ import Foundation
 // 這裡的型別只給測試讀檔用；正式的匯入格式與檢查在 Sources 的 WebExport.swift（片 B4）。
 // 網頁版的欄位名太短（bf、bw、t），用 CodingKeys 對到完整名。
 // 檔案裡還有宗門身分的答案（sectGrid、各組的 sect），2026-11-17 起不讀：app 的宗門規則跟網頁版不一樣了。
+// 突破紀錄與最高境界（breakthroughs、realmMax）2026-11-25 起也不讀：app 看最近三次的平均。
 
 struct GoldenFile: Decodable {
     let today: String
@@ -90,8 +91,6 @@ struct GoldenLift: Decodable {
 
 struct GoldenExpected: Decodable {
     let measurements: [GoldenStanding]
-    let breakthroughs: [GoldenBreakthrough]
-    let realmMax: Int
     let trainDays: Int
     let weekCount: Int
     let lifts: [GoldenLiftAnswer]
@@ -110,14 +109,6 @@ struct GoldenStanding: Decodable {
     let fromFFMI: Double
     let nextLabel: String?
     let leanNeeded: Double?
-}
-
-struct GoldenBreakthrough: Decodable {
-    let date: String
-    let stageRank: Int
-    let label: String
-    let first: Bool
-    let days: Int
 }
 
 /// 一筆修煉的答案。best 裡的每一筆多帶功法代號。
