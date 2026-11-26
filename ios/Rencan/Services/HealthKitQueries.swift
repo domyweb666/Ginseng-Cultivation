@@ -76,11 +76,13 @@ struct HealthQueries {
     let store: HKHealthStore
 
     /// 跟 DayStamp 同一套：西曆加手機的時區，樣本落在哪一天才會跟存下去的日期字串一致。
-    static var calendar: Calendar {
+    /// 只建一次（原本每次用都重建，2026-11-26 性能審查）。時區用 autoupdatingCurrent，
+    /// 手機換時區時跟著換，跟 DayStamp 一樣。
+    static let calendar: Calendar = {
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = .current
+        calendar.timeZone = .autoupdatingCurrent
         return calendar
-    }
+    }()
 
     /// 某一種樣本，新的在前。start、end 是 nil 就不設那一邊的界線；limit 是 nil 就全部拿。
     /// 使用者拒絕讀取時系統回空陣列（系統不讓 app 知道被拒絕），不會丟錯。
