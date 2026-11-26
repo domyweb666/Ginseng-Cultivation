@@ -89,21 +89,19 @@ extension StoreService {
         }
         let localMeasurements = try context.fetch(FetchDescriptor<Measurement>())
         var takenDays = Set(localMeasurements.map(\.day))
-        var added = 0
-        for entry in entries {
-            // 同一批裡同一天有兩筆的，也只放第一筆（跟以前逐筆查資料庫的結果一樣）。
-            guard takenDays.insert(entry.date).inserted else { continue }
+        // 只留還沒有量測的日子。同一批裡同一天有兩筆的，也只留第一筆（跟以前逐筆查資料庫的結果一樣）。
+        let fresh = entries.filter { entry in takenDays.insert(entry.date).inserted }
+        for entry in fresh {
             let record = Measurement(
                 uid: entry.id, day: entry.date, weightKg: entry.weightKg,
                 bodyFatPercent: entry.bodyFatPercent, leanMassKg: entry.leanMassKg,
                 source: .health, createdAt: Date(millisecondsSince1970: entry.createdAtMs)
             )
             context.insert(record)
-            added += 1
         }
-        guard added > 0 else { return 0 }
+        guard !fresh.isEmpty else { return 0 }
         try save()
-        return added
+        return fresh.count
     }
 
     /// 要不要從健康 app 讀體重與體脂（片 E2）。這是 app 自己的開關，系統的授權在手機的設定裡管。
