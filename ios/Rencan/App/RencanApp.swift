@@ -19,11 +19,11 @@ struct AppServices {
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: inMemory)
         let container = try ModelContainer(for: schema, configurations: [configuration])
         let store = StoreService(context: container.mainContext)
-        // 每次存檔成功就照最新的資料重寫小工具的快照（片 G1）。
+        // 每次存檔成功就照最新的資料重寫小工具的快照（片 G1）。摘要從 StoreService 的快取拿，
+        // 跟畫面是同一份。store 擁有這個閉包，所以不強抓 store，免得互相抓住放不掉。
         let bridge = WidgetBridge()
-        let context = container.mainContext
-        store.afterSave = {
-            bridge.publish { try AppServices.digest(in: context) }
+        store.afterSave = { [unowned store] in
+            bridge.publish { try store.digest(today: DayStamp.today) }
         }
         return AppServices(
             container: container, store: store, health: HealthKitService(),
@@ -44,8 +44,9 @@ struct RencanApp: App {
             made = try AppServices.shared()
             if let made {
                 try UITestSupport.seedIfAsked(made)
-                // 打開 app 就寫一次快照：剛裝好、剛更新、跨了一天，小工具都拿得到最新的。
-                made.store.afterSave?()
+                // UI 測試的示範資料有一部分直接存進資料庫、沒走 save()，記一下資料變了，
+                // 第一個畫面拿到的才是塞完的那份摘要。不是 UI 測試時只是多加一，沒有影響。
+                made.store.noteSavedOutsideStore()
                 // 在這裡就開始聽：點通知把 app 叫起來那一下，畫面還沒出現也收得到。
                 made.notifications.startListening()
                 // 內購的交易通知也一打開就聽（別台裝置買的、家長核准的、退款撤銷的）。
@@ -75,6 +76,12 @@ struct RencanApp: App {
                 // 設定頁選過的外觀（淺色、深色）一打開就套上；設在視窗上，所以等畫面出來才套
                 .onAppear {
                     Appearance.stored.apply()
+                }
+                // 打開 app 就寫一次快照：剛裝好、剛更新、跨了一天，小工具都拿得到最新的。
+                // 以前在 init 裡同步算，第一個畫面要等它；改成畫面出來才寫，這時畫面已經算好摘要，
+                // 快取裡就有，不用再算一次。
+                .task {
+                    services.store.afterSave?()
                 }
         } else {
             StartupErrorView()

@@ -133,7 +133,8 @@ public enum Judgement {
         new lift: LiftEntry, before lifts: [LiftEntry], measurements: [MeasurementEntry],
         sex: Sex
     ) -> MoveProgress {
-        guard let calc = Formulas.liftCalc(lift, measurements: measurements) else {
+        let sorted = MeasurementsByDate(measurements)
+        guard let calc = Formulas.liftCalc(lift, byDate: sorted) else {
             // 開練那句要寫目前哪一階，沒體重寫不出來，所以這門第一筆不算開練，是修煉 +1。
             return MoveProgress(
                 calc: nil, level: nil, isFirst: false, isLevelUp: false,
@@ -142,7 +143,7 @@ public enum Judgement {
         }
         let level = Formulas.moveLevel(move: calc.move, ratio: calc.ratio, sex: sex)
         let earlier = lifts.filter { $0.move == lift.move }.compactMap {
-            Formulas.liftCalc($0, measurements: measurements)
+            Formulas.liftCalc($0, byDate: sorted)
         }
         let bestRatio = earlier.map(\.ratio).max()
         let bestOneRepMaxKg = earlier.map(\.estimatedOneRepMaxKg).max()

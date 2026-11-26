@@ -235,10 +235,15 @@ public enum Formulas {
 
     /// 一筆修煉的估計 1RM 與比值。沒有任何體重可用時回 nil（網頁版會用 65 公斤硬算）。
     public static func liftCalc(_ lift: LiftEntry, measurements: [MeasurementEntry]) -> LiftCalc? {
+        liftCalc(lift, bodyweightOnDay: { bwAt(date: lift.date, measurements: measurements) })
+    }
+
+    /// bodyweightOnDay 只在這筆沒帶體重快照時才叫，量測排好沒排好的兩個版本共用這段。
+    static func liftCalc(_ lift: LiftEntry, bodyweightOnDay: () -> Double?) -> LiftCalc? {
         guard let move = Tables.moves.first(where: { $0.key == lift.move }) else { return nil }
         var bodyweightKg = lift.bodyweightKg ?? 0
         if bodyweightKg == 0 {
-            bodyweightKg = bwAt(date: lift.date, measurements: measurements) ?? 0
+            bodyweightKg = bodyweightOnDay() ?? 0
         }
         guard bodyweightKg != 0 else { return nil }
         let loadKg = move.usesBodyweight ? bodyweightKg + lift.kg : lift.kg
@@ -254,8 +259,9 @@ public enum Formulas {
         lifts: [LiftEntry], measurements: [MeasurementEntry]
     ) -> [MoveKey: LiftCalc] {
         var best: [MoveKey: LiftCalc] = [:]
+        let sorted = MeasurementsByDate(measurements)
         for lift in lifts {
-            guard let calc = liftCalc(lift, measurements: measurements) else { continue }
+            guard let calc = liftCalc(lift, byDate: sorted) else { continue }
             if let current = best[lift.move], !(calc.ratio > current.ratio) { continue }
             best[lift.move] = calc
         }

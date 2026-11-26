@@ -87,6 +87,8 @@ public struct Digest: Equatable {
     public let lifts: [LiftEntry]
     public let heightCm: Double?
     public let sex: Sex?
+    /// 照日期排好的量測，查某天體重時不用每次重排（MeasurementsByDate.swift）。
+    private let measurementsByDate: MeasurementsByDate
 
     public let trainDays: Int
     public let weekCount: Int
@@ -126,6 +128,8 @@ public struct Digest: Equatable {
         self.lifts = lifts
         self.heightCm = heightCm
         self.sex = sex
+        let measurementsByDate = MeasurementsByDate(measurements)
+        self.measurementsByDate = measurementsByDate
         let days = Formulas.trainDays(lifts: lifts)
         trainDays = days
         weekCount = try Formulas.weekCount(lifts: lifts, today: today)
@@ -142,7 +146,7 @@ public struct Digest: Equatable {
             if let top = records.last {
                 realmIndex = top.stageRank / Tables.stages.count
             }
-            let sorted = Formulas.byDate(measurements)
+            let sorted = measurementsByDate.entries
             if let earliest = sorted.first {
                 points = try sorted.map { measurement in
                     try Digest.point(of: measurement, heightCm: heightCm, since: earliest.date)
@@ -155,13 +159,13 @@ public struct Digest: Equatable {
         stele = latest
         sect = Formulas.sectOf(trainDays: days, realmIndex: realmIndex)
         moveCards = Tables.moves.map { move in
-            Digest.card(of: move, lifts: lifts, measurements: measurements, sex: sex)
+            Digest.card(of: move, lifts: lifts, measurements: measurementsByDate, sex: sex)
         }
     }
 
     /// 某一筆修煉自己算出來的等級；沒有體重或沒選性別時為 nil。
     public func level(of lift: LiftEntry) -> Int? {
-        guard let sex, let calc = Formulas.liftCalc(lift, measurements: measurements) else {
+        guard let sex, let calc = Formulas.liftCalc(lift, byDate: measurementsByDate) else {
             return nil
         }
         return Formulas.moveLevel(move: calc.move, ratio: calc.ratio, sex: sex)
@@ -169,7 +173,7 @@ public struct Digest: Equatable {
 
     /// 某一天能用的體重（記一筆表單用它做預覽與體重快照）。
     public func bodyweight(on date: String) -> Double? {
-        Formulas.bwAt(date: date, measurements: measurements)
+        Formulas.bwAt(date: date, byDate: measurementsByDate)
     }
 
     /// 記一筆表單的即時預覽。沒有體重時回 nil，表單改顯示「先量一次體重」。
@@ -237,10 +241,10 @@ public struct Digest: Equatable {
     }
 
     private static func card(
-        of move: Move, lifts: [LiftEntry], measurements: [MeasurementEntry], sex: Sex?
+        of move: Move, lifts: [LiftEntry], measurements: MeasurementsByDate, sex: Sex?
     ) -> MoveCard {
         let own = lifts.filter { $0.move == move.key }
-        let calcs = own.compactMap { Formulas.liftCalc($0, measurements: measurements) }
+        let calcs = own.compactMap { Formulas.liftCalc($0, byDate: measurements) }
         let ordered = calcs.sorted { left, right in
             (left.lift.date, left.lift.createdAtMs) < (right.lift.date, right.lift.createdAtMs)
         }

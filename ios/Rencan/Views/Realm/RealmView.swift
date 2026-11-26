@@ -1,4 +1,5 @@
 import RencanCore
+import SwiftData
 import SwiftUI
 
 private enum Metrics {
@@ -12,7 +13,10 @@ private enum Metrics {
 /// 底部浮著一顆「記一筆修煉」。記一筆與手動輸入都是彈出表單，掛在 PagesView。
 struct RealmView: View {
     @Environment(AppFlow.self) private var flow
+    /// 今天記的修煉，照記的先後排。資料庫只撈今天的，不在畫面裡篩全部（2026-11-26 性能審查）。
+    @Query private var todayLifts: [LiftRecord]
     let digest: Digest
+    /// 呼叫的地方傳進來的全部紀錄。今天清單改成自己查之後用不到了，先留著不動呼叫端。
     let lifts: [LiftRecord]
     /// 最新那筆量測是手打的還是健康 app 帶進來的。
     let latestSource: RecordSource?
@@ -20,6 +24,21 @@ struct RealmView: View {
     let healthStatus: HealthLinkStatus
     /// 設定裡選的立繪造型（組塊 M1）
     let portraitStyle: PortraitStyle
+
+    init(
+        digest: Digest, lifts: [LiftRecord], latestSource: RecordSource?,
+        healthStatus: HealthLinkStatus, portraitStyle: PortraitStyle
+    ) {
+        self.digest = digest
+        self.lifts = lifts
+        self.latestSource = latestSource
+        self.healthStatus = healthStatus
+        self.portraitStyle = portraitStyle
+        // 過了午夜 digest.today 會換，RootTabView 重畫時這裡跟著換成新的一天。
+        let today = digest.today
+        let isToday = #Predicate<LiftRecord> { $0.day == today }
+        _todayLifts = Query(filter: isToday, sort: \LiftRecord.createdAt)
+    }
 
     var body: some View {
         ScrollView {
@@ -36,7 +55,7 @@ struct RealmView: View {
                     emptyStele
                 }
                 stats
-                TodayListView(digest: digest, lifts: lifts.filter { $0.day == digest.today })
+                TodayListView(digest: digest, lifts: todayLifts)
                     .padding(.top, RencanLayout.itemSpacing)
             }
             .padding(.horizontal, RencanLayout.screenMargin)

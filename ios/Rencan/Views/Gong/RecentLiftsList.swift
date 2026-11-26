@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 /// 這一塊自己的版面常數（數值照畫布 AnalysisGong 的「最近修煉」）。
@@ -17,18 +18,27 @@ private enum Metrics {
 /// 點一列進編輯（PRD S15）；刪除在編輯表單裡，這裡不做左滑。
 struct RecentLiftsList: View {
     @Environment(AppFlow.self) private var flow
+    /// 最新的 20 筆，資料庫排好、只撈這幾筆。原本把全部紀錄排一次再取前 20（2026-11-26 性能審查）。
+    @Query private var recent: [LiftRecord]
+    /// 呼叫的地方傳進來的全部紀錄。清單改成自己查之後用不到了，先留著不動呼叫端。
     let lifts: [LiftRecord]
     /// 今天的日期字串；日期欄靠它決定寫「今天」還是「11/10」。
     let today: String
+
+    init(lifts: [LiftRecord], today: String) {
+        self.lifts = lifts
+        self.today = today
+        _recent = Query(RecentLiftsList.newestFirstQuery(limit: Metrics.limit))
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: RencanLayout.itemSpacing) {
             SectionTitle(text: "最近修煉")
                 .padding(.horizontal, Metrics.titleInset)
-            if lifts.isEmpty {
+            if recent.isEmpty {
                 emptyState
             } else {
-                rows(Array(RecentLiftsList.newestFirst(lifts).prefix(Metrics.limit)))
+                rows(recent)
             }
         }
     }
@@ -50,11 +60,18 @@ struct RecentLiftsList: View {
     }
 
     /// 日期新的在上；同一天的，後記的在上（網頁版 byDate 再反過來的順序）。
-    /// 單一功法頁列全部紀錄時也用這個順序。
-    static func newestFirst(_ lifts: [LiftRecord]) -> [LiftRecord] {
-        lifts.sorted { left, right in
-            (left.day, left.createdAt) > (right.day, right.createdAt)
-        }
+    /// 單一功法頁列全部紀錄時也用這個順序，只是多一個「只要這一門」的條件、不限筆數。
+    /// 日期是固定寬度的「yyyy-MM-dd」，資料庫照字串排跟照日期排一樣。
+    static func newestFirstQuery(
+        matching predicate: Predicate<LiftRecord>? = nil, limit: Int? = nil
+    ) -> FetchDescriptor<LiftRecord> {
+        let newestDay = SortDescriptor(\LiftRecord.day, order: .reverse)
+        let latestRecorded = SortDescriptor(\LiftRecord.createdAt, order: .reverse)
+        var descriptor = FetchDescriptor<LiftRecord>(
+            predicate: predicate, sortBy: [newestDay, latestRecorded]
+        )
+        descriptor.fetchLimit = limit
+        return descriptor
     }
 
     private func rows(_ recent: [LiftRecord]) -> some View {

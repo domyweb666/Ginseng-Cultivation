@@ -30,8 +30,9 @@ struct HealthSyncTrigger: Equatable {
     let isReadEnabled: Bool
 }
 
-/// 最外層：讀資料、算畫面摘要、決定顯示第一次打開那頁還是三頁。
-/// 量測、修煉、設定在這裡用 @Query 讀一次，算成一份 Digest 往下傳，三頁拿到的是同一份數字。
+/// 最外層：讀資料、拿畫面摘要、決定顯示第一次打開那頁還是三頁。
+/// 量測、修煉、設定在這裡用 @Query 讀一次；Digest 從 StoreService 的快取拿（資料沒變不重算），
+/// 往下傳一份，三頁拿到的是同一份數字。
 struct RootTabView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(AppFlow.self) private var flow
@@ -49,7 +50,7 @@ struct RootTabView: View {
     var body: some View {
         Group {
             if let settings = settingsRows.first, settings.isProfileComplete {
-                switch digest(settings) {
+                switch digest() {
                 case .success(let digest):
                     PagesView(
                         digest: digest, lifts: lifts, latestSource: latestSource,
@@ -157,7 +158,7 @@ struct RootTabView: View {
             weightKg: entry.weightKg, bodyFatPercent: entry.bodyFatPercent,
             leanMassKg: entry.leanMassKg, day: entry.date, source: .health
         )
-        let summary = try digest(settings).get()
+        let summary = try digest().get()
         let judgement = try store.saveMeasurement(draft, replacing: false, digest: summary)
         flow.page = .realm
         if let celebration = Celebration.make(
@@ -179,13 +180,10 @@ struct RootTabView: View {
         return try await health.latestBodyComposition() != nil
     }
 
-    private func digest(_ settings: UserSettings) -> Result<Digest, Error> {
-        Result {
-            try Digest(
-                measurements: measurements.map(\.entry), lifts: lifts.compactMap(\.entry),
-                heightCm: settings.heightCm, sex: settings.sex, today: today
-            )
-        }
+    /// 存檔次數、今天、身高、性別都沒變就是上次那份。body 經這裡讀到 store.revision，
+    /// 存檔之後會跟著重畫；回前景、換買過的造型這些重畫不會再整份重算。
+    private func digest() -> Result<Digest, Error> {
+        Result { try store.digest(today: today) }
     }
 }
 

@@ -14,6 +14,13 @@ private enum Metrics {
     static let pointSize: CGFloat = 8
     static let latestPointSize: CGFloat = 10
     static let pointStroke: CGFloat = 2
+    /// 一般點改用圖表內建的圓。原本是 8 點的圓描 2 點邊、邊有一半在圓外：外徑 10、白色內徑 6。
+    static let plainPointSize = CGSize(
+        width: pointSize + pointStroke, height: pointSize + pointStroke
+    )
+    static let plainPointHole = CGSize(
+        width: pointSize - pointStroke, height: pointSize - pointStroke
+    )
     /// 圖的上下各多留這麼多 FFMI，最高與最低的線才不會貼邊
     static let domainPadding = 0.25
     /// 日期最多標幾個，再多會擠在一起
@@ -111,32 +118,46 @@ struct FFMIChartCard: View {
             )
             .foregroundStyle(Color.rencan.accent)
             .lineStyle(Metrics.lineStyle)
-            PointMark(
-                x: .value("距第一次量測幾天", points[index].dayOffset),
-                y: .value("FFMI", points[index].ffmi)
-            )
-            .symbol { pointSymbol(isLatest: index == points.count - 1) }
-            .annotation(position: .top) { latestLabel(index) }
+        }
+        // 其他點是空心小圓，用兩層內建的實心圓疊出來：外面 10 點主色，裡面 6 點白卡色。
+        // 自訂形狀與標註每個點都掛，量了幾年會變慢，所以只留給最新那一點（2026-11-26 性能審查）。
+        ForEach(points.indices.dropLast(), id: \.self) { index in
+            pointMark(points[index])
+                .symbol(BasicChartSymbolShape.circle)
+                .symbolSize(Metrics.plainPointSize)
+                .foregroundStyle(Color.rencan.accent)
+            pointMark(points[index])
+                .symbol(BasicChartSymbolShape.circle)
+                .symbolSize(Metrics.plainPointHole)
+                .foregroundStyle(Color.rencan.surface)
+        }
+        if let latest = points.last {
+            pointMark(latest)
+                .symbol { latestSymbol }
+                .annotation(position: .top) { latestLabel(latest) }
         }
     }
 
-    /// 最新那一點是實心的大圓，其他是空心小圓。
-    private func pointSymbol(isLatest: Bool) -> some View {
-        let size = isLatest ? Metrics.latestPointSize : Metrics.pointSize
-        return Circle()
-            .fill(isLatest ? Color.rencan.accent : Color.rencan.surface)
+    private func pointMark(_ point: FFMIPoint) -> PointMark {
+        PointMark(
+            x: .value("距第一次量測幾天", point.dayOffset),
+            y: .value("FFMI", point.ffmi)
+        )
+    }
+
+    /// 最新那一點是實心的大圓。
+    private var latestSymbol: some View {
+        Circle()
+            .fill(Color.rencan.accent)
             .overlay(Circle().stroke(Color.rencan.accent, lineWidth: Metrics.pointStroke))
-            .frame(width: size, height: size)
+            .frame(width: Metrics.latestPointSize, height: Metrics.latestPointSize)
     }
 
     /// 只有最新那一點上面寫數字。
-    @ViewBuilder
-    private func latestLabel(_ index: Int) -> some View {
-        if index == points.count - 1 {
-            Text(Formulas.fmt(points[index].ffmi, digits: 1))
-                .font(RencanType.caption.weight(.bold))
-                .foregroundStyle(Color.rencan.textPrimary)
-        }
+    private func latestLabel(_ point: FFMIPoint) -> some View {
+        Text(Formulas.fmt(point.ffmi, digits: 1))
+            .font(RencanType.caption.weight(.bold))
+            .foregroundStyle(Color.rencan.textPrimary)
     }
 
     // MARK: 軸

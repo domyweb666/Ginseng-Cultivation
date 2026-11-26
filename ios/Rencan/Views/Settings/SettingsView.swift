@@ -32,6 +32,11 @@ struct SettingsView: View {
     @Environment(AppFlow.self) private var flow
     @Environment(StoreService.self) private var store
     let digest: Digest
+    /// 身高加減到一半、還沒存的數字；nil 是沒在改，畫面照 digest 顯示。
+    @State private var draftHeightCm: Double?
+
+    /// 身高停手多久才存。按住連走時每走一格都存的話，每格都要存檔、寫小工具、整份重算（2026-11-26 性能審查）。
+    private static let heightSavePauseSeconds = 0.4
 
     var body: some View {
         ScrollView {
@@ -86,19 +91,36 @@ struct SettingsView: View {
     }
 
     /// 身高直接放加減鈕（跟第一次打開那頁同一顆），不另開一頁。
-    /// 顯示的數字一律來自 digest：存不進去時數字留在原本的值，不會停在沒存到的數字上。
+    /// 加減時先顯示草稿的數字，停手一下才存；存完草稿就清掉，數字回到來自 digest：
+    /// 存不進去時數字留在原本的值，不會停在沒存到的數字上。
+    /// 停手前就離開這頁的話，離開那一刻馬上存，不會漏掉。
     private func heightRow(heightCm: Double, sex: Sex) -> some View {
         VStack(alignment: .leading, spacing: RencanLayout.itemSpacing) {
             Text("身高")
                 .font(RencanType.body)
             HeightStepper(
                 heightCm: Binding(
-                    get: { heightCm },
-                    set: { save(heightCm: $0, sex: sex) }
+                    get: { draftHeightCm ?? heightCm },
+                    set: { draftHeightCm = $0 }
                 )
             )
         }
         .padding(.vertical, RencanLayout.groupSpacing)
+        .task(id: draftHeightCm) {
+            guard draftHeightCm != nil else { return }
+            guard await Task.pause(seconds: SettingsView.heightSavePauseSeconds) else { return }
+            saveDraftHeight(sex: sex)
+        }
+        .onDisappear {
+            saveDraftHeight(sex: sex)
+        }
+    }
+
+    /// 把還沒存的身高存起來。先清草稿再存：存好了 digest 就是新的數字，存不進去就回到原本的值。
+    private func saveDraftHeight(sex: Sex) {
+        guard let draft = draftHeightCm else { return }
+        draftHeightCm = nil
+        save(heightCm: draft, sex: sex)
     }
 
     private func sexRow(heightCm: Double, sex: Sex) -> some View {
@@ -128,7 +150,10 @@ struct SettingsView: View {
         let textColor = isSelected ? Color.rencan.textPrimary : Color.rencan.textSecondary
         let shadowOpacity = isSelected ? RencanLayout.shadowOpacity : 0
         return Button {
-            save(heightCm: heightCm, sex: value)
+            // 身高還在等停手時就點性別：連同還沒存的身高一起存，草稿清掉，等著的那次就不會再存一次
+            let pendingHeightCm = draftHeightCm ?? heightCm
+            draftHeightCm = nil
+            save(heightCm: pendingHeightCm, sex: value)
         } label: {
             Text(title)
                 .font(RencanType.subheadline.weight(.semibold))

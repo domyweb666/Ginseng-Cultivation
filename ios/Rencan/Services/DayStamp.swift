@@ -4,11 +4,13 @@ import Foundation
 /// 一律用西曆加手機的時區：手機設成民國曆或佛曆時，Calendar.current 的年份不是西元年，
 /// 存下去的字串就跟網頁版對不上了。
 enum DayStamp {
-    private static var calendar: Calendar {
+    /// 只建一次（2026-11-26 性能審查）。時區用 autoupdatingCurrent：手機換時區後每次算都跟著換，
+    /// 跟原本每次重建、每次讀 .current 的結果一樣，不會卡在第一次讀到的時區。
+    private static let calendar: Calendar = {
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = .current
+        calendar.timeZone = .autoupdatingCurrent
         return calendar
-    }
+    }()
 
     static var today: String {
         string(from: Date())

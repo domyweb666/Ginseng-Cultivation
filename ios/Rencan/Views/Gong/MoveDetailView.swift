@@ -1,5 +1,6 @@
 import Charts
 import RencanCore
+import SwiftData
 import SwiftUI
 
 /// 這一頁自己的版面常數。
@@ -21,9 +22,22 @@ private enum Metrics {
 /// 橫軸是第幾筆，不是日期。
 struct MoveDetailView: View {
     @Environment(AppFlow.self) private var flow
+    /// 這門功法的全部紀錄，新的在上。資料庫只撈這一門、排好，不在畫面裡篩全部再排
+    /// （2026-11-26 性能審查）。
+    @Query private var ownLifts: [LiftRecord]
     let key: MoveKey
     let digest: Digest
+    /// 呼叫的地方傳進來的全部紀錄。紀錄改成自己查之後用不到了，先留著不動呼叫端。
     let lifts: [LiftRecord]
+
+    init(key: MoveKey, digest: Digest, lifts: [LiftRecord]) {
+        self.key = key
+        self.digest = digest
+        self.lifts = lifts
+        let move = key.rawValue
+        let isThisMove = #Predicate<LiftRecord> { $0.move == move }
+        _ownLifts = Query(RecentLiftsList.newestFirstQuery(matching: isThisMove))
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -103,16 +117,16 @@ struct MoveDetailView: View {
     }
 
     /// 這門功法的全部紀錄。一筆都沒有時不畫這一塊，上半張已經寫「還沒有紀錄」。
+    /// 練了幾年一門會有幾百列，用 LazyVStack 捲到才建。
     @ViewBuilder
     private var records: some View {
-        let own = RecentLiftsList.newestFirst(lifts.filter { $0.move == key.rawValue })
-        if !own.isEmpty {
+        if !ownLifts.isEmpty {
             VStack(alignment: .leading, spacing: RencanLayout.itemSpacing) {
                 SectionTitle(text: "全部紀錄")
                     .padding(.horizontal, Metrics.titleInset)
-                VStack(spacing: 0) {
-                    ForEach(own) { record in
-                        if record.uid != own.first?.uid {
+                LazyVStack(spacing: 0) {
+                    ForEach(ownLifts) { record in
+                        if record.uid != ownLifts.first?.uid {
                             RowDivider()
                         }
                         row(record)

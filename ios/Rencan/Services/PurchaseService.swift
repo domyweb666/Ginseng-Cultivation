@@ -170,6 +170,8 @@ final class PurchaseService {
             else { continue }
             owned.insert(transaction.productID)
         }
+        // 一樣就不重新指定：@Observable 一指定就通知，回前景時最外層會白白重畫一次。
+        guard owned != ownedProductIDs else { return }
         ownedProductIDs = owned
     }
 

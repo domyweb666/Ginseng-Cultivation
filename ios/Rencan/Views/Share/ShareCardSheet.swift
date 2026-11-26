@@ -38,11 +38,17 @@ struct ShareCardSheet: View {
     /// 道號輸入框在 UIKit 那一層的本體，只用來問它是不是還在選字
     @State private var nameField = NameFieldBox()
     @State private var showsBodyFat = true
-    /// 照目前的道號與開關做好的 1080×1920 圖；內容一改就重做
+    /// 照目前的道號與開關做好的 1080×1920 圖；內容一改，停手一下才重做
     @State private var rendered: UIImage?
+    /// rendered 是照哪一份內容畫的。跟現在的內容不一樣，就是最新那張還沒畫好
+    @State private var renderedContent: ShareCardContent?
     /// 卡片下面那一句：存好了、或為什麼沒存成
     @State private var notice: String?
     @State private var isSaving = false
+
+    /// 內容改了停手多久才重畫。打道號時每按一個鍵內容就變一次，每次都在主執行緒畫一張
+    /// 1080×1920 的圖，舊手機打字會黏（2026-11-26 性能審查）。
+    private static let renderPauseSeconds = 0.3
 
     private var content: ShareCardContent? {
         ShareCardContent(
@@ -74,7 +80,7 @@ struct ShareCardSheet: View {
                 }
                 buttons(content)
                     .task(id: content) {
-                        rendered = ShareCard.render(content)
+                        await render(content)
                     }
             } else {
                 // 入口在沒量過時是藏起來的；萬一還是打開了，講清楚要先做什麼
@@ -187,7 +193,8 @@ struct ShareCardSheet: View {
             .buttonStyle(RencanSecondaryButtonStyle())
             .disabled(rendered == nil || isSaving)
             .accessibilityIdentifier("share-card-save")
-            if let rendered {
+            // 最新那張還沒畫好時不給分享，免得分享出去的是改之前的卡
+            if let rendered, renderedContent == content {
                 let image = Image(uiImage: rendered)
                 ShareLink(
                     item: image,
@@ -209,6 +216,15 @@ struct ShareCardSheet: View {
         .padding(.horizontal, RencanLayout.screenMargin)
         .padding(.vertical, RencanLayout.itemSpacing)
         .background(Color.rencan.canvas)
+    }
+
+    /// 剛打開還沒有圖時馬上畫，按鈕不用空等；之後內容改了，停手一下才畫，被下一次修改取消就不畫。
+    private func render(_ content: ShareCardContent) async {
+        if rendered != nil {
+            guard await Task.pause(seconds: ShareCardSheet.renderPauseSeconds) else { return }
+        }
+        rendered = ShareCard.render(content)
+        renderedContent = content
     }
 
     /// 道號超過上限就把多的字拿掉，並在欄位下面提醒一句；刪到上限以內提醒就收起來。
@@ -240,10 +256,15 @@ struct ShareCardSheet: View {
 
     /// 存一張 1080×1920 的圖到相簿。第一次會問要不要讓 app 加入照片；沒答應就講怎麼打開。
     private func saveToPhotos() async {
-        guard let rendered else { return }
+        guard let content else { return }
         isSaving = true
         defer { isSaving = false }
         saveDaoName()
+        // 打完字馬上按的話，最新那張還在等停手：當下照最新的內容現畫一張，存的一定是看到的那張卡
+        guard let image = renderedContent == content ? rendered : ShareCard.render(content) else {
+            notice = "沒有存成功，請再試一次。"
+            return
+        }
         let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
         guard status == .authorized || status == .limited else {
             notice = "沒有存到相簿。到「設定」讓人蔘修煉可以加入照片，再試一次。"
@@ -251,7 +272,7 @@ struct ShareCardSheet: View {
         }
         do {
             try await PHPhotoLibrary.shared().performChanges {
-                PHAssetChangeRequest.creationRequestForAsset(from: rendered)
+                PHAssetChangeRequest.creationRequestForAsset(from: image)
             }
             notice = "已存到相簿"
         } catch {

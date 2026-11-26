@@ -19,6 +19,11 @@ struct LiftFormView: View {
     @State private var date = Date()
     @State private var errorMessage: String?
     @State private var isLoaded = false
+    /// 選中那門功法「上次」那一行的字。打開表單、換功法時算一次就好：
+    /// 寫在 body 裡的話，按住加減重量時每走一格都要掃一遍全部修煉（2026-11-26 性能審查）。
+    @State private var lastText: String?
+    /// 表單上那一天的體重。打開表單、換日期時才重算，加減數字時不重算（同上）。
+    @State private var bodyweightKg: Double?
 
     /// 沒有上一筆可以帶時的起始值：空槓 20 公斤、5 下、3 組（次數與組數照網頁版表單）。
     private static let defaultKg: Double = 20
@@ -60,6 +65,9 @@ struct LiftFormView: View {
         }
         .background(Color.rencan.canvas.ignoresSafeArea())
         .onAppear(perform: loadLast)
+        .onChange(of: day) { _, newDay in
+            bodyweightKg = digest.bodyweight(on: newDay)
+        }
     }
 
     private var move: Move {
@@ -68,10 +76,6 @@ struct LiftFormView: View {
 
     private var day: String {
         DayStamp.string(from: date)
-    }
-
-    private var bodyweightKg: Double? {
-        digest.bodyweight(on: day)
     }
 
     private var movePicker: some View {
@@ -93,8 +97,8 @@ struct LiftFormView: View {
     /// 選中的功法上次是哪天、多少。欄位一加減就看不到上次的數字了，所以另外寫一行（2026-11-25）。
     @ViewBuilder
     private var lastLine: some View {
-        if let last = lastRecord(of: moveKey) {
-            Text(LiftText.last(last, today: digest.today))
+        if let lastText {
+            Text(lastText)
                 .font(RencanType.footnote)
                 .foregroundStyle(Color.rencan.textSecondary)
                 .accessibilityIdentifier("lift-last")
@@ -178,6 +182,7 @@ struct LiftFormView: View {
     private func loadLast() {
         guard !isLoaded else { return }
         isLoaded = true
+        bodyweightKg = digest.bodyweight(on: day)
         if let last = lifts.last, let key = MoveKey(rawValue: last.move) {
             moveKey = key
         }
@@ -195,11 +200,13 @@ struct LiftFormView: View {
     private func fill(for key: MoveKey) {
         let isBodyweightMove = Tables.moves.first { $0.key == key }?.usesBodyweight == true
         guard let last = lastRecord(of: key) else {
+            lastText = nil
             kg = isBodyweightMove ? 0 : LiftFormView.defaultKg
             reps = LiftFormView.defaultReps
             sets = LiftFormView.defaultSets
             return
         }
+        lastText = LiftText.last(last, today: digest.today)
         kg = last.kg
         reps = last.reps
         sets = last.sets

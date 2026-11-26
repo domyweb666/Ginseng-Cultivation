@@ -80,11 +80,19 @@ extension StoreService {
 
     /// 把健康 app 帶進來的量測存進去（片 E4）。同一天已經有一筆的不動，回實際新增幾筆。
     /// 帶進來的量測不做慶祝判定，跟補登一樣。
+    /// 先全部檢查完才放進資料庫（跟 checkImport 一樣）：檢查到一半丟錯的話，前面放進去的幾筆
+    /// 會在下一次任何存檔時被一起存掉。已經有量測的日子一次撈好，不每一筆都去資料庫查
+    /// （健康 app 有上千天時會卡，性能審查第四區）。一筆都沒加就不存。
     func importHealthMeasurements(_ entries: [MeasurementEntry]) throws -> Int {
-        var added = 0
         for entry in entries {
             try Validation.check(entry)
-            guard try measurement(on: entry.date) == nil else { continue }
+        }
+        let localMeasurements = try context.fetch(FetchDescriptor<Measurement>())
+        var takenDays = Set(localMeasurements.map(\.day))
+        var added = 0
+        for entry in entries {
+            // 同一批裡同一天有兩筆的，也只放第一筆（跟以前逐筆查資料庫的結果一樣）。
+            guard takenDays.insert(entry.date).inserted else { continue }
             let record = Measurement(
                 uid: entry.id, day: entry.date, weightKg: entry.weightKg,
                 bodyFatPercent: entry.bodyFatPercent, leanMassKg: entry.leanMassKg,
@@ -93,6 +101,7 @@ extension StoreService {
             context.insert(record)
             added += 1
         }
+        guard added > 0 else { return 0 }
         try save()
         return added
     }
