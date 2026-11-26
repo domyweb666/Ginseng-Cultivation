@@ -12,6 +12,7 @@ import SwiftData
 ///   -rencanSeed unstable   身高 174、男，金丹但體脂 24%（根基不穩）
 ///   -rencanSeed away       demo 的資料，修煉全部往前推 40 天，量測照舊（回來還沒記）
 ///   -rencanSeed gateAfter  身高 174、男，先突破到金丹，最新一筆體脂 24%（境界照舊、才能再突破）
+///   -rencanSeed heavy      三年 3000 筆修煉、200 筆量測，量時間用（UITestHeavySeed）
 ///   -rencanPlayPortrait    境界碑的立繪照播動畫（測試模式預設不播）
 ///   -rencanHoldCelebration 全螢幕慶祝不自己關，等測試點掉（XCUITest 用；Limrun 走流程不帶）
 ///   -rencanOwn ink,celadon 假商店裡先算已經買了這幾種造型；all 是全套（PurchaseService）
@@ -86,6 +87,8 @@ enum UITestSupport {
                 try seedDemo(liftsDaysBack: 0, into: services)
             case "away":
                 try seedDemo(liftsDaysBack: 40, into: services)
+            case "heavy":
+                try UITestHeavySeed.seed(into: services)
             case "gateAfter":
                 try services.store.saveProfile(heightCm: seedHeightCm, sex: .male)
                 context.insert(measurement(70.4, 14.2, daysAgo: 40, lean: nil))
