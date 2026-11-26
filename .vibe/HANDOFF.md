@@ -1,3 +1,27 @@
+# Handoff: 性能修正在 work/perf-1126，等檢查線綠了出 TestFlight；1.1（41）與 1.0（40）照舊等
+
+> 產出時間：2026-11-26。分支 `work/perf-1126`（從 `work/return` 開出來，前面三批都在裡面）。沒併 main。
+> 上一份交接備份在 `.vibe/handoff/archive/HANDOFF-2026-11-26-出關前.md`。
+
+## 🆕 2026-11-26 性能審查與修正（多米：「先量再改」「綠了就出一版 TestFlight 給我測」）
+
+- 審查報告：`.vibe/性能審查-2026-11-26.md`。根因是同一份 Digest 算太多次（body 裡算、每次存檔算、開 app 在 init 算）。立繪動畫沒問題。
+- 量時間：`RencanCore/Tests/.../DigestPerformanceTests.swift`（Linux，搜「[perf]」）、`RencanUITests/PerfUITests.swift` 加 `-rencanSeed heavy`（3000 筆修煉，`UITestHeavySeed.swift`，結果在截圖 artifact 的 perf.txt）。
+- 改法（commit fbb985e、8f7be2d）：StoreService 加 revision 與 Digest 快取（畫面、小工具、Siri 共用）、save 沒改到不存、開 app 快照移到 `.task`、快照內容沒變不 reload、健康匯入先驗完再一次撈已有日子、已購清單沒變不重設、修煉卡停 0.3 秒才重畫、設定身高停 0.4 秒才存（離開頁面與點性別時馬上存）、記一筆「上次」與體重只在打開與換日時算、最近修煉／單一功法／今天清單改 @Query、FFMI 一般點用兩層內建圓、`MeasurementsByDate` 量測排一次二分找體重（新舊對照測試 10 條）、DayStamp calendar 改 static let。
+- 前後數字（模擬器，3000 筆）：開 app 8.21→7.30 秒、回前景 1.27→0.97、打 8 字道號 1.45→0.66、按住身高後畫面停下 3.71→2.00、點功法分段 1.97→2.25（模擬器有雜訊，沒變好）、打開記一筆 1.91→1.91、按住走的格數沒變。Digest 95.7→26.9 ms（Linux 除錯版）。
+- 截圖：FFMI 走勢、功法清單、設定按住身高，改前改後一樣（後兩者位元組相同）。
+- 檢查線：fbb985e 那輪 UI 34 條全過、規則引擎 418 條全過，只有 swift-format 一條（迴圈開頭 guard continue）紅，8f7be2d 修掉，run 45743378156 在跑。
+- 測試說明已換（4f667fb，[skip ci]）。
+
+## ⏭️ 接手要做的
+
+1. 確認 run 45743378156 綠了，`gh workflow run ios.yml --ref work/perf-1126` 出 TestFlight（版號照舊 1.1，建置號是 run_number）。紅了先修再出。
+2. 等多米真機回饋：身高停手才存、修煉卡分享鈕灰一下、其他順不順。
+3. 沒做、留著的（報告第五區）：立繪動畫在別頁還在跑、粒子多跑 2.6 秒、回前景重抓商品價格、陰影包住立繪、`HealthKitQueries.swift:79` 的 calendar 也是每次重建；沒量測時每次回前景讀全部健康歷史（第四區第三條）也沒改。
+4. 傳進來沒用到的參數 `RealmView.lifts`、`RecentLiftsList.lifts`、`MoveDetailView.lifts` 先留著，之後可以從呼叫端拿掉。
+
+以下是 2026-11-25 的交接，仍然有效。
+
 # Handoff: TestFlight 1.1（41）已出（手感、境界、出關），等多米真機；1.0（40）等 Apple
 
 > 產出時間：2026-11-25。分支 `work/return`（從 `work/realm-average` 開出來，境界平均與手感三點都在裡面）。都沒併 main。TestFlight 1.1（41）已上傳。
