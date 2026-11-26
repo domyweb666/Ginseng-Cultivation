@@ -114,7 +114,7 @@ final class HealthKitService {
     /// day 是 nil 就從最早的開始拿（換手機重建歷史）。
     func bodySamples(since day: String?) async throws -> [HealthSample] {
         guard try isReady() else { return [] }
-        guard let day else { return try await queries.bodySamples(from: nil, to: nil) }
+        guard let day else { return try await everyBodySample() }
         guard let noon = DayStamp.date(from: day) else { throw RencanError.invalidDate }
         let start = HealthQueries.calendar.startOfDay(for: noon)
         return try await queries.bodySamples(from: start, to: nil)
@@ -150,6 +150,22 @@ final class HealthKitService {
     }
 
     // MARK: 內部
+
+    /// app 裡一筆量測都沒有時，從健康 app 最早的樣本開始拿。
+    /// 湊得成一筆的那天一定要有體脂率（HealthImport），所以先讀體脂率：一筆都沒有，
+    /// 體重與去脂體重各只拿最新一筆。原本只有體重的人每次回前景都把整段體重歷史讀一遍
+    /// （2026-11-26 性能審查）。有沒有拿到樣本照舊，境界頁判斷讀不讀得到的結果不變。
+    private func everyBodySample() async throws -> [HealthSample] {
+        let fat = try await queries.samples(of: HealthTypes.bodyFat, from: nil, to: nil, limit: nil)
+        let limit: Int? = fat.isEmpty ? 1 : nil
+        var result = fat.map { HealthQueries.convert($0, kind: .bodyFat) }
+        for kind in [HealthSampleKind.weight, .leanMass] {
+            let type = HealthTypes.quantityType(for: kind)
+            let found = try await queries.samples(of: type, from: nil, to: nil, limit: limit)
+            result += found.map { HealthQueries.convert($0, kind: kind) }
+        }
+        return result
+    }
 
     /// 可以去問健康 app 了嗎。UI 測試模式回 false，呼叫的函式直接回沒有資料；
     /// 裝置沒有健康 app 就丟錯。
