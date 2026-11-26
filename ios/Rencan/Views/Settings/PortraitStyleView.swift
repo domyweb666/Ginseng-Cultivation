@@ -207,7 +207,7 @@ struct PortraitStyleView: View {
             Button {
                 Task { await buy(productID) }
             } label: {
-                Text(price.map { "購買「\(name)」 \($0)" } ?? "連不上 App Store")
+                Text(price.map { "購買「\(name)」 \($0)" } ?? missingPriceText)
             }
             .buttonStyle(RencanPrimaryButtonStyle())
             .disabled(price == nil || isWorking)
@@ -216,6 +216,13 @@ struct PortraitStyleView: View {
         .padding(.horizontal, RencanLayout.screenMargin)
         .padding(.vertical, RencanLayout.itemSpacing)
         .background(Color.rencan.canvas)
+    }
+
+    /// 購買鍵拿不到價格時寫什麼。價格改成打開這頁才抓（2026-11-26），這次打開還沒抓回來時
+    /// 寫「讀取價格中」，不先說連不上。
+    private var missingPriceText: String {
+        let isLoading = purchases.displayPrices.isEmpty && !purchases.isStoreUnavailable
+        return isLoading ? "讀取價格中" : "連不上 App Store"
     }
 
     /// 立繪放大或縮小都用整數倍、關掉平滑，像素格子才不會糊。

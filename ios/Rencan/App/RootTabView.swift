@@ -87,9 +87,10 @@ struct RootTabView: View {
             await syncHealth()
         }
         // 回到前景就重看一次買過什麼（退款、別台裝置買的），沒買的造型畫面自動回原版。
+        // 價格不在這裡抓，打開選造型頁才抓。
         .task(id: scenePhase == .active) {
             guard scenePhase == .active else { return }
-            await purchases.refresh()
+            await purchases.refreshOwned()
         }
     }
 

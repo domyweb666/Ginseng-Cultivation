@@ -96,7 +96,17 @@ final class PurchaseService {
         }
     }
 
-    /// 讀價格與買過的東西。app 回到前景、打開選造型頁時各叫一次。
+    /// 只重看買過什麼（退款、別台裝置買的），不碰價格。app 回到前景時叫。
+    /// 原本回前景也向 App Store 重抓 12 個商品價格，價格只有選造型頁用得到（2026-11-26 性能審查）。
+    func refreshOwned() async {
+        if UITestSupport.isUITest {
+            applyTestStore()
+            return
+        }
+        await refreshEntitlements()
+    }
+
+    /// 讀價格與買過的東西。打開選造型頁時叫。
     /// 讀不到價格不往上丟：選造型頁照 isStoreUnavailable 顯示「連不上 App Store」，
     /// 已買的照 Apple 給的算（這段不需要網路）。
     func refresh() async {
