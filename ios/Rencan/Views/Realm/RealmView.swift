@@ -16,8 +16,6 @@ struct RealmView: View {
     /// 今天記的修煉，照記的先後排。資料庫只撈今天的，不在畫面裡篩全部（2026-11-26 性能審查）。
     @Query private var todayLifts: [LiftRecord]
     let digest: Digest
-    /// 呼叫的地方傳進來的全部紀錄。今天清單改成自己查之後用不到了，先留著不動呼叫端。
-    let lifts: [LiftRecord]
     /// 最新那筆量測是手打的還是健康 app 帶進來的。
     let latestSource: RecordSource?
     /// 健康 app 這條線現在怎麼樣（RootTabView 回到前景時去讀一次）。
@@ -26,11 +24,10 @@ struct RealmView: View {
     let portraitStyle: PortraitStyle
 
     init(
-        digest: Digest, lifts: [LiftRecord], latestSource: RecordSource?,
+        digest: Digest, latestSource: RecordSource?,
         healthStatus: HealthLinkStatus, portraitStyle: PortraitStyle
     ) {
         self.digest = digest
-        self.lifts = lifts
         self.latestSource = latestSource
         self.healthStatus = healthStatus
         self.portraitStyle = portraitStyle

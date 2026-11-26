@@ -232,12 +232,12 @@ struct PagesView: View {
                 .tabPage(.settings, current: flow.page, clearance: clearance)
                 .tag(RencanPage.settings)
             RealmView(
-                digest: digest, lifts: lifts, latestSource: latestSource,
+                digest: digest, latestSource: latestSource,
                 healthStatus: healthStatus, portraitStyle: portraitStyle
             )
             .tabPage(.realm, current: flow.page, clearance: clearance)
             .tag(RencanPage.realm)
-            AnalysisView(digest: digest, lifts: lifts)
+            AnalysisView(digest: digest)
                 .tabPage(.analysis, current: flow.page, clearance: clearance)
                 .tag(RencanPage.analysis)
         }
@@ -258,7 +258,7 @@ struct PagesView: View {
         case .editLift(let record):
             EditRecordView(record: record, digest: digest)
         case .moveDetail(let key):
-            MoveDetailView(key: key, digest: digest, lifts: lifts)
+            MoveDetailView(key: key, digest: digest)
         case .portraitStyle:
             PortraitStyleView(digest: digest)
         case .shareCard:

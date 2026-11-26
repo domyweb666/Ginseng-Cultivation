@@ -24,15 +24,13 @@ private enum Metrics {
 /// 一筆修煉都沒有時，三格是 0、每張卡寫「還沒有紀錄」，「最近修煉」那格換成一句說明。
 struct GongView: View {
     let digest: Digest
-    /// 全部的修煉紀錄；最近修煉自己挑最新的幾筆。
-    let lifts: [LiftRecord]
 
     var body: some View {
         VStack(alignment: .leading, spacing: RencanLayout.sectionSpacing) {
             GongStats(digest: digest)
             radar
             moveCards
-            RecentLiftsList(lifts: lifts, today: digest.today)
+            RecentLiftsList(today: digest.today)
             GongRulesCard(sex: digest.sex)
         }
     }

@@ -27,13 +27,10 @@ struct MoveDetailView: View {
     @Query private var ownLifts: [LiftRecord]
     let key: MoveKey
     let digest: Digest
-    /// 呼叫的地方傳進來的全部紀錄。紀錄改成自己查之後用不到了，先留著不動呼叫端。
-    let lifts: [LiftRecord]
 
-    init(key: MoveKey, digest: Digest, lifts: [LiftRecord]) {
+    init(key: MoveKey, digest: Digest) {
         self.key = key
         self.digest = digest
-        self.lifts = lifts
         let move = key.rawValue
         let isThisMove = #Predicate<LiftRecord> { $0.move == move }
         _ownLifts = Query(RecentLiftsList.newestFirstQuery(matching: isThisMove))

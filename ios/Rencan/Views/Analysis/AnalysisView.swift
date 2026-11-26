@@ -17,7 +17,6 @@ struct AnalysisView: View {
     }
 
     let digest: Digest
-    let lifts: [LiftRecord]
     @State private var segment: Segment = .realm
 
     var body: some View {
@@ -31,7 +30,7 @@ struct AnalysisView: View {
                 case .realm:
                     AnalysisRealmSection(digest: digest)
                 case .gong:
-                    GongView(digest: digest, lifts: lifts)
+                    GongView(digest: digest)
                 }
             }
             .padding(.horizontal, RencanLayout.screenMargin)

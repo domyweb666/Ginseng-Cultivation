@@ -20,13 +20,10 @@ struct RecentLiftsList: View {
     @Environment(AppFlow.self) private var flow
     /// 最新的 20 筆，資料庫排好、只撈這幾筆。原本把全部紀錄排一次再取前 20（2026-11-26 性能審查）。
     @Query private var recent: [LiftRecord]
-    /// 呼叫的地方傳進來的全部紀錄。清單改成自己查之後用不到了，先留著不動呼叫端。
-    let lifts: [LiftRecord]
     /// 今天的日期字串；日期欄靠它決定寫「今天」還是「11/10」。
     let today: String
 
-    init(lifts: [LiftRecord], today: String) {
-        self.lifts = lifts
+    init(today: String) {
         self.today = today
         _recent = Query(RecentLiftsList.newestFirstQuery(limit: Metrics.limit))
     }
