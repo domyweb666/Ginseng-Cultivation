@@ -220,7 +220,8 @@ struct PortraitStyleView: View {
 
     /// 購買鍵拿不到價格時寫什麼。價格改成打開這頁才抓（2026-11-26），這次打開還沒抓回來時
     /// 寫「讀取價格中」，不先說連不上。
-    private var missingPriceText: String {
+    /// 型別是 LocalizedStringKey：跟購買那句同一種，Text 才照原本的排法（String 會讓「」後面多出空格）。
+    private var missingPriceText: LocalizedStringKey {
         let isLoading = purchases.displayPrices.isEmpty && !purchases.isStoreUnavailable
         return isLoading ? "讀取價格中" : "連不上 App Store"
     }
