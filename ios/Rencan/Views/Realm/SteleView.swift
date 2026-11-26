@@ -73,15 +73,17 @@ struct SteleView: View {
                     .onChange(of: proxy.size.width) { _, width in heroWidth = width }
             }
         }
-        .background(
-            Color.rencan.realmBase(standing.realmIndex),
-            in: RoundedRectangle(cornerRadius: RencanLayout.heroCornerRadius)
-        )
-        .shadow(
-            color: Color.rencan.shadow.opacity(RencanLayout.shadowOpacity),
-            radius: RencanLayout.shadowRadius,
-            y: RencanLayout.shadowY
-        )
+        // 陰影只掛在底色那塊圓角上。原本包住整張卡，立繪每換一格陰影就跟著重算（2026-11-26 性能審查）。
+        // 立繪與字都在底色裡面，看起來一樣。不要加 .drawingGroup()，那會把整張動畫大圖先畫進暫存畫布。
+        .background {
+            RoundedRectangle(cornerRadius: RencanLayout.heroCornerRadius)
+                .fill(Color.rencan.realmBase(standing.realmIndex))
+                .shadow(
+                    color: Color.rencan.shadow.opacity(RencanLayout.shadowOpacity),
+                    radius: RencanLayout.shadowRadius,
+                    y: RencanLayout.shadowY
+                )
+        }
         // 螢幕寬 375 的手機放不下最窄寬度：對外只佔拿到的寬，多出來的左右平均凸出去，
         // 不把整頁撐寬。
         .frame(maxWidth: .infinity)
@@ -97,6 +99,12 @@ struct SteleView: View {
     /// 立繪要不要動。減少動態效果、低耗電、app 不在前景、跑自動測試時都放靜態圖。
     private var isAnimating: Bool {
         scenePhase == .active && !reduceMotion && !isLowPower && !UITestSupport.holdsPortraitStill
+    }
+
+    /// 現在看不看得到立繪：在境界頁、沒開表單、沒在慶祝。看不到時動畫停在當格，
+    /// 不換成靜態圖（換圖那一下從表單後面看得到）。原本切到別頁還一直在換格（2026-11-26 性能審查）。
+    private var isOnScreen: Bool {
+        flow.page == .realm && flow.sheet == nil && flow.celebration == nil
     }
 
     /// 點立繪打開選造型頁（2026-11-18 多米選的 B 版），左下角寫現在是哪個造型。
@@ -157,7 +165,10 @@ struct SteleView: View {
         let columns = RencanPortrait.animationColumns
         let rows = RencanPortrait.animationRows
         let seconds = RencanPortrait.animationFrameSeconds
-        return TimelineView(.periodic(from: animationStart, by: seconds)) { context in
+        let schedule = PortraitFrameSchedule(
+            start: animationStart, interval: seconds, isPaused: !isOnScreen
+        )
+        return TimelineView(schedule) { context in
             let elapsed = context.date.timeIntervalSince(animationStart) / seconds
             let frame = Int(max(0, elapsed.rounded())) % (columns * rows)
             let name = RencanPortrait.animationName(
@@ -302,5 +313,31 @@ struct SteleView: View {
         let stage = Tables.stages[standing.stageIndex]
         let walked = Formulas.fmt(stele.stagePercent, digits: 0)
         return "\(standing.realm.name)\(stage)走了百分之 \(walked)"
+    }
+}
+
+/// 立繪動畫的換格時刻：從 start 起每 interval 秒一格，跟原本用的 .periodic 一樣，格子照舊對齊。
+/// 暫停時只給目前這一格的時刻，畫面停在當格、不再換；恢復時從現在這格接著走。
+struct PortraitFrameSchedule: TimelineSchedule {
+    let start: Date
+    let interval: TimeInterval
+    let isPaused: Bool
+
+    func entries(from startDate: Date, mode: TimelineScheduleMode) -> AnyIterator<Date> {
+        let passed = max(0, startDate.timeIntervalSince(start))
+        var next = start.addingTimeInterval((passed / interval).rounded(.down) * interval)
+        if isPaused {
+            var isDone = false
+            return AnyIterator {
+                guard !isDone else { return nil }
+                isDone = true
+                return next
+            }
+        }
+        return AnyIterator {
+            let current = next
+            next = next.addingTimeInterval(interval)
+            return current
+        }
     }
 }
