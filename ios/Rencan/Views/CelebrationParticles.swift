@@ -103,6 +103,12 @@ struct CelebrationBurst {
         self.start = start
     }
 
+    /// 最後一顆淡完是開始後幾秒：最晚噴的那波加上一顆粒子的壽命。
+    var duration: Double {
+        let lastDelay = particles.map(\.delay).max() ?? 0
+        return (lastDelay + 1 / Metrics.fadePerFrame) / Metrics.framesPerSecond
+    }
+
     /// 一波粒子：方向繞一圈平均抽，速度與大小在範圍內抽。
     private static func wave(
         count: Int, delay: Double, random: inout CelebrationRandom
@@ -129,22 +135,38 @@ struct CelebrationBurst {
 }
 
 /// 把一批粒子畫出來。位置只跟「過了多久」有關，每一幀重算，不存狀態。
+/// 最後一顆淡完（約 1.9 秒）就把整塊拿掉，不再每幀重畫到慶祝關掉（2026-11-26 性能審查）。
 struct CelebrationParticlesView: View {
     let burst: CelebrationBurst
+    /// 粒子全部淡完了
+    @State private var isFinished = false
 
     var body: some View {
-        TimelineView(.animation) { timeline in
-            let frame = timeline.date.timeIntervalSince(burst.start) * Metrics.framesPerSecond
-            Canvas { context, size in
-                for particle in burst.particles {
-                    guard let dot = particle.dot(frame: frame, in: size) else { continue }
-                    context.opacity = dot.opacity
-                    context.fill(Path(ellipseIn: dot.rect), with: .color(color(of: particle)))
+        Group {
+            if !isFinished {
+                TimelineView(.animation) { timeline in
+                    let elapsed = timeline.date.timeIntervalSince(burst.start)
+                    let frame = elapsed * Metrics.framesPerSecond
+                    Canvas { context, size in
+                        for particle in burst.particles {
+                            guard let dot = particle.dot(frame: frame, in: size) else { continue }
+                            context.opacity = dot.opacity
+                            context.fill(
+                                Path(ellipseIn: dot.rect), with: .color(color(of: particle))
+                            )
+                        }
+                    }
                 }
             }
         }
         .allowsHitTesting(false)
         .accessibilityHidden(true)
+        .task(id: burst.start) {
+            isFinished = false
+            let remaining = burst.duration - Date().timeIntervalSince(burst.start)
+            guard await Task.pause(seconds: max(0, remaining)) else { return }
+            isFinished = true
+        }
     }
 
     private func color(of particle: CelebrationParticle) -> Color {
