@@ -42,8 +42,9 @@ SHOTS = [
     dict(name="05-log", raw="6-log-lift.png", title=["練完記四格", "不用填一堆"], sub="功法、重量、次數、組數，記完就算等級"),
     dict(name="06-moves", raw="7-moves.png", title=["十二門功法", "各有等級"], sub="深蹲叫坐馬樁、硬舉叫拔山式，從未入門練到化境"),
     dict(name="07-data", raw="8-data.png", title=["不用註冊", "資料只在手機"], sub="換手機用匯出檔帶走，量測從健康 app 重建"),
-    dict(name="08-styles", raw="10-styles.png", title=["十一種造型", "換一種畫風"], sub="原版免費。記錄、算境界全部免費，付費的只有造型",
-         badge=PAID),
+    dict(name="08-styles", raw="10-styles.png", title=["十一種造型", "換一種畫風"], sub="水墨、鎏金、青花瓷，境界碑和慶祝畫面跟著換"),
+    # 2026-11-27 Apple 以 2.3.7 退件：截圖不能寫價格，「免費」「付費」也算。原本副標「原版免費。記錄、算境界全部免費，
+    # 付費的只有造型」加一顆「付費造型」標，兩個都拿掉。要講免費請寫在描述裡（Apple 退件信建議的）。
 ]
 
 
