@@ -1,10 +1,26 @@
-<!-- overnight: running -->
+<!-- overnight: done -->
 # Overnight 報告
 
 分支：`work/overnight-20261126-1110`（從 `work/perf-1126` 開出來）。檢查線只在 `work/**` 跑，所以分支名前面加了 work/。
 
 ## 早上摘要
-（全部做完才寫）
+
+10 項做完 10 項。2026-11-27 多米說「併進 main」，整條分支已併 main。
+
+- 第 1 項：TestFlight 1.1（43）已上傳，是 work/perf-1126 那一版（Digest 快取那批），不含下面 2 到 8 項。
+- 第 2 項：立繪動畫只在境界頁、沒開表單、沒在慶祝時換格，看不到時停在當格（`SteleView.swift` 的 `PortraitFrameSchedule`）。
+- 第 3 項：境界碑陰影只掛在底色圓角上（`SteleView.swift`）。截圖跟改前每格差最多 2，看不出來。
+- 第 4 項：慶祝粒子淡完（約 1.9 秒）就把整塊拿掉（`CelebrationParticles.swift`）。
+- 第 5 項：回前景只重看買過什麼（`PurchaseService.refreshOwned`），價格打開選造型頁才抓；還沒抓回來時購買鍵寫「讀取價格中」（`PortraitStyleView.swift`）。
+- 第 6 項：健康查詢的日曆只建一次，時區跟著手機換（`HealthKitQueries.swift`）。
+- 第 7 項：一筆量測都沒有時，健康 app 沒有體脂率就只拿最新一筆體重與去脂體重，不讀整段歷史（`HealthKitService.swift`）。
+- 第 8 項：拿掉境界頁、分析頁、功法、最近修煉、單一功法沒用到的 lifts 參數。
+
+檢查線：run 45747324040 全綠；改購買鍵字型別後的 run 45824004998 有一條 SheetDelete（刪除再復原）找不到「復原」鍵，跟改動無關，重跑。
+
+要先測：選造型頁第一次打開時價格多久出來、購買鍵；切到設定或分析頁再回境界頁，立繪接著動；突破慶祝的粒子。這幾項模擬器都沒量過速度。
+
+沒解決：1.0（40）又被 Apple 退（2026-11-27 asc check 看到 REJECTED），要多米貼退件信。
 
 ## 任務清單
 - [x] 1. run 45743378156 綠了，從 work/perf-1126 手動觸發 ios.yml 出 TestFlight 性能版。完成標準：ios.yml 那次執行成功。
@@ -15,8 +31,8 @@
 - [x] 6. `HealthKitQueries.swift` 的 calendar 改 static let。完成標準：檢查線過。
 - [x] 7. 一筆量測都沒有時，健康 app 沒有體脂率就不讀整段體重歷史。完成標準：檢查線過。
 - [x] 8. 拿掉沒用到的 lifts 參數（RealmView、AnalysisView、GongView、RecentLiftsList、MoveDetailView）。完成標準：檢查線過。
-- [ ] 9. 推上去跑檢查線，全綠；紅了修。
-- [ ] 10. 更新 HANDOFF.md、寫早上摘要。
+- [x] 9. 推上去跑檢查線，全綠；紅了修。
+- [x] 10. 更新 HANDOFF.md、寫早上摘要。
 
 ## 待確認（需要多米決定的事）
 
@@ -29,3 +45,4 @@
 - 11:50 run 45743378156 全綠。從 work/perf-1126（4f667fb）手動觸發 ios.yml，run 45747413975，建置號 43，在跑。整晚分支的檢查線 run 45747324040 在排 macOS 機器。
 - 12:20 第 1 項完成：run 45747413975 三段全綠（規則引擎、建置上傳、填測試說明），TestFlight 1.1（43）已上傳。整晚分支檢查線 macOS 那段在跑。
 - 12:45 檢查線 run 45747324040 全綠（UI 34 條、規則引擎、swift-format、swiftlint）。截圖 156 張對過：境界碑那些每格差最多 2（陰影換寫法，看不出來）；選造型頁購買鍵多了一個空格（「水墨」 NT$120），原因是新加的 missingPriceText 回 String，整句從 LocalizedStringKey 變成 String。改回同型別，再推一次。立繪動畫截圖格數不同是截圖時機，人蔘姿勢一樣。
+- 2026-11-27 11:10 多米說併進 main。asc check 看到 1.0（40）REJECTED。run 45824004998 的 SheetDelete 紅，重跑中，綠了再併。

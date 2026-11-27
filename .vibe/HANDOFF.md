@@ -1,3 +1,23 @@
+# Handoff: 整條（手感、境界、出關、性能兩批）已併 main，版號 1.1；1.0（40）又被 Apple 退，等多米貼退件信
+
+> 產出時間：2026-11-27。main 從 b1b1bb5 快轉到 work/overnight-20261126-1110（多米說「併進 main」）。推 main 會由 ios.yml 出 TestFlight 1.1 的下一個建置。
+> 上一份交接備份在 `.vibe/handoff/archive/HANDOFF-2026-11-27-併main前.md`。
+
+## 🆕 2026-11-27 併 main 與 1.0 退件
+
+- 併進 main 的：work/feel-1125（手感三點）、work/realm-average（境界看平均）、work/return（出關等三件）、work/perf-1126（Digest 快取那批）、work/overnight-20261126-1110（性能報告第五區六條、拿掉沒用到的 lifts 參數）。整晚的細節在 `OVERNIGHT.md`。
+- main 的版號從 1.0 變 1.1（work/return 改的）。
+- **1.0（40）又被退**：2026-11-27 跑 `asc.yml` check，appInfo 與 IOS 1.0 都是 REJECTED，十二個內購 READY_TO_SUBMIT。還沒看退件信，要多米貼。
+- 重送要注意：main 現在是 1.1，新建置的版號是 1.1。App Store 那邊的版本 1.0 從沒上架過，網頁上可以把版本字串改成 1.1 再掛新建置；或從 b1b1bb5（main 併之前）開分支出 1.0 的建置，只修退件那一條。選哪條要等看完退件信、多米決定。`asc.yml` prepare 一定要帶建置號。
+
+## ⏭️ 接手要做的
+
+1. 請多米貼 1.0 退件信與截圖，照退件原因修，決定用 1.1 還是 1.0 重送（上面兩條路）。
+2. 推 main 出的 TestFlight 1.1 建置等多米真機：性能兩批、選造型頁價格、立繪切頁回來接著動、慶祝粒子。
+3. 第四區「健康重建逐筆查」已在 work/perf-1126 修掉；性能報告已無留著的項目。
+
+以下是 2026-11-26 的交接，仍然有效（「沒做、留著的」與「lifts 參數」兩條已在 2026-11-27 做完）。
+
 # Handoff: 性能修正 TestFlight 1.1（43）已出，等多米真機；1.0（40）照舊等 Apple
 
 > 產出時間：2026-11-26。分支 `work/perf-1126`（從 `work/return` 開出來，前面三批都在裡面）。沒併 main。
