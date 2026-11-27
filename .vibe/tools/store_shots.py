@@ -31,25 +31,24 @@ SIZES = {"6.3": (1206, 2622), "6.9": (1320, 2868)}
 PAID = "付費造型"
 
 # name 檔名｜raw 真機截圖｜title 大標（兩行，第二行金色）｜sub 描述句｜badge 小標｜top 手機上緣（1206 寬時的 y）
-# 2026-11-27 多米說太醜、重點不凸顯（參考茄記、蒜日子、豆鍵）：每張除了慶祝都用 pop 把要講的那塊放大浮出來
+# 2026-11-27 多米說太醜、重點不凸顯（參考茄記、蒜日子、豆鍵）。第二輪他說不用每張都浮，必要的就好：
+# 只留第 3、4 張（標題講的就是那個數字）。第 1 張手機縮小露出境界名那行字；第 2 張兩側畫震動波浪
+# phone 手機畫面多寬（1206 寬時，預設 1000）｜shake 手機兩側畫震動波浪，值是波浪中心的 y（1206 寬時）
 # pop 把截圖裡的一塊放大、跳出手機外：(x0, y0, x1, y1, 倍率, 圓角)，座標是真機截圖上的像素｜ring 圈出一顆鈕 (x, y, 半徑)
 SHOTS = [
     dict(name="01-realm", raw="1-realm.png", hero=True, title=["練到哪一境"], sub="量一次就知道",
-         pills=["不用註冊", "男女各一套標準", "健康 app 自動帶入"]),
+         pills=["不用註冊", "男女各一套標準", "健康 app 自動帶入"], phone=860),
     dict(name="02-celebration", raw="2-celebration.png", title=["突破那一刻", "手機會震一下"],
-         sub="第一次入道、升一期、跨大境界，都有全螢幕慶祝"),
+         sub="第一次入道、升一期、跨大境界，都有全螢幕慶祝",
+         phone=880, shake=1150),
     dict(name="03-next", raw="3-next-stage.png", title=["下一期", "還差幾公斤肌肉"], sub="用身高校正過的 FFMI 算，不只看體重",
          pop=(48, 750, 1158, 1050, 1.14, 40)),
     dict(name="04-unstable", raw="5-unstable.png", title=["體脂還偏高", "照樣算給你看"], sub="標「根基不穩」，告訴你還差幾 % 就生效",
          pop=(48, 1490, 1158, 1772, 1.14, 40)),
-    dict(name="05-log", raw="6-log-lift.png", title=["練完記四格", "不用填一堆"], sub="功法、重量、次數、組數，記完就算等級",
-         pop=(48, 1900, 1158, 2100, 1.16, 40)),
-    dict(name="06-moves", raw="7-moves.png", title=["十二門功法", "各有等級"], sub="深蹲叫坐馬樁、硬舉叫拔山式，從未入門練到化境",
-         pop=(50, 1625, 595, 2200, 1.4, 48)),
-    dict(name="07-data", raw="8-data.png", title=["不用註冊", "資料只在手機"], sub="換手機用匯出檔帶走，量測從健康 app 重建",
-         pop=(48, 700, 1158, 1040, 1.14, 40)),
-    dict(name="08-styles", raw="10-styles.png", title=["十一種造型", "換一種畫風"], sub="水墨、鎏金、青花瓷，境界碑和慶祝畫面跟著換",
-         pop=(48, 1582, 1158, 2032, 1.14, 40)),
+    dict(name="05-log", raw="6-log-lift.png", title=["練完記四格", "不用填一堆"], sub="功法、重量、次數、組數，記完就算等級"),
+    dict(name="06-moves", raw="7-moves.png", title=["十二門功法", "各有等級"], sub="深蹲叫坐馬樁、硬舉叫拔山式，從未入門練到化境"),
+    dict(name="07-data", raw="8-data.png", title=["不用註冊", "資料只在手機"], sub="換手機用匯出檔帶走，量測從健康 app 重建"),
+    dict(name="08-styles", raw="10-styles.png", title=["十一種造型", "換一種畫風"], sub="水墨、鎏金、青花瓷，境界碑和慶祝畫面跟著換"),
     # 2026-11-27 Apple 以 2.3.7 退件：截圖不能寫價格，「免費」「付費」也算。原本副標「原版免費。記錄、算境界全部免費，
     # 付費的只有造型」加一顆「付費造型」標，兩個都拿掉。要講免費請寫在描述裡（Apple 退件信建議的）。
 ]
@@ -127,7 +126,28 @@ def shadow(im, box, radius, blur, alpha=130, dy=18):
     return Image.alpha_composite(im.convert("RGBA"), sh.filter(ImageFilter.GaussianBlur(blur))).convert("RGB")
 
 
-def compose(size, raw, title, sub, badge=None, top=None, ring=None, pop=None, hero=False, pills=None, name=None):
+def waves(im, w, left, right, cy, k):
+    """手機兩側各三條直的波浪線，代表在震（多米給的參考是頸掛風扇兩側的藍色波浪）。內側那條最長。"""
+    import math
+    d = ImageDraw.Draw(im)
+    gap = (left - 0) / 4
+    for i, length in enumerate((300, 240, 180)):
+        for side in (-1, 1):
+            cx = left - gap * (i + 1) if side < 0 else right + gap * (i + 1)
+            pts = []
+            for j in range(61):
+                t = j / 60
+                yy = cy - length * k / 2 + t * length * k
+                xx = cx + 13 * k * math.sin(t * 2 * math.pi * length / 120)
+                pts.append((xx, yy))
+            d.line(pts, fill=GOLD, width=int(10 * k), joint="curve")
+            for px, py in (pts[0], pts[-1]):
+                rr = 5 * k
+                d.ellipse([px - rr, py - rr, px + rr, py + rr], fill=GOLD)
+
+
+def compose(size, raw, title, sub, badge=None, top=None, ring=None, pop=None, hero=False, pills=None, name=None,
+            phone=1000, shake=None):
     w, h = size
     k = w / 1206
     im = gradient(size)
@@ -161,7 +181,7 @@ def compose(size, raw, title, sub, badge=None, top=None, ring=None, pop=None, he
             y += 120 * k
         top = top or (y / k + 40)
     shot = Image.open(os.path.join(ROOT, RAW, raw)).convert("RGB")
-    sc = 1000 * k / shot.width            # 手機畫面放大到 1000 寬，底部出血
+    sc = phone * k / shot.width           # 手機畫面放大到 phone 寬（預設 1000），底部出血
     pw, ph = int(shot.width * sc), int(shot.height * sc)
     x, y = (w - pw) // 2, int(top * k)
     r, b = int(92 * k), int(18 * k)
@@ -169,6 +189,8 @@ def compose(size, raw, title, sub, badge=None, top=None, ring=None, pop=None, he
     ImageDraw.Draw(im).rounded_rectangle([x - b, y - b, x + pw + b, y + ph + b], r + b, fill=BEZEL)
     im.paste(shot.resize((pw, ph), Image.LANCZOS), (x, y), mask((pw, ph), r))
     LAST_RECT[:] = [x, y, pw, ph, r, sc]  # 給預覽影片用：手機畫面的位置
+    if shake:
+        waves(im, w, x - b, x + pw + b, shake * k, k)
     if pop:
         # 把重點那一塊放大，疊在原位置上，超出手機邊框
         x0, y0, x1, y1, zoom, rad = pop
